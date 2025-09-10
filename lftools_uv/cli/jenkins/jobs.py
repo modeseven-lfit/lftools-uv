@@ -12,6 +12,9 @@
 __author__ = "Anil Belur"
 
 import click
+import logging
+
+log = logging.getLogger(__name__)
 
 enable_disable_jobs = """
 import jenkins.*
@@ -50,7 +53,7 @@ def enable(ctx, regex):
     jenkins = ctx.obj["jenkins"]
 
     result = jenkins.server.run_script(enable_disable_jobs.format(regex, "enable"))
-    print(result)
+    log.info(result)
 
 
 @click.command()
@@ -61,7 +64,7 @@ def disable(ctx, regex):
     jenkins = ctx.obj["jenkins"]
 
     result = jenkins.server.run_script(enable_disable_jobs.format(regex, "disable"))
-    print(result)
+    log.info(result)
 
 
 jobs.add_command(enable)

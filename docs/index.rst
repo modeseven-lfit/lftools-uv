@@ -23,6 +23,7 @@ Contents:
 
     release-notes
     installation
+    ci-cd
     commands/index
     jenkins/index
 

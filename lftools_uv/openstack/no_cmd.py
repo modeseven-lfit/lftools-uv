@@ -21,6 +21,6 @@ import click
 def openstack(ctx, os_cloud):
     """(lftools-uv[openstack]) Provides an OpenStack interface.
 
-    To activate this interface run `pip install lftools-uv[openstack]`.
+    To activate this interface run `uv pip install "lftools-uv[openstack]"`.
     """
     pass

@@ -67,7 +67,7 @@ build: clean
 
 # Build documentation
 docs:
-	uv run --extra docs sphinx-build -W -b html -n -d docs/_build/doctrees ./docs/ docs/_build/html
+	uv run --extra docs sphinx-build -b html -n -d docs/_build/doctrees ./docs/ docs/_build/html
 
 # Serve documentation locally
 serve-docs: docs

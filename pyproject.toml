@@ -137,7 +137,7 @@ test = [
 
 # Combined extra for development work
 all = [
-    "lftools[dev,ldap,openstack,test]"
+    "lftools-uv[dev,ldap,openstack,test]"
 ]
 
 [project.urls]

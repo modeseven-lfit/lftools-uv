@@ -5,7 +5,7 @@
 .. _nexus2:
 
 ******
-Nexus3
+nexus2
 ******
 
 .. program-output:: lftools-uv nexus2 --help
@@ -15,8 +15,6 @@ Nexus3
 Commands
 ========
 
-.. contents:: Nexus2 Commands
-    :local:
 
 .. _nexus2_privileges:
 

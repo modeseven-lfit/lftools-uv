@@ -3,7 +3,7 @@
 .. SPDX-License-Identifier: EPL-1.0
 
 *******
-Plugins
+plugins
 *******
 
 .. program-output:: lftools-uv jenkins plugins --help

@@ -3,7 +3,7 @@
 .. SPDX-License-Identifier: EPL-1.0
 
 ******
-Config
+config
 ******
 
 .. program-output:: lftools-uv config --help
@@ -11,8 +11,7 @@ Config
 Commands
 ========
 
-.. contents:: Config Commands
-    :local:
+
 
 get
 ---

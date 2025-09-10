@@ -3,7 +3,7 @@
 .. SPDX-License-Identifier: EPL-1.0
 
 *******
-Lfidapi
+lfidapi
 *******
 
 .. program-output:: lftools-uv lfidapi --help

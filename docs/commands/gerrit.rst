@@ -3,7 +3,7 @@
 .. SPDX-License-Identifier: EPL-1.0
 
 ******
-Gerrit
+gerrit
 ******
 
 .. program-output:: lftools-uv gerrit --help

@@ -31,12 +31,12 @@ author = 'Linux Foundation Release Engineering'
 
 # Version information
 try:
-    from pbr.version import VersionInfo
-    version = str(VersionInfo("lftools-uv"))
-    release = str(VersionInfo("lftools-uv"))
+    from importlib.metadata import version as get_version
+    version = get_version("lftools-uv")
+    release = version
 except Exception:
-    version = '0.37.14'
-    release = '0.37.14'
+    version = '0.1.0'
+    release = '0.1.0'
 
 # Sphinx extensions
 extensions = [

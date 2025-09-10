@@ -2,17 +2,16 @@
 ..
 .. SPDX-License-Identifier: EPL-1.0
 
-****
-Dco
-****
+***
+dco
+***
 
 .. program-output:: lftools-uv dco --help
 
 Commands
 ========
 
-.. contents:: Check Commands
-    :local:
+
 
 check
 ---------

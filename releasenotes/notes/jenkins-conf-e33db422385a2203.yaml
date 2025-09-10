@@ -1,5 +1,0 @@
----
-features:
-  - |
-    Add ``--conf`` parameter to jenkins subcommand to allow choosing a jjb
-    config outside of the default paths.

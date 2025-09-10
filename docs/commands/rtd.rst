@@ -1,8 +1,12 @@
+.. SPDX-FileCopyrightText: 2025 The Linux Foundation
+..
+.. SPDX-License-Identifier: EPL-1.0
+
 ***********
 ReadTheDocs
 ***********
 
-.. program-output:: lftools rtd --help
+.. program-output:: lftools-uv rtd --help
 
 Commands
 ========
@@ -10,54 +14,62 @@ Commands
 project-list
 ------------
 
-.. program-output:: lftools rtd project-list --help
+.. program-output:: lftools-uv rtd project-list --help
 
 project-details
 ---------------
 
-.. program-output:: lftools rtd project-details --help
+.. program-output:: lftools-uv rtd project-details --help
+
 
 
 project-version-list
 --------------------
 
-.. program-output:: lftools rtd project-version-list --help
+.. program-output:: lftools-uv rtd project-version-list --help
+
 
 
 project-version-details
 -----------------------
 
-.. program-output:: lftools rtd project-version-details --help
+.. program-output:: lftools-uv rtd project-version-details --help
+
 
 
 project-version-update
 ----------------------
 
-.. program-output:: lftools rtd project-version-update --help
+.. program-output:: lftools-uv rtd project-version-update --help
+
 
 
 project-create
 --------------
 
-.. program-output:: lftools rtd project-create --help
+.. program-output:: lftools-uv rtd project-create --help
+
 
 
 project-build-list
 ------------------
 
-.. program-output:: lftools rtd project-build-list --help
+.. program-output:: lftools-uv rtd project-build-list --help
+
 
 
 project-build-details
 ---------------------
 
-.. program-output:: lftools rtd project-build-details --help
+.. program-output:: lftools-uv rtd project-build-details --help
+
 
 
 project-build-trigger
 ---------------------
 
-.. program-output:: lftools rtd project-build-trigger --help
+.. program-output:: lftools-uv rtd project-build-trigger --help
+
 
 
 
@@ -68,4 +80,3 @@ API requires a [rtd] section in ~/.config/lftools/lftools.ini:
    [rtd]
    token = REDACTED
    endpoint = https://readthedocs.org/api/v3/
-

@@ -36,14 +36,14 @@ function start_script {
         echo "./fix_yamlint -a (to run for all files)"
         echo "./fix_yamllint -f "file1 file2 file3" (to fix for only the provided files)"
         exit
-    elif [ $option -eq 1 ]; then
+    elif [ "$option" -eq 1 ]; then
         echo "Running yamllint for all yaml files ..."
-        ALL_FILES=`find . \( -name '*.yaml' -o -name '*.yml' \)`
+        ALL_FILES=$(find . \( -name '*.yaml' -o -name '*.yml' \))
         for FILE in $ALL_FILES; do
             process_file "$FILE"
         done
         exit 0
-    elif [ $option -eq 2 ]; then
+    elif [ "$option" -eq 2 ]; then
         # TODO: Allow the script take non full paths of files
         for FILE in $FILES; do
             process_file "$FILE"
@@ -57,7 +57,7 @@ function loop_log_file {
     # TODO below line fixes all lines that contain a project-name definition
     # sed -i '/{project-name}/s/ */      /' $FILE
     # Need to add this case to the loop
-    while read line; do
+    while read -r line; do
         LINE_NUMBER=$( echo "$line" | cut -d ":" -f2 | cut -d ":" -f1 )
         if [[ $line == *error* ]] && [[ $line == *"wrong indentation"* ]]; then
             EXPECTED=$( echo "$line" | sed -e 's#.*expected \(\)#\1#' | sed 's/\s.*$//' )
@@ -84,12 +84,14 @@ function loop_log_file {
             sed -i "${LINE_NUMBER}s/ *{ */{/g" "$FILE"
             sed -i "${LINE_NUMBER}s/ *} */}/g" "$FILE"
         fi
-            # Remove the line with the error from the output log file
-            sed -i '1d' /tmp/temp_lint.txt
-            # Cat the log file (can be muted, I liked seeing it for debugging purposes)
-            echo the log file looks like this now...
-            cat /tmp/temp_lint.txt
-    done </tmp/temp_lint.txt
+    done < /tmp/temp_lint.txt
+
+    # Process the temp file after the loop to avoid SC2094
+    if [ -f /tmp/temp_lint.txt ]; then
+        # Remove processed lines and show remaining content
+        echo "Processing completed. Remaining issues:"
+        cat /tmp/temp_lint.txt
+    fi
 }
 
 function process_file {

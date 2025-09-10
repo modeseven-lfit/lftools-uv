@@ -1,4 +1,0 @@
----
-fixes:
-  - |
-    Fix broken openstack and sign help command output in docs.

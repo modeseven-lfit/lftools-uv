@@ -1,6 +1,0 @@
----
-features:
-  - |
-    New command lftools infofile create-info-file
-    Creates an initial info file for a project.
-    Must be on the VPN to use.

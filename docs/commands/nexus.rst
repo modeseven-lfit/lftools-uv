@@ -1,10 +1,14 @@
+.. SPDX-FileCopyrightText: 2025 The Linux Foundation
+..
+.. SPDX-License-Identifier: EPL-1.0
+
 .. _nexus:
 
 *****
 Nexus
 *****
 
-.. program-output:: lftools nexus --help
+.. program-output:: lftools-uv nexus --help
 
 .. _nexus-commands:
 
@@ -19,24 +23,24 @@ Commands
 create
 ------
 
-.. program-output:: lftools nexus create --help
+.. program-output:: lftools-uv nexus create --help
 
 .. _nexus-repo:
 
 repo
 ^^^^
 
-.. program-output:: lftools nexus create repo --help
+.. program-output:: lftools-uv nexus create repo --help
 
 For details and examples, please see
-:ref:`Create Nexus2 repos with lftools <create-repos-lftools>`
+:ref:`Create Nexus2 repos with lftools-uv <create-repos-lftools>`
 
 .. _nexus-role:
 
 role
 ^^^^
 
-.. program-output:: lftools nexus create role --help
+.. program-output:: lftools-uv nexus create role --help
 
 .. code-block:: yaml
 
@@ -44,13 +48,13 @@ role
    ---
    # Minimal config
    lf-deployment:
-     name: LF Deployment Role
-     roles: # Roles can be defined by ID or by Name
+     display_name: LF Deployment Role
+     roles: # Define roles by ID or by Name
        - nx-deployment
        - analytics
-   # Full config with privileges (by name only) and description defined.
+   # Full config with privileges (by name) and description defined.
    LF Deployment By Name:
-     name: LF Dep Role
+     display_name: LF Dep Role
      privileges:
        - Status - (read)
        - Login to UI
@@ -65,47 +69,47 @@ role
 reorder-staged-repos
 --------------------
 
-.. program-output:: lftools nexus reorder-staged-repos --help
+.. program-output:: lftools-uv nexus reorder-staged-repos --help
 
 .. _nexus-docker:
 
 docker
 ------
 
-.. program-output:: lftools nexus docker --help
+.. program-output:: lftools-uv nexus docker --help
 
 While a settings.yaml file is still supported for ``nexus docker`` commands,
-the preferred way to login is to use an lftools.ini file, and provide the
+the preferred way to login is to use an lftools-uv.ini file, and provide the
 server address using the ``--server`` option. The config file should be at
-$HOME/.config/lftools/lftools.ini.
+$HOME/.config/lftools-uv/lftools-uv.ini.
 
 .. _nexus-docker-delete:
 
 delete
 ^^^^^^
 
-.. program-output:: lftools nexus docker delete --help
+.. program-output:: lftools-uv nexus docker delete --help
 
 .. _nexus-docker-list:
 
 list
 ^^^^
 
-.. program-output:: lftools nexus docker list --help
+.. program-output:: lftools-uv nexus docker list --help
 
 .. _nexus-release:
 
 release
 -------
 
-.. program-output:: lftools nexus release --help
+.. program-output:: lftools-uv nexus release --help
 
 While a settings.yaml file is still supported for ``nexus release`` commands,
-the preferred way to login is to use an lftools.ini file, and provide the
+the preferred way to login is to use an lftools-uv.ini file, and provide the
 server address using the ``--server`` option. The config file should be at
-$HOME/.config/lftools/lftools.ini.
+$HOME/.config/lftools-uv/lftools-uv.ini.
 Requires an [nexus.example.com] for each Nexus repositories in
-~/.config/lftools/lftools.ini:
+~/.config/lftools-uv/lftools-uv.ini:
 
 .. code-block:: bash
 

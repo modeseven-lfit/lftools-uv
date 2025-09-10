@@ -1,8 +1,12 @@
+.. SPDX-FileCopyrightText: 2025 The Linux Foundation
+..
+.. SPDX-License-Identifier: EPL-1.0
+
 *******
 Lfidapi
 *******
 
-.. program-output:: lftools lfidapi --help
+.. program-output:: lftools-uv lfidapi --help
 
 Commands
 ========
@@ -10,28 +14,28 @@ Commands
 create-group
 ------------
 
-.. program-output:: lftools lfidapi create-group --help
+.. program-output:: lftools-uv lfidapi create-group --help
 
 invite
 -------
 
-.. program-output:: lftools lfidapi invite --help
+.. program-output:: lftools-uv lfidapi invite --help
 
 search-members
 --------------
 
-.. program-output:: lftools lfidapi search-members --help
+.. program-output:: lftools-uv lfidapi search-members --help
 
 
 user
 ----
 
-.. program-output:: lftools lfidapi user --help
+.. program-output:: lftools-uv lfidapi user --help
 
 match-ldap-to-info
 ------------------
 
-.. program-output:: lftools lfidapi match-ldap-to-info --help
+.. program-output:: lftools-uv lfidapi match-ldap-to-info --help
 
 
 API requires an [lfid] section in ~/.config/lftools/lftools.ini:

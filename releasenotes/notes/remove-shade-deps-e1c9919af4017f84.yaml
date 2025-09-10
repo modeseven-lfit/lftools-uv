@@ -1,7 +1,0 @@
----
-upgrade:
-  - |
-    Add Python 3.8 and 3.9 support to PyPI
-deprecations:
-  - |
-    Remove Python 2.7 support to PyPI

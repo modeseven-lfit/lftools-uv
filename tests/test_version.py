@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # SPDX-License-Identifier: EPL-1.0
 ##############################################################################
 # Copyright (c) 2017 The Linux Foundation and others.
@@ -15,7 +14,7 @@ import os
 
 import pytest
 
-from lftools import cli
+from lftools_uv import cli
 
 FIXTURE_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
@@ -31,7 +30,7 @@ def test_version_bump(cli_runner, datafiles):
     os.chdir(str(datafiles))
     cli_runner.invoke(cli.cli, ["version", "bump", "TestRelease"], obj={})
 
-    for _file in datafiles.listdir():
+    for _file in datafiles.iterdir():
         pom = str(_file) + "/pom.xml"
         expected_pom = str(_file) + "/pom.xml.expected"
         # noqa: B101 .
@@ -46,7 +45,7 @@ def test_version_release(cli_runner, datafiles):
     os.chdir(str(datafiles))
     cli_runner.invoke(cli.cli, ["version", "release", "TestRelease"], obj={})
 
-    for _file in datafiles.listdir():
+    for _file in datafiles.iterdir():
         pom = str(_file) + "/pom.xml"
         expected_pom = str(_file) + "/pom.xml.expected"
         # noqa: B101 .

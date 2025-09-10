@@ -1,5 +1,0 @@
----
-features:
-  - |
-    Added --exact to the releasedockerhub command. This enables
-    user to only work on a specific repo (specified by --repo)

@@ -418,7 +418,7 @@
           This profile is to ensure we only build javadocs reports
           when we plan to deploy Maven site for our project.
 
-          It activates by checking for the existance of deploy-site.xml in the
+          It activates by checking for the existence of deploy-site.xml in the
           user's current working directory. (Intent is that this is run from
           the Project root directory)
       -->

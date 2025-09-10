@@ -1,3 +1,7 @@
+.. SPDX-FileCopyrightText: 2025 The Linux Foundation
+..
+.. SPDX-License-Identifier: EPL-1.0
+
 *********
 OpenStack
 *********
@@ -5,7 +9,7 @@ OpenStack
 Requires a `pip install lftools[openstack]` to activate this command.
 Requires `qemu-img` binary to upload images
 
-.. program-output:: lftools openstack --help
+.. program-output:: lftools-uv openstack --help
 
 Commands
 ========
@@ -16,7 +20,7 @@ Commands
 image
 -----
 
-.. program-output:: lftools openstack --os-cloud docs image --help
+.. program-output:: lftools-uv openstack --os-cloud docs image --help
 
 cleanup
 ^^^^^^^
@@ -26,41 +30,41 @@ The OpenDaylight project has 2 clouds, a Private Cloud and a Public cloud which
 needs the `--clouds` option to automatically remove the same images from
 more than one cloud simultaneously.
 
-.. program-output:: lftools openstack --os-cloud docs image cleanup --help
+.. program-output:: lftools-uv openstack --os-cloud docs image cleanup --help
 
 list
 ^^^^
 
-.. program-output:: lftools openstack --os-cloud docs image list --help
+.. program-output:: lftools-uv openstack --os-cloud docs image list --help
 
 object
 ------
 
 Command for managing objects.
 
-.. program-output:: lftools openstack --os-cloud docs object --help
+.. program-output:: lftools-uv openstack --os-cloud docs object --help
 
 list-containers
 ^^^^^^^^^^^^^^^
 
-.. program-output:: lftools openstack --os-cloud docs object list-containers --help
+.. program-output:: lftools-uv openstack --os-cloud docs object list-containers --help
 
 stack
 -----
 
 Command for managing stacks.
 
-.. program-output:: lftools openstack --os-cloud docs stack --help
+.. program-output:: lftools-uv openstack --os-cloud docs stack --help
 
 create
 ^^^^^^
 
 Create a new stack.
 
-.. program-output:: lftools openstack --os-cloud docs stack create --help
+.. program-output:: lftools-uv openstack --os-cloud docs stack create --help
 
-The create command requires a parameters file in the following format in order
-to build out the stack:
+The create command requires a parameters file in the following format to
+build out the stack:
 
 .. code-block: yaml
    :caption: parameter_file
@@ -81,7 +85,7 @@ delete
 
 Delete existing stack.
 
-.. program-output:: lftools openstack --os-cloud docs stack delete --help
+.. program-output:: lftools-uv openstack --os-cloud docs stack delete --help
 
 
 cost
@@ -89,6 +93,6 @@ cost
 
 Get total cost of existing stack.
 
-.. program-output:: lftools openstack --os-cloud docs stack cost --help
+.. program-output:: lftools-uv openstack --os-cloud docs stack cost --help
 
 Return sum of costs for each member of the running stack.

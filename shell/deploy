@@ -40,13 +40,13 @@ copy_archives() {
     fi
 
     # Copy all files matching pattern provided by user
-    if [ ! -z "$archive_pattern" ]; then
+    if [ -n "$archive_pattern" ]; then
         shopt -s globstar  # Enable globstar to copy archives
         for pattern in $archive_pattern; do
             [[ -e $pattern ]] || continue  # handle the case of no files to archive
             echo "Archiving $pattern" >> "$workspace/archives.log"
 
-            filename=$(basename $pattern)
+            filename=$(basename "$pattern")
             if [ "${#filename}" -gt 255 ]; then
                 echo "Filename too long: $pattern" | tee -a "$workspace/archives-missed.log"
                 continue
@@ -246,9 +246,11 @@ deploy_logs() {
         )
         for cmd in "${sys_cmds[@]}"; do
             # If command exists then print output.
+            # shellcheck disable=SC2086 # Intentional word splitting to parse command string
             set -- $cmd
+            # shellcheck disable=SC2086 # $1 comes from intentional word splitting above
             hash $1 2> /dev/null
-            if [ "$?" -eq "0" ]; then
+            if hash "$1" 2> /dev/null; then
                 echo -e "---> $cmd:\n $($cmd) \n"
             fi
         done
@@ -331,7 +333,7 @@ deploy_maven_file () {
     # As this script uses mvn to deploy. The server configuration should be
     # configured in your local settings.xml. By default the script uses the
     # mvn default "~/.m2/settings.xml" for the configuration but this can be
-    # overrided in the following order:
+    # overridden in the following order:
     #
     #     1. Passed through CLI option "-s" ("-l" for global-settings)
     #     2. Environment variable "$SETTINGS_FILE" ("$GLOBAL_SETTINGS_FILE" for global-settings)
@@ -417,26 +419,26 @@ deploy_maven_file () {
     # Precedence:
     #   1) -g option
     #   2) $GLOBAL_SETTINGS_FILE environment variable
-    if [ ! -z "$global_settings" ]; then
+    if [ -n "$global_settings" ]; then
         params+=("-gs $global_settings")
-    elif [ ! -z "$GLOBAL_SETTINGS_FILE" ] && [ -z "$global_settings" ]; then
+    elif [ -n "$GLOBAL_SETTINGS_FILE" ] && [ -z "$global_settings" ]; then
         params+=("-gs $GLOBAL_SETTINGS_FILE")
     fi
 
     # Precedence:
     #   1) -s option
     #   2) $SETTINGS_FILE environment variable
-    if [ ! -z "$settings" ]; then
+    if [ -n "$settings" ]; then
         params+=("-s $settings")
-    elif [ ! -z "$SETTINGS_FILE" ] && [ -z "$settings" ]; then
+    elif [ -n "$SETTINGS_FILE" ] && [ -z "$settings" ]; then
         params+=("-s $SETTINGS_FILE")
     fi
 
-    if [ ! -z "$mvn_params" ]; then
+    if [ -n "$mvn_params" ]; then
         params+=("$mvn_params")
     fi
 
-    if [ ! -z "$pom_file" ]; then
+    if [ -n "$pom_file" ]; then
         params+=("-DpomFile=\"$pom_file\"")
     else
         # Ensure groupId is passed when -f <pom-file> parameter is not used
@@ -513,7 +515,7 @@ deploy_maven_file () {
         params+=("-DartifactId=\"$artifact_id\"")
         params+=("-Dversion=\"$version\"")
 
-        if [ ! -z "$classifier" ]; then
+        if [ -n "$classifier" ]; then
             params+=("-Dclassifier=\"$classifier\"")
         fi
     fi
@@ -596,7 +598,7 @@ deploy_nexus() {
     if hash parallel 2>/dev/null; then
         export -f upload_to_nexus
         parallel --no-notice --jobs 200% --halt now,fail=1 \
-            "upload_to_nexus $nexus_repo_url {}" ::: ${file_list[*]}
+            "upload_to_nexus $nexus_repo_url {}" ::: "${file_list[@]}"
     else
         for file in "${file_list[@]}"; do
             upload_to_nexus "$nexus_repo_url" "$file"
@@ -666,7 +668,7 @@ EOF
 
     if echo "$resp" | grep -q nexus-error; then
         local msg
-        msg=$(sed -n -e 's/.*<msg>\(.*\)<\/msg>.*/\1/p' <<< $resp)
+        msg=$(sed -n -e 's/.*<msg>\(.*\)<\/msg>.*/\1/p' <<< "$resp")
         echo "ERROR: $msg"
         exit "$status"
     elif [ "$status" != "201" ]; then
@@ -706,7 +708,7 @@ EOF
 
     if echo "$resp" | grep -q nexus-error; then
         local msg
-        msg=$(sed -n -e 's/.*<msg>\(.*\)<\/msg>.*/\1/p' <<< $resp)
+        msg=$(sed -n -e 's/.*<msg>\(.*\)<\/msg>.*/\1/p' <<< "$resp")
         echo "ERROR: $msg"
         exit "$status"
     elif [ "$status" != "201" ]; then
@@ -714,7 +716,7 @@ EOF
         exit "$status"
     fi
 
-    echo "$(sed -n -e 's/.*<stagedRepositoryId>\(.*\)<\/stagedRepositoryId>.*/\1/p' <<< $resp)"
+    sed -n -e 's/.*<stagedRepositoryId>\(.*\)<\/stagedRepositoryId>.*/\1/p' <<< "$resp"
 }
 
 deploy_nexus_zip() {
@@ -792,7 +794,7 @@ upload_maven_file_to_nexus() {
     params+=("-F a=$artifact_id")
     params+=("-F v=$version")
     params+=("-F p=$packaging")
-    if [ ! -z "$classifier" ]; then
+    if [ -n "$classifier" ]; then
         params+=("-F c=$classifier")
     fi
     params+=("-F file=@$file")
@@ -801,13 +803,13 @@ upload_maven_file_to_nexus() {
     local status
     # We need word splitting here to parse the params
     # shellcheck disable=SC2086
-    resp=$(curl -s -w " %{http_code}" --netrc -X POST ${params[*]} \
+    resp=$(curl -s -w " %{http_code}" --netrc -X POST "${params[@]}" \
         "${nexus_url}/service/local/artifact/maven/content")
     status=$(echo "$resp" | awk 'END {print $NF}')
 
     if echo "$resp" | grep -q nexus-error; then
         local msg
-        msg=$(sed -n -e 's/.*<msg>\(.*\)<\/msg>.*/\1/p' <<< $resp)
+        msg=$(sed -n -e 's/.*<msg>\(.*\)<\/msg>.*/\1/p' <<< "$resp")
         echo "ERROR: $msg"
         exit "$status"
     elif [ "$status" != "201" ]; then

@@ -1,8 +1,12 @@
+.. SPDX-FileCopyrightText: 2025 The Linux Foundation
+..
+.. SPDX-License-Identifier: EPL-1.0
+
 ****
 Dco
 ****
 
-.. program-output:: lftools dco --help
+.. program-output:: lftools-uv dco --help
 
 Commands
 ========
@@ -13,7 +17,7 @@ Commands
 check
 ---------
 
-.. program-output:: lftools dco check --help
+.. program-output:: lftools-uv dco check --help
                     List of git commit hash missing the DCO (Signed-off-by line).
 
 

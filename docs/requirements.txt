@@ -1,0 +1,13 @@
+# Documentation requirements for ReadTheDocs
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2025 The Linux Foundation
+
+
+# GitHub native releases are used instead of reno
+
+# Install the package itself
+-e .
+furo
+# Sphinx and core dependencies
+sphinx>=4.0.0
+sphinxcontrib-programoutput

@@ -15,7 +15,7 @@ import os
 import pytest
 import responses
 
-import lftools.api.endpoints.readthedocs as client
+import lftools_uv.api.endpoints.readthedocs as client
 
 creds = {"authtype": "token", "endpoint": "https://readthedocs.org/api/v3/", "token": "xyz"}
 rtd = client.ReadTheDocs(creds=creds)
@@ -32,7 +32,7 @@ FIXTURE_DIR = os.path.join(
 @responses.activate
 def test_project_list(datafiles):
     os.chdir(str(datafiles))
-    json_file = open("project_list.json", "r")
+    json_file = open("project_list.json")
     json_data = json.loads(json_file.read())
     responses.add(responses.GET, url="https://readthedocs.org/api/v3/projects/", json=json_data, status=200)
     assert "TestProject1" in rtd.project_list()
@@ -44,7 +44,7 @@ def test_project_list(datafiles):
 @responses.activate
 def test_project_details(datafiles):
     os.chdir(str(datafiles))
-    json_file = open("project_details.json", "r")
+    json_file = open("project_details.json")
     json_data = json.loads(json_file.read())
     responses.add(
         responses.GET, url="https://readthedocs.org/api/v3/projects/TestProject1/", json=json_data, status=200
@@ -58,7 +58,7 @@ def test_project_details(datafiles):
 @responses.activate
 def test_project_version_list(datafiles):
     os.chdir(str(datafiles))
-    json_file = open("project_version_list.json", "r")
+    json_file = open("project_version_list.json")
     json_data = json.loads(json_file.read())
     responses.add(
         responses.GET,
@@ -76,7 +76,7 @@ def test_project_version_list(datafiles):
 @responses.activate
 def test_project_version_details(datafiles):
     os.chdir(str(datafiles))
-    json_file = open("project_version_details.json", "r")
+    json_file = open("project_version_details.json")
     json_data = json.loads(json_file.read())
     responses.add(
         responses.GET,
@@ -89,11 +89,10 @@ def test_project_version_details(datafiles):
 
 @responses.activate
 def test_project_version_update():
-    data = {"active": True}
     responses.add(
         responses.PATCH,
         url="https://readthedocs.org/api/v3/projects/TestProject1/versions/latest/",  # noqa
-        json=data,
+        body="",
         status=204,
     )
     assert rtd.project_version_update("TestProject1", "latest", "True")
@@ -120,7 +119,7 @@ def test_project_create():
 @responses.activate
 def test_project_build_list(datafiles):
     os.chdir(str(datafiles))
-    json_file = open("project_build_list.json", "r")
+    json_file = open("project_build_list.json")
     json_data = json.loads(json_file.read())
     responses.add(
         responses.GET,
@@ -138,7 +137,7 @@ def test_project_build_list(datafiles):
 @responses.activate
 def test_project_build_details(datafiles):
     os.chdir(str(datafiles))
-    json_file = open("project_build_details.json", "r")
+    json_file = open("project_build_details.json")
     json_data = json.loads(json_file.read())
     responses.add(
         responses.GET,
@@ -167,7 +166,7 @@ def test_project_build_trigger():
 @responses.activate
 def test_subproject_list(datafiles):
     os.chdir(str(datafiles))
-    json_file = open("subproject_list.json", "r")
+    json_file = open("subproject_list.json")
     json_data = json.loads(json_file.read())
     responses.add(
         responses.GET,
@@ -185,7 +184,7 @@ def test_subproject_list(datafiles):
 @responses.activate
 def test_subproject_details(datafiles):
     os.chdir(str(datafiles))
-    json_file = open("subproject_details.json", "r")
+    json_file = open("subproject_details.json")
     json_data = json.loads(json_file.read())
     responses.add(
         responses.GET,
@@ -199,7 +198,9 @@ def test_subproject_details(datafiles):
 @responses.activate
 def test_subproject_create():
     responses.add(
-        responses.POST, url="https://readthedocs.org/api/v3/projects/TestProject1/subprojects/", status=201  # NOQA
+        responses.POST,
+        url="https://readthedocs.org/api/v3/projects/TestProject1/subprojects/",
+        status=201,  # NOQA
     )
     assert rtd.subproject_create("TestProject1", "testproject2")
 

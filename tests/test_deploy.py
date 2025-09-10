@@ -14,8 +14,8 @@ import os
 import pytest
 import requests
 
-import lftools.deploy as deploy_sys
-from lftools import cli
+import lftools_uv.deploy as deploy_sys
+from lftools_uv import cli
 
 FIXTURE_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
@@ -45,7 +45,7 @@ def test_log_and_exit():
     """Test exit."""
     with pytest.raises(SystemExit) as excinfo:
         deploy_sys._log_error_and_exit("testmsg")
-    assert excinfo.type == SystemExit
+    assert excinfo.type is SystemExit
 
 
 @pytest.mark.datafiles(
@@ -55,7 +55,8 @@ def test_copy_archive_dir(cli_runner, datafiles):
     """Test copy_archives() command to ensure archives dir is copied."""
     os.chdir(str(datafiles))
     workspace_dir = os.path.join(str(datafiles), "workspace")
-    stage_dir = str(datafiles.mkdir("stage_archive"))
+    stage_dir = os.path.join(str(datafiles), "stage_archive")
+    os.mkdir(stage_dir)
 
     os.chdir(stage_dir)
     result = cli_runner.invoke(cli.cli, ["--debug", "deploy", "copy-archives", workspace_dir], obj={})
@@ -71,7 +72,8 @@ def test_copy_archive_pattern(cli_runner, datafiles):
     """Test copy_archives() command to ensure glob patterns are copied."""
     os.chdir(str(datafiles))
     workspace_dir = os.path.join(str(datafiles), "workspace")
-    stage_dir = str(datafiles.mkdir("stage_archive"))
+    stage_dir = os.path.join(str(datafiles), "stage_archive")
+    os.mkdir(stage_dir)
 
     os.chdir(stage_dir)
     result = cli_runner.invoke(cli.cli, ["--debug", "deploy", "copy-archives", workspace_dir, "**/*.txt"], obj={})
@@ -102,7 +104,7 @@ def test_deploy_archive(cli_runner, datafiles, responses):
 
     # Test successful upload
     url = "https://nexus.example.org/service/local/repositories/logs/content-compressed"
-    responses.add(responses.POST, "{}/test/path/abc".format(url), json=None, status=201)
+    responses.add(responses.POST, f"{url}/test/path/abc", json=None, status=201)
     result = cli_runner.invoke(
         cli.cli, ["--debug", "deploy", "archives", "https://nexus.example.org", "test/path/abc", workspace_dir], obj={}
     )
@@ -110,7 +112,7 @@ def test_deploy_archive(cli_runner, datafiles, responses):
 
     # Test failed upload
     url = "https://nexus-fail.example.org/service/local/repositories/logs/content-compressed"
-    responses.add(responses.POST, "{}/test/fail/path".format(url), status=404)
+    responses.add(responses.POST, f"{url}/test/fail/path", status=404)
     result = cli_runner.invoke(
         cli.cli,
         ["--debug", "deploy", "archives", "https://nexus-fail.example.org", "test/fail/path", workspace_dir],
@@ -282,14 +284,14 @@ def test_deploy_logs(cli_runner, datafiles, responses):
     # Test successful upload
     build_url = "https://jenkins.example.org/job/builder-check-poms/204"
     nexus_url = "https://nexus.example.org/service/local/repositories/logs/content-compressed"
-    responses.add(responses.GET, "{}/consoleText".format(build_url), status=201)
+    responses.add(responses.GET, f"{build_url}/consoleText", status=201)
     responses.add(
         responses.GET,
-        "{}/timestamps?time=HH:mm:ss&appendLog".format(build_url),
+        f"{build_url}/timestamps?time=HH:mm:ss&appendLog",
         body="This is a console timestamped log.",
         status=201,
     )
-    responses.add(responses.POST, "{}/test/log/upload".format(nexus_url), status=201)
+    responses.add(responses.POST, f"{nexus_url}/test/log/upload", status=201)
     result = cli_runner.invoke(
         cli.cli, ["--debug", "deploy", "logs", "https://nexus.example.org", "test/log/upload", build_url], obj={}
     )
@@ -306,11 +308,7 @@ def test_deploy_nexus_zip(cli_runner, datafiles, responses):
     nexus_path = "test/path"
 
     # Test success
-    success_upload_url = "{}/service/local/repositories/{}/content-compressed/{}".format(
-        nexus_url,
-        nexus_repo,
-        nexus_path,
-    )
+    success_upload_url = f"{nexus_url}/service/local/repositories/{nexus_repo}/content-compressed/{nexus_path}"
     responses.add(responses.POST, success_upload_url, status=201)
     result = cli_runner.invoke(
         cli.cli,
@@ -396,7 +394,7 @@ def test_get_node_from_xml():
     assert deploy_sys._get_node_from_xml(document, "stagedRepositoryId") == "432"
     with pytest.raises(SystemExit) as excinfo:
         deploy_sys._get_node_from_xml(document, "NotFoundTag")
-    assert excinfo.type == SystemExit
+    assert excinfo.type is SystemExit
 
 
 def mocked_log_error(*msg_list):
@@ -419,7 +417,7 @@ def mocked_log_error(*msg_list):
     if "Did not find nexus site" in msg1:
         raise ValueError("site.not.found")
     if "Failed with status code " in msg1:
-        raise ValueError("other.error.occured")
+        raise ValueError("other.error.occurred")
     if "Staging repository do not exist." in msg1:
         raise ValueError("missing.staging.repository")
     if "Staging repository is already closed." in msg1:
@@ -429,7 +427,7 @@ def mocked_log_error(*msg_list):
 
 def test__request_post(responses, mocker):
     """Test _request_post."""
-    mocker.patch("lftools.deploy._log_error_and_exit", side_effect=mocked_log_error)
+    mocker.patch("lftools_uv.deploy._log_error_and_exit", side_effect=mocked_log_error)
     xml_doc = """
         <promoteRequest><data>
             <stagedRepositoryId>test1-1027</stagedRepositoryId>
@@ -551,7 +549,7 @@ def test__request_post_file_data(responses, mocker):
 
 def test_nexus_stage_repo_close(responses, mocker):
     """Test nexus_stage_repo_close."""
-    mocker.patch("lftools.deploy._log_error_and_exit", side_effect=mocked_log_error)
+    mocker.patch("lftools_uv.deploy._log_error_and_exit", side_effect=mocked_log_error)
     url = "service/local/staging/profiles"
 
     responses.add(
@@ -603,25 +601,25 @@ def test_nexus_stage_repo_close(responses, mocker):
         deploy_sys.nexus_stage_repo_close("staging.already.closed", "INVALID", "test1-1027")
     assert "staging.already.closed" in str(excinfo.value)
 
-    xml_other_error_occured = """
+    xml_other_error_occurred = """
         <html><head><title>303 - See Other</title></head>
             <body><h1>303 - See Other</h1></body>
         </html>
         """
     responses.add(
         responses.POST,
-        "http://other.error.occured/{}/{}/finish".format(url, "INVALID"),
-        body=xml_other_error_occured,
+        "http://other.error.occurred/{}/{}/finish".format(url, "INVALID"),
+        body=xml_other_error_occurred,
         status=303,
     )
     with pytest.raises(ValueError) as excinfo:
-        deploy_sys.nexus_stage_repo_close("other.error.occured", "INVALID", "test1-1027")
-    assert "other.error.occured" in str(excinfo.value)
+        deploy_sys.nexus_stage_repo_close("other.error.occurred", "INVALID", "test1-1027")
+    assert "other.error.occurred" in str(excinfo.value)
 
 
 def test_nexus_stage_repo_create(responses, mocker):
     """Test nexus_stage_repo_create."""
-    mocker.patch("lftools.deploy._log_error_and_exit", side_effect=mocked_log_error)
+    mocker.patch("lftools_uv.deploy._log_error_and_exit", side_effect=mocked_log_error)
     url = "service/local/staging/profiles"
 
     xml_created = "<stagedRepositoryId>test1-1030</stagedRepositoryId>"
@@ -660,7 +658,7 @@ def test_nexus_stage_repo_create(responses, mocker):
         res = deploy_sys.nexus_stage_repo_create("other.create.error", "INVALID")
     assert "other.create.error" in str(excinfo.value)
 
-    xml_other_error_occured = """
+    xml_other_error_occurred = """
         <html>
             <head><title>303 - See Other</title></head>
             <body><h1>303 - See Other</h1></body>
@@ -668,13 +666,13 @@ def test_nexus_stage_repo_create(responses, mocker):
         """
     responses.add(
         responses.POST,
-        "http://other.error.occured/{}/{}/start".format(url, "INVALID"),
-        body=xml_other_error_occured,
+        "http://other.error.occurred/{}/{}/start".format(url, "INVALID"),
+        body=xml_other_error_occurred,
         status=303,
     )
     with pytest.raises(ValueError) as excinfo:
-        res = deploy_sys.nexus_stage_repo_create("other.error.occured", "INVALID")
-    assert "other.error.occured" in str(excinfo.value)
+        res = deploy_sys.nexus_stage_repo_create("other.error.occurred", "INVALID")
+    assert "other.error.occurred" in str(excinfo.value)
 
     xml_post_not_supported = """
         <html>
@@ -732,7 +730,7 @@ def test__upload_maven_file_to_nexus(responses, mocker):
     packaging = "tar.xz"
 
     test_url = "http://all.ok.upload:8081"
-    responses.add(responses.POST, "{}/{}".format(test_url, common_urlpart), body=None, status=201)
+    responses.add(responses.POST, f"{test_url}/{common_urlpart}", body=None, status=201)
     deploy_sys.upload_maven_file_to_nexus(test_url, nexus_repo_id, group_id, artifact_id, version, packaging, zip_file)
 
     xml_other_error = """
@@ -742,7 +740,7 @@ def test__upload_maven_file_to_nexus(responses, mocker):
         </error></errors></nexus-error>
         """
     test_url = "http://something.went.wrong:8081"
-    responses.add(responses.POST, "{}/{}".format(test_url, common_urlpart), body=xml_other_error, status=405)
+    responses.add(responses.POST, f"{test_url}/{common_urlpart}", body=xml_other_error, status=405)
     with pytest.raises(requests.HTTPError) as excinfo:
         deploy_sys.upload_maven_file_to_nexus(
             test_url, nexus_repo_id, group_id, artifact_id, version, packaging, zip_file
@@ -761,7 +759,7 @@ def test_deploy_nexus_snapshot(datafiles, responses):
     There are two files that should not be uploaded.
     """
     os.chdir(str(datafiles))
-    nexus_url = "http://successfull.nexus.deploy/nexus/content/repositories/releases"
+    nexus_url = "http://successful.nexus.deploy/nexus/content/repositories/releases"
     deploy_dir = "m2repo"
 
     # Test success - Snapshot
@@ -778,7 +776,7 @@ def test_deploy_nexus_snapshot(datafiles, responses):
         "maven-metadata.xml.sha1",
     ]
     for file in test_files:
-        success_upload_url = "{}/{}".format(nexus_url, file)
+        success_upload_url = f"{nexus_url}/{file}"
         responses.add(responses.PUT, success_upload_url, status=201)
     deploy_sys.deploy_nexus(nexus_url, deploy_dir, snapshot)
 
@@ -794,7 +792,7 @@ def test_deploy_nexus_nosnapshot(datafiles, responses):
     There are six files that should not be uploaded, and three that should.
     """
     os.chdir(str(datafiles))
-    nexus_url = "http://successfull.nexus.deploy/nexus/content/repositories/releases"
+    nexus_url = "http://successful.nexus.deploy/nexus/content/repositories/releases"
     deploy_dir = "m2repo"
 
     # Test success - No Snapshot
@@ -804,7 +802,7 @@ def test_deploy_nexus_nosnapshot(datafiles, responses):
         "4.0.3-SNAPSHOT/odlparent-lite-4.0.3-20181120.113136-1.pom.md5",
     ]
     for file in test_files:
-        success_upload_url = "{}/{}".format(nexus_url, file)
+        success_upload_url = f"{nexus_url}/{file}"
         responses.add(responses.PUT, success_upload_url, status=201)
     deploy_sys.deploy_nexus(nexus_url, deploy_dir)
 
@@ -820,14 +818,12 @@ def test_deploy_nexus_stage(datafiles, responses):
     repo_id = "test1-1030"
 
     # Setup for nexus_stage_repo_create
-    xml_created = "<stagedRepositoryId>{}</stagedRepositoryId>".format(repo_id)
-    responses.add(
-        responses.POST, "{}/{}/{}/start".format(url, url_repo, staging_profile_id), body=xml_created, status=201
-    )
+    xml_created = f"<stagedRepositoryId>{repo_id}</stagedRepositoryId>"
+    responses.add(responses.POST, f"{url}/{url_repo}/{staging_profile_id}/start", body=xml_created, status=201)
 
     # Setup for deploy_nexus with no snapshot
     os.chdir(str(datafiles))
-    nexus_deploy_url = "{}/service/local/staging/deployByRepositoryId/{}".format(url, repo_id)
+    nexus_deploy_url = f"{url}/service/local/staging/deployByRepositoryId/{repo_id}"
     deploy_dir = "m2repo"
     test_files = [
         "4.0.3-SNAPSHOT/odlparent-lite-4.0.3-20181120.113136-1.pom",
@@ -835,11 +831,11 @@ def test_deploy_nexus_stage(datafiles, responses):
         "4.0.3-SNAPSHOT/odlparent-lite-4.0.3-20181120.113136-1.pom.md5",
     ]
     for file in test_files:
-        success_upload_url = "{}/{}".format(nexus_deploy_url, file)
+        success_upload_url = f"{nexus_deploy_url}/{file}"
         responses.add(responses.PUT, success_upload_url, status=201)
 
     # Setup for nexus_stage_repo_close
-    responses.add(responses.POST, "{}/{}/{}/finish".format(url, url_repo, staging_profile_id), body=None, status=201)
+    responses.add(responses.POST, f"{url}/{url_repo}/{staging_profile_id}/finish", body=None, status=201)
 
     # Execute test, should not return anything for successful run.
     deploy_sys.deploy_nexus_stage(url, staging_profile_id, deploy_dir)

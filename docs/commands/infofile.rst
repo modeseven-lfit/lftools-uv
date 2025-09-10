@@ -1,8 +1,12 @@
+.. SPDX-FileCopyrightText: 2025 The Linux Foundation
+..
+.. SPDX-License-Identifier: EPL-1.0
+
 ********
 Infofile
 ********
 
-.. program-output:: lftools infofile --help
+.. program-output:: lftools-uv infofile --help
 
 Commands
 ========
@@ -10,17 +14,17 @@ Commands
 check-votes
 -----------
 
- .. program-output:: lftools infofile check-votes --help
+ .. program-output:: lftools-uv infofile check-votes --help
 
 get-committers
 --------------
 
- .. program-output:: lftools infofile get-committers --help
+ .. program-output:: lftools-uv infofile get-committers --help
 
 sync-committers
 ---------------
 
- .. program-output:: lftools infofile sync-committers --help
+ .. program-output:: lftools-uv infofile sync-committers --help
 
 
 Creating an info file requires a connection to the VPN
@@ -38,14 +42,13 @@ and a working openldap configuration
 create-info-file
 ----------------
 
- .. program-output:: lftools infofile create-info-file --help
+ .. program-output:: lftools-uv infofile create-info-file --help
 
 
 
-API for check votes requires a [github] section in ~/.config/lftools/lftools.ini:
+API for check votes requires a [github] section in ~/.config/lftools-uv/lftools-uv.ini:
 
 .. code-block:: bash
 
    [github]
    token = REDACTED
-

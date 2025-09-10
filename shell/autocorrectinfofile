@@ -62,7 +62,7 @@ parseoptions() {
 
   fi
 
-  #I should only clone the review if their is a discrepancy in commiters
+  #I should only clone the review if their is a discrepancy in committers
   if [[ $purpose =~ "IN-REVIEW" ]]; then
 
     tmpdir "$@"
@@ -115,11 +115,11 @@ main() {
 
   while IFS= read -r line; do
     diff_array+=( "$line" )
-    if [[ $(echo "$line" | grep ">") ]];
+    if echo "$line" | grep -q ">";
     then
       onlyinINFO+=( "$(echo "$line" | awk -F"id: " '{ print $2 }')" )
     fi
-    if [[ $(echo "$line" | grep "<") ]];
+    if echo "$line" | grep -q "<";
     then
       onlyinLDAP+=( "$(echo "$line" | awk -F"id: " '{ print $2 }')" )
     fi
@@ -128,7 +128,7 @@ main() {
 
   if ! [ "${#onlyinINFO[@]}" -eq 0 ]; then
     for missing in "${onlyinINFO[@]}"; do
-      if ! [ -z "$missing" ]; then
+      if [ -n "$missing" ]; then
         echo "    DUMMY: sending invite to $missing"
         lftools infofile get-committers --id "$missing" "$DIR"/"$repo"/INFO.yaml 2>&-
       fi
@@ -136,7 +136,7 @@ main() {
   fi
 
   if ! [ "${#onlyinLDAP[@]}" -eq 0 ]; then
-    echo "    These users are listed as commiters in LDAP and not in the INFO.yaml"
+    echo "    These users are listed as committers in LDAP and not in the INFO.yaml"
     for missing in "${onlyinLDAP[@]}"; do
       echo "    lftools infofile sync-committers $DIR/$repo/INFO.yaml $DIR/LDAP.yaml $missing --repo $repo 2>&-"
       lftools infofile sync-committers "$DIR"/"$repo"/INFO.yaml "$DIR"/LDAP.yaml "$missing" --repo "$repo" 2>&-

@@ -1,8 +1,12 @@
+.. SPDX-FileCopyrightText: 2025 The Linux Foundation
+..
+.. SPDX-License-Identifier: EPL-1.0
+
 ******
 Schema
 ******
 
-.. program-output:: lftools schema --help
+.. program-output:: lftools-uv schema --help
 
 Commands
 ========
@@ -10,4 +14,4 @@ Commands
 verify
 -------
 
-.. program-output:: lftools schema verify --help
+.. program-output:: lftools-uv schema verify --help

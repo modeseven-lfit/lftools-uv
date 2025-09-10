@@ -1,4 +1,0 @@
----
-fixes:
-  - |
-    Use Centos8 nodes in ONAP new project creation automated yaml files.

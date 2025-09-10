@@ -1,4 +1,0 @@
----
-fixes:
-  - |
-    Fix stack_cost initialization value

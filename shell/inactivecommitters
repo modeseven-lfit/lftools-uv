@@ -55,8 +55,8 @@ main() {
       if  [[ -z $updated ]]; then
        echo -n "  ERROR $id, $fullname, $email has no activity "
 
-       registered_on=$(ssh -n -p 29418 $gerritssh "gerrit gsql -c \"select registered_on from accounts where full_name = \\\"$fullname\\\" \" ")
-       whenreg=$(echo $registered_on | awk '{ print $3, $4 }' | awk '{print $1}'| sed s,\(,,g)
+       registered_on=$(ssh -n -p 29418 "$gerritssh" "gerrit gsql -c \"select registered_on from accounts where full_name = \\\"$fullname\\\" \" ")
+       whenreg=$(echo "$registered_on" | awk '{ print $3, $4 }' | awk '{print $1}'| sed s,\(,,g)
          if [[ $whenreg == 0 ]]; then
            echo "AND USER NEVER REGISTERED"
          else
@@ -69,7 +69,7 @@ main() {
       fi
 
     else
-     echo "  OK $id, $fullname, $email last submision or review $updated"
+     echo "  OK $id, $fullname, $email last submission or review $updated"
     fi
 
   done < <(lftools ldap csv "$group")
@@ -84,7 +84,7 @@ Email list can be built with 'ldap-lookup'
 Program outputs users who have not used gerrit at all, or in the last 6 months
 users from this list can be slated to have their access revoked.
 
-If you encounter: "Cant contact LDAP server"
+If you encounter: "Can't contact LDAP server"
 
 you will need to add:
 TLS_CACERT /path/to/ca.crt in /etc/openldap/ldap.conf

@@ -1,8 +1,12 @@
+.. SPDX-FileCopyrightText: 2025 The Linux Foundation
+..
+.. SPDX-License-Identifier: EPL-1.0
+
 ******
 Deploy
 ******
 
-.. program-output:: lftools deploy --help
+.. program-output:: lftools-uv deploy --help
 
 Commands
 ========
@@ -13,34 +17,34 @@ Commands
 archives
 --------
 
-.. program-output:: lftools deploy archives --help
+.. program-output:: lftools-uv deploy archives --help
 
 copy-archives
 -------------
 
-.. program-output:: lftools deploy copy-archives --help
+.. program-output:: lftools-uv deploy copy-archives --help
 
 logs
 ----
 
-.. program-output:: lftools deploy logs --help
+.. program-output:: lftools-uv deploy logs --help
 
 maven-file
 ----------
 
-.. program-output:: lftools deploy maven-file --help
+.. program-output:: lftools-uv deploy maven-file --help
 
 nexus
 -----
 
-.. program-output:: lftools deploy nexus --help
+.. program-output:: lftools-uv deploy nexus --help
 
 nexus-stage
 -----------
 
-.. program-output:: lftools deploy nexus-stage --help
+.. program-output:: lftools-uv deploy nexus-stage --help
 
 nexus-zip
 ---------
 
-.. program-output:: lftools deploy nexus-zip --help
+.. program-output:: lftools-uv deploy nexus-zip --help

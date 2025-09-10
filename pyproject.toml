@@ -1,14 +1,17 @@
+# SPDX-License-Identifier: EPL-1.0
+# SPDX-FileCopyrightText: 2025 The Linux Foundation
+
 [build-system]
-requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
 
 [project]
-name = "lftools"
+name = "lftools-uv"
 dynamic = ["version"]
 description = "Linux Foundation Release Engineering Tools"
 readme = "README.md"
 requires-python = ">=3.8"
-license = {text = "EPL-1.0"}
+license = {text = "EPL-1.0 OR Apache-2.0"}
 
 authors = [
     {name = "LF Release Engineering", email = "releng@linuxfoundation.org"},
@@ -27,7 +30,11 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9"
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13"
 ]
 
 dependencies = [
@@ -44,7 +51,7 @@ dependencies = [
     "defusedxml",
     "Deprecated",
     "dnspython",
-    "docker==4.2.2",
+    "docker",
     "email-validator",
     "filelock",
     "GitPython",
@@ -68,7 +75,7 @@ dependencies = [
     "pyrsistent",
     "python-jenkins",
     "PyYAML",
-    "requests",
+    "requests>=2.32.0",
     "rsa",
     "ruamel.yaml",
     "ruamel.yaml.clib",
@@ -77,7 +84,7 @@ dependencies = [
     "tabulate",
     "toml",
     "tqdm",
-    "urllib3<2.1.0",
+    "urllib3>=2.2.3,<3.0.0",
     "websocket-client",
     "wrapt",
     "xdg"
@@ -85,13 +92,30 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "mypy"
+    "mypy",
+    "pre-commit",
+    "tox",
+    "ruff",
+    "black",
+    "isort",
+    "bandit",
+    "safety",
+    "types-requests",
+    "types-PyYAML",
+    "types-tabulate",
+    "types-six",
+    "types-pyxdg",
+    "types-httplib2",
+    "types-jsonschema",
+    "types-tqdm",
+    "boto3-stubs",
+    "types-Deprecated"
 ]
 
 docs = [
-    "lfdocs-conf",
-    "reno",
-    "sphinxcontrib-programoutput"
+    "sphinxcontrib-programoutput",
+    "sphinx>=4.0.0",
+    "furo"
 ]
 
 ldap = [
@@ -103,47 +127,71 @@ openstack = [
 ]
 
 test = [
-    "pytest==5.3.5",
-    "pytest-click==0.3",
-    "pytest-cov",
-    "pytest-datafiles==2.0",
-    "pytest-mock==2.0.0",
-    "pytest-responses==0.4.0"
+    "pytest>=8.3.0",
+    "pytest-click>=1.1.0",
+    "pytest-cov>=5.0.0",
+    "pytest-datafiles>=3.0.0",
+    "pytest-mock>=3.14.0",
+    "pytest-responses>=0.5.1"
+]
+
+# Combined extra for development work
+all = [
+    "lftools[dev,ldap,openstack,test]"
 ]
 
 [project.urls]
-"Homepage" = "https://docs.releng.linuxfoundation.org/projects/lftools"
-"Bug Tracker" = "https://github.com/lfit/releng-tools/issues"
-"Documentation" = "https://docs.releng.linuxfoundation.org/projects/lftools"
-"Source Code" = "https://github.com/lfit/releng-lftools"
+"Homepage" = "https://docs.releng.linuxfoundation.org/projects/lftools-uv"
+"Bug Tracker" = "https://github.com/lfit/lftools-uv/issues"
+"Documentation" = "https://docs.releng.linuxfoundation.org/projects/lftools-uv"
+"Source Code" = "https://github.com/lfit/lftools-uv"
+"Repository" = "https://github.com/lfit/lftools-uv"
+"Changelog" = "https://github.com/lfit/lftools-uv/releases"
 
 [project.scripts]
-lftools = "lftools.cli:main"
-
-[tool.setuptools]
-platforms = ["linux"]
-script-files = [
-    "shell/deploy",
-    "shell/gerrit_create",
-    "shell/inactivecommitters",
-    "shell/sign",
-    "shell/version",
-    "shell/yaml4info",
-    "shell/autocorrectinfofile"
-]
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["lftools*"]
-exclude = ["tests*"]
+lftools-uv = "lftools_uv.cli:main"
+autocorrectinfofile = "lftools_uv.shell.autocorrectinfofile:main"
+deploy = "lftools_uv.shell.deploy:main"
+fix_yamllint = "lftools_uv.shell.fix_yamllint:main"
+gerrit_create = "lftools_uv.shell.gerrit_create:main"
+inactivecommitters = "lftools_uv.shell.inactivecommitters:main"
+sign = "lftools_uv.shell.sign:main"
+version = "lftools_uv.shell.version:main"
+yaml4info = "lftools_uv.shell.yaml4info:main"
 
 
-[tool.setuptools_scm]
-# For smarter version schemes and other configuration options,
-# check out https://github.com/pypa/setuptools_scm
+
+[tool.hatch.version]
+source = "vcs"
+fallback-version = "0.0.0"
+
+[tool.hatch.version.raw-options]
 local_scheme = "no-local-version"
 version_scheme = "python-simplified-semver"
 
+[tool.hatch.build.targets.wheel]
+packages = ["lftools_uv"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/lftools_uv",
+    "/shell",
+    "/docs",
+    "/tests",
+    "/README.md",
+    "/pyproject.toml"
+]
+exclude = [
+    "/.git*",
+    "/.tox",
+    "/.pytest_cache",
+    "/__pycache__",
+    "*.pyc",
+    "*.pyo"
+]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"shell" = "share/lftools-uv/shell"
 
 [tool.black]
 line-length = 120
@@ -156,3 +204,79 @@ exclude = '''
 
 [tool.isort]
 profile = "black"
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.pytest.ini_options]
+markers = ["datafiles"]
+addopts = [
+    "-p", "no:warnings",
+    "--cov=lftools_uv",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml"
+]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.coverage.run]
+source = ["lftools_uv"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:"
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py38"
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/*" = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["lftools_uv"]

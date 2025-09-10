@@ -225,7 +225,11 @@ do
                 p ) parent="$OPTARG" ;;
                 w ) TMP_WORKSPACE="$OPTARG" ;;
                 e ) ENABLE_REPLICATION=true ;;
-                h ) usage; exit;;
+                h )
+                    usage
+                    # shellcheck disable=SC2317
+                    exit
+                    ;;
                 \? ) echo "Unknown option: -$OPTARG" >&2; exit 1;;
         esac
 done

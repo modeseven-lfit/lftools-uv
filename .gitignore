@@ -1,35 +1,45 @@
-# Ignore Vim temporary files
-.*.sw?
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2025 The Linux Foundation
 
-# Maven
-target/
+# Temporary and binary files
+*~
+*.py[cod]
+*.so
+*.cfg
+!.isort.cfg
+!setup.cfg
+*.orig
+*.log
+*.pot
+__pycache__/*
+.cache/*
+.*.swp
+*/.ipynb_checkpoints/*
+.DS_Store
 
-# Vagrant
-.vagrant
-
-# IntelliJ
-.idea/
-*.iml
-
-# Eclipse
+# Project files
+.ropeproject
 .project
-
-# VSCode
+.pydevproject
+.settings
+.idea
 .vscode
+tags
 
-# NPM / NodeJS
-_cacache/
-anonymous-cli-metrics.json
+# Package files
+*.egg
+*.eggs/
+.installed.cfg
+*.egg-info
 
-# Python
-.cache/
-.eggs/
+# Unittest and coverage
+htmlcov/*
+.coverage
+.coverage.*
+.tox
+junit*.xml
+coverage.xml
 .pytest_cache/
-.tox/
-.venv/
-__pycache__/
-*.egg-info/
-*.pyc
 
 # Build and docs folder/files
 build/*
@@ -41,10 +51,10 @@ docs/_build/*
 cover/*
 MANIFEST
 
-# PBR
-AUTHORS
-ChangeLog
+# Per-project virtualenvs
+.venv*/
+.conda*/
+.python-version
 
-# Reno
-RELEASENOTES.rst
-reno.cache
+# Node
+node_modules/*

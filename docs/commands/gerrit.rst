@@ -1,8 +1,12 @@
+.. SPDX-FileCopyrightText: 2025 The Linux Foundation
+..
+.. SPDX-License-Identifier: EPL-1.0
+
 ******
 Gerrit
 ******
 
-.. program-output:: lftools gerrit --help
+.. program-output:: lftools-uv gerrit --help
 
 Commands
 ========
@@ -10,58 +14,58 @@ Commands
 list-project-permissions
 ------------------------
 
-.. program-output:: lftools gerrit list-project-permissions --help
+.. program-output:: lftools-uv gerrit list-project-permissions --help
 
 
 list-project-inherits-from
 --------------------------
 
-.. program-output:: lftools gerrit list-project-inherits-from --help
+.. program-output:: lftools-uv gerrit list-project-inherits-from --help
 
 
 abandonchanges
 --------------
 
-.. program-output:: lftools gerrit abandonchanges --help
+.. program-output:: lftools-uv gerrit abandonchanges --help
 
 addgitreview
 ------------
 
-.. program-output:: lftools gerrit addgitreview --help
+.. program-output:: lftools-uv gerrit addgitreview --help
 
 
 addgithubrights
 ---------------
 
-.. program-output:: lftools gerrit addgithubrights --help
+.. program-output:: lftools-uv gerrit addgithubrights --help
 
 
 addfile
 -------
 
-.. program-output:: lftools gerrit addfile --help
+.. program-output:: lftools-uv gerrit addfile --help
 
 
 createproject
 -------------
 
-.. program-output:: lftools gerrit createproject --help
+.. program-output:: lftools-uv gerrit createproject --help
 
 
 create-saml-group
 -----------------
 
-.. program-output:: lftools gerrit create-saml-group --help
+.. program-output:: lftools-uv gerrit create-saml-group --help
 
 
 addinfojob
 ----------
-.. program-output:: lftools gerrit addinfojob --help
+.. program-output:: lftools-uv gerrit addinfojob --help
 
 
 .. note::
 
-        Gerrit API methods require configuration in lftools.ini
+        Gerrit API methods require configuration in lftools-uv.ini
         in a global [gerrit] section.
         support for [gerrit.umbrella.tld] exists as well
         signed_off_by required to push changes.
@@ -84,10 +88,10 @@ addinfojob
 
 addmavenconfig
 --------------
-.. program-output:: lftools gerrit addmavenconfig --help
+.. program-output:: lftools-uv gerrit addmavenconfig --help
 
 
-An example of the lftools.ini entry for a Gerrit server making use of a full
+An example of the lftools-uv.ini entry for a Gerrit server making use of a full
 configuration:
 
 .. code-block:: none

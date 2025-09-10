@@ -14,7 +14,7 @@ import re
 
 import pytest
 
-from lftools.nexus import cmd, util
+from lftools_uv.nexus import cmd, util
 
 FIXTURE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtures")
 
@@ -22,7 +22,7 @@ FIXTURE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixture
 @pytest.fixture
 def mock_get_credentials(mocker):
     rtn = {"nexus": "http://nexus.localhost", "user": "user", "password": "password"}
-    mocker.patch("lftools.nexus.cmd.get_credentials", return_value=rtn)
+    mocker.patch("lftools_uv.nexus.cmd.get_credentials", return_value=rtn)
     mocker.patch("time.sleep", return_value=True)
 
 
@@ -44,10 +44,10 @@ def test_create_roles(datafiles, responses, nexus2_obj_create):
     role2_return = """{"data": {"id": "LF Deployment By Name"}}"""
 
     for _ in range(4):  # Add response for each expected "get_role" call
-        with open("simplified_roles_list.json", "r") as roles_return:
+        with open("simplified_roles_list.json") as roles_return:
             responses.add(responses.GET, roles_url, roles_return.read())
     for _ in range(2):  # Add response for each expected "get_priv" call
-        with open("simplified_privs_list.json", "r") as privs_return:
+        with open("simplified_privs_list.json") as privs_return:
             responses.add(responses.GET, privs_url, privs_return.read())
     responses.add(responses.POST, roles_url, role1_return, status=201)
     responses.add(responses.POST, roles_url, role2_return, status=201)
@@ -61,12 +61,12 @@ def test_release_staging_repos(datafiles, responses, mocker, nexus2_obj_create, 
     os.chdir(str(datafiles))
     baseurl = "http://nexus.localhost/service/local"
     repos = ["test-release-repo"]
-    activity_url = "{}/staging/repository/{}/activity".format(baseurl, repos[0])
-    request_url = "{}/staging/bulk/promote".format(baseurl)
+    activity_url = f"{baseurl}/staging/repository/{repos[0]}/activity"
+    request_url = f"{baseurl}/staging/bulk/promote"
 
-    closed_return = open("staging_activities_closed.xml", "r").read()
-    releasing_return = open("staging_activities_releasing.xml", "r").read()
-    released_return = open("staging_activities_released.xml", "r").read()
+    closed_return = open("staging_activities_closed.xml").read()
+    releasing_return = open("staging_activities_releasing.xml").read()
+    released_return = open("staging_activities_released.xml").read()
 
     mocker.patch.object(cmd, "sleep")
 

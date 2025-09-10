@@ -13,7 +13,7 @@ import os
 
 import pytest
 
-from lftools import cli
+from lftools_uv import cli
 
 FIXTURE_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),

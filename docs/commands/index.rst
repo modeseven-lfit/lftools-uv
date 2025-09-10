@@ -1,8 +1,12 @@
+.. SPDX-FileCopyrightText: 2025 The Linux Foundation
+..
+.. SPDX-License-Identifier: EPL-1.0
+
 ########
 Commands
 ########
 
-lftools is a collection of scripts written directly in python or externally via
+lftools-uv is a collection of scripts written directly in python or externally via
 bash.
 
 It supports the following commands:
@@ -27,6 +31,6 @@ It supports the following commands:
     sign
     version
 
-Enable debugging via ``lftools --debug`` preceding any commands or via
+Enable debugging via ``lftools-uv --debug`` preceding any commands or via
 environment variable ``DEBUG=True``, this will print extra information if
 available.

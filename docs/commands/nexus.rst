@@ -31,8 +31,7 @@ repo
 
 .. program-output:: lftools-uv nexus create repo --help
 
-For details and examples, please see
-:ref:`Create Nexus2 repos with lftools-uv <create-repos-lftools>`
+For details and examples, please see the nexus2 documentation.
 
 .. _nexus-role:
 

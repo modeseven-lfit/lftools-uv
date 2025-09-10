@@ -1,0 +1,6 @@
+This is a test archive log file for testing the copy_archives functionality.
+It should be copied when the deploy copy-archives command is run.
+
+Test log entry 1: Application started successfully
+Test log entry 2: Processing completed
+Test log entry 3: Archive created at 2024-01-01 12:00:00

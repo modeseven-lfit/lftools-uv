@@ -8,7 +8,7 @@ Installation
 
 .. note::
 
-    LFtools requires python3 (3.6+) virtual environment.
+    LFtools requires python3 (3.8+) virtual environment.
     https://virtualenv.pypa.io/en/stable/.
     Not using a virtualenv can have serious negative side effects!
 

@@ -2,9 +2,9 @@
 ..
 .. SPDX-License-Identifier: EPL-1.0
 
-***********
-ReadTheDocs
-***********
+***
+rtd
+***
 
 .. program-output:: lftools-uv rtd --help
 

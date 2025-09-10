@@ -3,7 +3,7 @@
 .. SPDX-License-Identifier: EPL-1.0
 
 *******
-License
+license
 *******
 
 .. program-output:: lftools-uv license --help
@@ -11,8 +11,7 @@ License
 Commands
 ========
 
-.. contents:: License Commands
-    :local:
+
 
 check
 -----

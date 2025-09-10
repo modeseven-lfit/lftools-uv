@@ -5,9 +5,10 @@ SPDX-FileCopyrightText: 2025 The Linux Foundation
 
 # LF Tools UV
 
-This project's documentation is available on ReadTheDocs (RTD)
+This project's documentation is available on ReadTheDocs (RTD) and GitHub Pages:
 
-<https://lf-releng-tools.readthedocs.io>
+- **Official Documentation**: <https://lf-releng-tools.readthedocs.io>
+- **GitHub Pages**: <https://modeseven-lfit.github.io/lftools-uv/>
 
 LF Tools UV is a collection of scripts and utilities that are useful to Linux
 Foundation projects' CI and Releng related activities. We try to create

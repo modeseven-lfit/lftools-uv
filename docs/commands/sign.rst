@@ -3,7 +3,7 @@
 .. SPDX-License-Identifier: EPL-1.0
 
 ****
-Sign
+sign
 ****
 
 .. program-output:: lftools-uv sign --help
@@ -11,8 +11,7 @@ Sign
 Commands
 ========
 
-.. contents:: Sign Commands
-    :local:
+
 
 container
 ---------

@@ -5,7 +5,7 @@
 .. _nexus:
 
 *****
-Nexus
+nexus
 *****
 
 .. program-output:: lftools-uv nexus --help
@@ -15,8 +15,7 @@ Nexus
 Commands
 ========
 
-.. contents:: Nexus Commands
-    :local:
+
 
 .. _nexus-create:
 

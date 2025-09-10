@@ -3,7 +3,7 @@
 .. SPDX-License-Identifier: EPL-1.0
 
 *******
-Version
+version
 *******
 
 .. program-output:: lftools-uv version --help
@@ -11,8 +11,7 @@ Version
 Commands
 ========
 
-.. contents:: Version Commands
-    :local:
+
 
 bump
 ----

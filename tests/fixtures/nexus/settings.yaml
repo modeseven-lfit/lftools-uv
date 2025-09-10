@@ -1,0 +1,4 @@
+---
+nexus: http://nexus.localhost
+user: admin
+password: admin123

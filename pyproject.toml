@@ -87,7 +87,7 @@ dependencies = [
     "urllib3>=2.2.3,<3.0.0",
     "websocket-client",
     "wrapt",
-    "xdg"
+    "xdg",
 ]
 
 [project.optional-dependencies]
@@ -144,6 +144,7 @@ all = [
 "Homepage" = "https://docs.releng.linuxfoundation.org/projects/lftools-uv"
 "Bug Tracker" = "https://github.com/lfit/lftools-uv/issues"
 "Documentation" = "https://docs.releng.linuxfoundation.org/projects/lftools-uv"
+"GitHub Pages" = "https://modeseven-lfit.github.io/lftools-uv/"
 "Source Code" = "https://github.com/lfit/lftools-uv"
 "Repository" = "https://github.com/lfit/lftools-uv"
 "Changelog" = "https://github.com/lfit/lftools-uv/releases"

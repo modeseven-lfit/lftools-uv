@@ -3,7 +3,7 @@
 .. SPDX-License-Identifier: EPL-1.0
 
 ******
-Deploy
+deploy
 ******
 
 .. program-output:: lftools-uv deploy --help
@@ -11,8 +11,7 @@ Deploy
 Commands
 ========
 
-.. contents:: Deploy Commands
-    :local:
+
 
 archives
 --------

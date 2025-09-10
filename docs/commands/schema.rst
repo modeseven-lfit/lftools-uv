@@ -3,7 +3,7 @@
 .. SPDX-License-Identifier: EPL-1.0
 
 ******
-Schema
+schema
 ******
 
 .. program-output:: lftools-uv schema --help

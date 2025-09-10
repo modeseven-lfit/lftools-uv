@@ -420,7 +420,7 @@ def deploy_logs(nexus_url, nexus_path, build_url):
         for c in sys_cmds:
             try:
                 output = subprocess.check_output(c).decode("utf-8")
-            except OSError:  # TODO: Switch to FileNotFoundError when Python < 3.5 support is dropped.
+            except FileNotFoundError:
                 log.debug("Command not found: {}".format(c))
                 continue
 

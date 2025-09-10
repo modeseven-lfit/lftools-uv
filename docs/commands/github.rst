@@ -3,7 +3,7 @@
 .. SPDX-License-Identifier: EPL-1.0
 
 ******
-GITHUB
+github
 ******
 
 .. program-output:: lftools-uv github --help

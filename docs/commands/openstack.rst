@@ -3,7 +3,7 @@
 .. SPDX-License-Identifier: EPL-1.0
 
 *********
-OpenStack
+openstack
 *********
 
 Requires a `pip install lftools-uv[openstack]` to activate this command.
@@ -14,8 +14,7 @@ Requires `qemu-img` binary to upload images
 Commands
 ========
 
-.. contents:: OpenStack Commands
-    :local:
+
 
 image
 -----

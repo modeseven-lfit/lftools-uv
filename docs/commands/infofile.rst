@@ -3,7 +3,7 @@
 .. SPDX-License-Identifier: EPL-1.0
 
 ********
-Infofile
+infofile
 ********
 
 .. program-output:: lftools-uv infofile --help

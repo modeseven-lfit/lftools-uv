@@ -5,7 +5,7 @@
 .. _nexus3:
 
 ******
-Nexus3
+nexus3
 ******
 
 .. program-output:: lftools-uv nexus3 --help
@@ -15,8 +15,7 @@ Nexus3
 Commands
 ========
 
-.. contents:: Nexus3 Commands
-    :local:
+
 
 .. _nexus3_asset:
 

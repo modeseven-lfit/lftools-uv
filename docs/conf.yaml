@@ -1,0 +1,16 @@
+# SPDX-FileCopyrightText: 2025 2025 The Linux Foundation
+#
+# SPDX-License-Identifier: EPL-1.0
+
+---
+project: lftools-uv
+project_cfg: lfdocs
+extensions:
+  - reno.sphinxext
+  - sphinx.ext.autodoc
+  - sphinx.ext.doctest
+  - sphinx.ext.intersphinx
+  - sphinx.ext.todo
+  - sphinx.ext.coverage
+  - sphinx.ext.viewcode
+  - sphinxcontrib.programoutput

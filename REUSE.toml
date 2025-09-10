@@ -1,0 +1,58 @@
+version = 1
+
+# SPDX-License-Identifier: EPL-1.0
+# SPDX-FileCopyrightText: 2025 The Linux Foundation
+
+# Licensing statement required for GHA tests and linting to pass for only this repository
+
+[[annotations]]
+path = [
+     "*.lock",
+     "*.md5",
+     "*.sha1",
+     "*.jar",
+     "*.tar.xz",
+     "*.zip",
+     "*.png",
+     "*.ico",
+     "*.jpg",
+     "*.jpeg",
+     "*.gif",
+     "*.svg",
+     "*.woff",
+     "*.woff2",
+     "*.ttf",
+     "*.eot",
+     "*.json",
+     "*.xml",
+     "*.html",
+     "*.css",
+     "*.js",
+     "*.map",
+     "*.txt",
+     "*.log",
+     "*.coverage",
+     "*.buildinfo*",
+     "test_coverage_report*",
+     "*.inv",
+     "LICENSES/*",
+     ".gitignore",
+     ".editorconfig",
+     ".flake8",
+     ".gitlint",
+     ".uvignore",
+     ".yamllint",
+     ".python-version",
+     "mypy.ini",
+     "archives",
+     "requirements*.txt",
+     "Makefile",
+     "commit-msg",
+     "tests/fixtures/**",
+     "docs/_static/**",
+     "docs/favicon.ico",
+     "etc/nexus/.gitignore",
+     "lftools_uv/git/templates/*"
+]
+SPDX-License-Identifier = "EPL-1.0"
+SPDX-FileCopyrightText = "2025 The Linux Foundation"

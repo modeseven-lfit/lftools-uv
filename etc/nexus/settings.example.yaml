@@ -1,0 +1,17 @@
+# SPDX-FileCopyrightText: 2025 2025 The Linux Foundation
+#
+# SPDX-License-Identifier: EPL-1.0
+
+---
+# vim: sw=2 ts=2 sts=3 et :
+
+# Nexus 2 system to work against. This should be the full path to the base web
+# interface including any URL context.
+nexus: 'https://nexus.example.org'
+
+# Administrative nexus user account credentials
+user: 'admin'
+password: 'admin123'
+
+# email domain that nexus user emails should be generated with
+email_domain: 'example.org'

@@ -1,0 +1,850 @@
+#!/bin/bash
+# SPDX-License-Identifier: EPL-1.0
+##############################################################################
+# Copyright (c) 2016, 2017 The Linux Foundation and others.
+#
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Eclipse Public License v1.0
+# which accompanies this distribution, and is available at
+# http://www.eclipse.org/legal/epl-v10.html
+##############################################################################
+
+# This script handles sending files to a Nexus site repo for archiving. Mainly
+# useful for storing logs for example on logs.opendaylight.org.
+
+copy_archives() {
+    # Find all files matching $pattern in a $workspace and copies it to the
+    # current directory. The best way to use this function is to cd into the
+    # directory you wish to store the files first before calling the function.
+    #
+    # To use this script the Nexus server must have a site repository configured
+    # with the name "logs" as this is a hardcoded path. Also this script uses
+    # ~/.netrc for it's authentication which must be provided.
+    #
+    # Usage: copy_archives <workspace> <archive_pattern>
+    #
+    #   <workspace>: Directory in which to search, typically in Jenkins this is
+    #                $WORKSPACE
+    #   <pattern>: Globstar pattern that is space separated of files that should
+    #              be archived. (optional)
+    local workspace="$1"
+    local archive_pattern="${2:-}"
+    local dest_dir
+    dest_dir="$(pwd)"
+
+    pushd "$workspace" || exit
+
+    # First copy all archives provided by user if any
+    if [ "$(ls -A "$workspace/archives/")" ]; then
+        mv "$workspace/archives/"* "$dest_dir"
+    fi
+
+    # Copy all files matching pattern provided by user
+    if [ -n "$archive_pattern" ]; then
+        shopt -s globstar  # Enable globstar to copy archives
+        for pattern in $archive_pattern; do
+            [[ -e $pattern ]] || continue  # handle the case of no files to archive
+            echo "Archiving $pattern" >> "$workspace/archives.log"
+
+            filename=$(basename "$pattern")
+            if [ "${#filename}" -gt 255 ]; then
+                echo "Filename too long: $pattern" | tee -a "$workspace/archives-missed.log"
+                continue
+            fi
+
+            dir=$(dirname "$pattern")
+            mkdir -p "$dest_dir/$dir"
+            mv "$pattern" "$dest_dir/$pattern"
+        done
+        shopt -u globstar  # Disable globstar once archives are copied
+    fi
+    popd || exit
+}
+
+deploy() {
+    # Entry point for the deploy command.
+    subcommand=$1; shift
+
+    case "$subcommand" in
+        archives )
+            echo "Deploying archives..."
+            deploy_archives "$@"
+            exit 0
+            ;;
+        maven-file )
+            echo "Deploying artifacts..."
+            deploy_maven_file "$@"
+            exit 0
+            ;;
+        file )
+            echo "Deploying file..."
+            upload_maven_file_to_nexus "$@"
+            exit 0
+            ;;
+        files )
+            echo "Deploying files..."
+            echo "ERROR: Unimplemented."
+            exit 1
+            ;;
+        logs )
+            echo "Deploying logs..."
+            deploy_logs "$@"
+            exit 0
+            ;;
+        nexus )
+            echo "Deploying Maven artifacts..."
+            deploy_nexus "$@"
+            exit 0
+            ;;
+        nexus-stage )
+            echo "Deploying Maven artifacts to staging repo..."
+            deploy_nexus_stage "$@"
+            exit 0
+            ;;
+        nexus-stage-repo-close )
+            nexus_stage_repo_close "$@"
+            exit 0
+            ;;
+        nexus-stage-repo-create )
+            nexus_stage_repo_create "$@"
+            exit 0
+            ;;
+        nexus-zip )
+            echo "Deploying nexus-zip..."
+            deploy_nexus_zip "$@"
+            exit 0
+            ;;
+        * )
+            echo "Invalid command: $subcommand" 1>&2
+            exit 1
+            ;;
+    esac
+}
+
+deploy_archives() {
+    # Archive files provided by the user to a Nexus site repository named logs.
+    #
+    # Provides 2 ways to archive files:
+    #     1) globstar pattern provided by the user.
+    #     2) $WORKSPACE/archives directory provided by the user.
+    #
+    # To use this script the Nexus server must have a site repository configured
+    # with the name "logs" as this is a hardcoded path. Also this script uses
+    # ~/.netrc for it's authentication which must be provided.
+    #
+    # Usage: deploy_archives <nexus_url> <nexus_path> <workspace> <archive_pattern>
+    #
+    #   <nexus_url>: URL of Nexus server. Eg: https://nexus.opendaylight.org
+    #   <nexus_path>: Path on nexus logs repo to place the logs. Eg:
+    #                 $SILO/$JENKINS_HOSTNAME/$JOB_NAME/$BUILD_NUMBER
+    #   <workspace>: Directory in which to search, typically in Jenkins this is
+    #                $WORKSPACE
+    #   <pattern>: Globstar pattern that is space separated of files that should
+    #              be archived. (optional)
+
+    if [ -z "$3" ]; then
+        echo "Missing required arguments."
+        exit 1
+    fi
+
+    local nexus_url="${1%/}"
+    local nexus_path="$2"
+    # Workspace of where to search for files to archive.
+    local workspace="$3"
+    # Pattern to archive (globstar allowed). Recommended to double quote the
+    # input so that the full pattern can be passed into the function.
+    local archive_pattern="${4:-}"
+
+    tmpdir=$(mktemp -d)
+    pushd "$tmpdir" || exit
+
+    ###################
+    # BEGIN ARCHIVING #
+    ###################
+    touch "$workspace/archives.log"
+    copy_archives "$workspace" "$archive_pattern"
+
+    # Find and gzip any 'text' files
+    find "$tmpdir" -type f -print0 \
+        | xargs -0r file \
+        | grep --extended-regexp --regexp ':.*text.*' \
+        | cut -d: -f1 \
+        | xargs -d'\n' -r gzip
+
+    if [ "$(ls -A)" ]; then
+        zip -qr "$workspace/archives.zip" . >> "$workspace/archives.log"
+        du -sh "$workspace/archives.zip"
+        gzip --force "$workspace/archives.log"
+
+        echo "Pushing archives.log.gz"
+        curl --netrc --upload-file "$workspace/archives.log.gz" \
+            "${nexus_url}/content/repositories/logs/${nexus_path}/archives.log.gz"
+
+        echo "Pushing archives.zip"
+        curl --netrc --upload-file "$workspace/archives.zip" \
+            "${nexus_url}/service/local/repositories/logs/content-compressed/${nexus_path}"
+    else
+        echo "Nothing to archive."
+    fi
+
+    popd || exit
+    rm -rf "$tmpdir"
+}
+
+deploy_logs() {
+    # Deploy logs to a Nexus site repository named logs.
+    #
+    # This script fetches logs and system information and pushes them to Nexus
+    # for log archiving.
+    #
+    # To use this script the Nexus server must have a site repository configured
+    # with the name "logs" as this is a hardcoded path. Also this script uses
+    # ~/.netrc for it's authentication which must be provided.
+    #
+    # Usage: deploy <nexus_url> <nexus_path> <build_url>
+    #
+    #   <nexus_url>: URL of Nexus server. Eg: https://nexus.opendaylight.org
+    #   <nexus_path>: Path on nexus logs repo to place the logs. Eg:
+    #                 $SILO/$JENKINS_HOSTNAME/$JOB_NAME/$BUILD_NUMBER
+    #   <build_url>: URL of the Jenkins build. Jenkins typicallyi provides this
+    #                via the $BUILD_URL environment variable.
+
+    if [ -z "$3" ]; then
+        echo "Missing required arguments."
+        echo "Usage: deploy <nexus_url> <nexus_path> <build_url>"
+        exit 1
+    fi
+
+    local nexus_url="${1%/}"
+    local nexus_path="$2"
+    local build_url="$3"
+
+    tmpdir=$(mktemp -d)
+    pushd "$tmpdir" || exit
+
+    touch "_build-details.log"
+    {
+        echo "build-url: ${build_url}"
+    } 2>&1 | tee -a "_build-details.log"
+    env | grep -v -E "COOKIE|DOCKER|HUDSON|KEY|PASSWORD|SSH|TOKEN" | sort > "_build-enviroment-variables.log"
+
+    # Print system info before collecting logs
+    local set_opts="$-"
+    set +e  # disable exit on errors
+    touch "_sys-info.log"
+    {
+        local sys_cmds
+        sys_cmds=(
+            "uname -a"
+            "lscpu"
+            "nproc"
+            "df -h"
+            "free -m"
+            "ip addr"
+            "sar -b -r -n DEV"
+            "sar -P ALL"
+        )
+        for cmd in "${sys_cmds[@]}"; do
+            # If command exists then print output.
+            # shellcheck disable=SC2086 # Intentional word splitting to parse command string
+            set -- $cmd
+            # shellcheck disable=SC2086 # $1 comes from intentional word splitting above
+            hash $1 2> /dev/null
+            if hash "$1" 2> /dev/null; then
+                echo -e "---> $cmd:\n $($cmd) \n"
+            fi
+        done
+    } 2>&1 | tee -a "_sys-info.log"
+    grep -q e <<< "$set_opts" && set -e # re-enable exit on errors
+
+    # Magic string used to trim console logs at the appropriate level during wget
+    MAGIC_STRING="-----END_OF_BUILD-----"
+    echo "$MAGIC_STRING"
+
+    wget --no-verbose -O "console.log" "${build_url}consoleText"
+    wget --no-verbose -O "console-timestamp.log" "${build_url}/timestamps?time=HH:mm:ss&appendLog"
+    sed -i "/^$MAGIC_STRING$/q" "console.log"
+    sed -i "/^.*$MAGIC_STRING$/q" "console-timestamp.log"
+
+    gzip -- *.log
+    zip -r console-logs.zip -- *.log.gz
+
+    curl --netrc --upload-file console-logs.zip \
+        "${nexus_url}/service/local/repositories/logs/content-compressed/${nexus_path}"
+
+    popd || exit
+    rm -rf "$tmpdir"
+}
+
+deploy_maven_file_usage () {
+    echo "Usage: $0 <nexus_url> <repo_id> <file>"
+    echo ""
+    echo "    nexus_url:   The URL to the Nexus Server."
+    echo "    repo_id:     Server ID as defined in settings.xml."
+    echo "    file:        File to deploy."
+    echo ""
+    echo "Options:"
+    echo "    -b /path/to/mvn"
+    echo "    -l /path/to/global-settings.xml"
+    echo "    -s /path/to/settings.xml"
+    echo "    -p <maven_params>"
+    echo "    -a <artifact_id>"
+    echo "    -c <classifier>"
+    echo "    -f <pom file>"
+    echo "    -g <group_id>"
+    echo "    -v <version>"
+}
+
+
+get_file_info () {
+  # Common function to parse artifact_id, version number from file.
+  local basefile
+
+  basefile=$(basename -s ".$1" "$2")
+
+  if [ -z "$artifact_id" ] && [[ "$1" =~ rpm|deb ]]; then
+      artifact_id=$(echo "$basefile" | cut -f 1 -d '_')
+  else
+      # handle other file types (tar, jar, gunzip files versions)
+      # extract artifactId from string <file-name>-<version-SNAPSHOT>
+      # regex ex: input "onap-amsterdam1-regional-controller-master-1.0.0-SNAPSHOT"
+      # returns "onap-amsterdam1-regional-controller-master"
+      artifact_id=$(echo "$basefile" | sed -r 's#(.*)-([0-9.]+(-SNAPSHOT)?)$#\1#g')
+  fi
+
+  if [ -z "$version" ] && [[ "$1" =~ rpm|deb ]]; then
+      version=$(echo "$basefile" | cut -f 2- -d '_')
+  else
+      # handle other file types (tar, jar, gunzip files versions)
+      # extract version from string <file-name>-<version-SNAPSHOT>
+      # regex ex: input "onap-amsterdam1-regional-controller-master-1.0.0-SNAPSHOT" returns "1.0.0-SNAPSHOT" or
+      # ex: input "onap-1.0.0" returns "1.0.0"
+      version=$(echo "$basefile" | sed -r 's#(.*)-([0-9.]+(-SNAPSHOT)?)$#\2#g')
+  fi
+}
+
+
+deploy_maven_file () {
+    # Deploy a file to a Nexus maven2 repository.
+    #
+    # Usage: deploy_maven_file <nexus_url> <repo_id> <file>
+    #        (Refer to help for full listing by passing -h)
+    #
+    # As this script uses mvn to deploy. The server configuration should be
+    # configured in your local settings.xml. By default the script uses the
+    # mvn default "~/.m2/settings.xml" for the configuration but this can be
+    # overridden in the following order:
+    #
+    #     1. Passed through CLI option "-s" ("-l" for global-settings)
+    #     2. Environment variable "$SETTINGS_FILE" ("$GLOBAL_SETTINGS_FILE" for global-settings)
+    #     3. Maven default "~/.m2/settings.xml".
+    #
+    # If pom-file is passed in via the "-f" option then the Maven GAV parameters
+    # are not necessary. pom-file setting overrides the Maven GAV parameters.
+
+    while getopts a:b:c:f:g:hl:m:p:s:v: opts; do
+      case "$opts" in
+        h)
+            deploy_maven_file_usage
+            exit 0
+            ;;
+
+        ################
+        # Maven Config #
+        ################
+        b)
+            local mvn_bin="$OPTARG"
+            ;;
+        l)
+            local global_settings="$OPTARG"
+            ;;
+        s)
+            settings="$OPTARG"
+            ;;
+        p)
+            local mvn_params="$OPTARG"
+            ;;
+
+
+        #########################
+        # Maven Artitfact (GAV) #
+        #########################
+        a)
+            local artifact_id="$OPTARG"
+            ;;
+        c)
+            local classifier="$OPTARG"
+            ;;
+        f)
+            local pom_file="$OPTARG"
+            ;;
+        g)
+            local group_id="$OPTARG"
+            ;;
+        v)
+            local version="$OPTARG"
+            ;;
+
+        [?])
+            deploy_maven_file_usage
+            exit 1
+            ;;
+      esac
+    done
+    shift $((OPTIND-1))
+
+    # User input
+    local nexus_url="${1%/}"
+    local repo_id="$2"
+    local file="$3"
+
+    if [ "$#" -ne "3" ]; then
+        echo "ERROR: $# arguments passed. This function expects 3 required arguments."
+        deploy_maven_file_usage
+        exit 1
+    fi
+
+    ################
+    # Start script #
+    ################
+
+    local mvn_bin="${mvn_bin:-mvn}"
+    local mvn_goals=("org.apache.maven.plugins:maven-deploy-plugin:deploy-file")
+
+    declare -a params
+    params+=("-DrepositoryId=\"$repo_id\"")
+    params+=("-Durl=\"$nexus_url\"")
+    params+=("-Dfile=\"$file\"")
+
+    # Precedence:
+    #   1) -g option
+    #   2) $GLOBAL_SETTINGS_FILE environment variable
+    if [ -n "$global_settings" ]; then
+        params+=("-gs $global_settings")
+    elif [ -n "$GLOBAL_SETTINGS_FILE" ] && [ -z "$global_settings" ]; then
+        params+=("-gs $GLOBAL_SETTINGS_FILE")
+    fi
+
+    # Precedence:
+    #   1) -s option
+    #   2) $SETTINGS_FILE environment variable
+    if [ -n "$settings" ]; then
+        params+=("-s $settings")
+    elif [ -n "$SETTINGS_FILE" ] && [ -z "$settings" ]; then
+        params+=("-s $SETTINGS_FILE")
+    fi
+
+    if [ -n "$mvn_params" ]; then
+        params+=("$mvn_params")
+    fi
+
+    if [ -n "$pom_file" ]; then
+        params+=("-DpomFile=\"$pom_file\"")
+    else
+        # Ensure groupId is passed when -f <pom-file> parameter is not used
+        if [ -z "$group_id" ]; then
+            echo "ERROR: group_id must be defined. Please pass -g <group_id>."
+            exit 1
+        fi
+
+        local file_type
+        if [[ "$file" == *.tar.gz ]]; then
+            file_type="tar.gz"
+        else
+            file_type="${file##*.}"
+        fi
+        params+=("-Dtype=\"$file_type\"")
+        params+=("-Dpackaging=\"$file_type\"")
+
+        case "$file_type" in
+            deb )
+                if hash dpkg 2>/dev/null; then
+                    echo "dpkg command is available."
+
+                    # If user does not provide artifact_id and / or version then parse
+                    # information from file.
+                    if [ -z "$artifact_id" ]; then
+                        artifact_id=$(dpkg -I "$file" | grep ' Package: ' | sed 's/^[ \t]*Package:[ \t]*//')
+
+                    fi
+                    if [ -z "$version" ]; then
+                        version=$(dpkg -I "$file" | grep ' Version: ' | sed 's/^[ \t]*Version:[ \t]*//')
+                    fi
+                else
+                    echo "dpkg command is not available."
+                    get_file_info "$file_type" "$file"
+                fi
+                ;;
+
+            rpm )
+                if hash rpm 2>/dev/null; then
+                    echo "rpm command is available."
+
+                    # If user does not provide artifact_id and / or version then parse
+                    # information from file.
+                    if [ -z "$artifact_id" ]; then
+                        artifact_id=$(rpm -qp --queryformat="%{name}" "$file")
+                    fi
+                    if [ -z "$version" ]; then
+                        if grep -qE '\.s(rc\.)?rpm' <<<"$file"; then
+                            rpmrelease=$(rpm -qp --queryformat="%{release}.src" "$file")
+                        else
+                            rpmrelease=$(rpm -qp --queryformat="%{release}.%{arch}" "$file")
+                        fi
+
+                        version=$(rpm -qp --queryformat="%{version}" "$file")
+                        version+="-$rpmrelease"
+                    fi
+                else
+                    echo "rpm command is not available."
+                    get_file_info "$file_type" "$file"
+                fi
+                ;;
+
+            gz|jar|tar.gz|tgz|war )
+                get_file_info "$file_type" "$file"
+                ;;
+
+            * )
+                echo "ERROR: Unrecognized file type \"$file_type\"." 1>&2
+                exit 1
+                ;;
+        esac
+
+        params+=("-DgroupId=\"$group_id\"")
+        params+=("-DartifactId=\"$artifact_id\"")
+        params+=("-Dversion=\"$version\"")
+
+        if [ -n "$classifier" ]; then
+            params+=("-Dclassifier=\"$classifier\"")
+        fi
+    fi
+
+    # Disable the Maven transfer output.
+    params+=("--batch-mode")
+    params+=("-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn")
+
+    echo "Deploying $file to $nexus_url..."
+
+    # make sure the script bombs if we fail an upload
+    if ! eval "$mvn_bin" "${mvn_goals[*]}" "${params[*]}"; then
+        echo "ERROR: There was an error with the upload"
+        exit 1
+    fi
+}
+
+deploy_nexus_usage() {
+    echo "Usage: deploy nexus <nexus_repo_url> <deploy_dir>"
+    echo
+    echo "Options:"
+    echo "    -s  # Enable snapshot mode for pushing snapshot artifacts to Nexus."
+}
+
+deploy_nexus() {
+    # Deploy Maven artifacts to Nexus using curl
+    #
+    # Parameters:
+    #
+    #     nexus_repo_url: The URL to the Nexus repo.
+    #         (Ex:  https://nexus.example.org/content/repositories/release)
+    #     deploy_dir:     The path to a directory to deploy. (Ex: /tmp/m2repo)
+    #
+    # One purpose of this is so that we can get around the problematic
+    # deploy-at-end configuration with upstream Maven.
+    # https://issues.apache.org/jira/browse/MDEPLOY-193
+    local snapshot="false"
+
+    while getopts hs o; do
+      case "$o" in
+        h)
+            deploy_nexus_usage
+            exit 0
+            ;;
+
+        s)
+            local snapshot="true"
+            ;;
+
+        [?])
+            deploy_nexus_usage
+            exit 1
+            ;;
+      esac
+    done
+    shift $((OPTIND-1))
+
+    local nexus_repo_url="${1%/}"
+    local deploy_dir="$2"
+
+    if [ -z "$2" ]; then
+        echo "Missing required arguments."
+        deploy_nexus_usage
+        exit 1
+    fi
+
+    pushd "$deploy_dir" || exit
+    if [ "$snapshot" == "true" ]; then
+        mapfile -t file_list < <(find . -type f \
+            ! -name _remote.repositories \
+            ! -name resolver-status.properties \
+            | cut -c 3-)
+    else
+        mapfile -t file_list < <(find . -type f \
+            ! -name "maven-metadata*" \
+            ! -name _remote.repositories \
+            ! -name resolver-status.properties \
+            | cut -c 3-)
+    fi
+    if hash parallel 2>/dev/null; then
+        export -f upload_to_nexus
+        parallel --no-notice --jobs 200% --halt now,fail=1 \
+            "upload_to_nexus $nexus_repo_url {}" ::: "${file_list[@]}"
+    else
+        for file in "${file_list[@]}"; do
+            upload_to_nexus "$nexus_repo_url" "$file"
+        done
+    fi
+    popd || exit
+}
+
+deploy_nexus_stage() {
+    # Deploy Maven artifacts to Nexus staging repo using curl
+    #
+    # Parameters:
+    #     nexus_url:    URL to Nexus server. (Ex: https://nexus.opendaylight.org)
+    #     staging_profile_id:  The staging profile id as defined in Nexus for the
+    #                          staging repo.
+    #     deploy_dir:   The directory to deploy. (Ex: /tmp/m2repo)
+
+    local nexus_url="${1%/}"
+    local staging_profile_id="$2"
+    local deploy_dir="$3"
+
+    if [ -z "$3" ]; then
+        echo "Missing required arguments."
+        echo "Usage: deploy nexus-stage <nexus_url> <staging_profile_id> <deploy_dir>"
+        exit 1
+    fi
+
+    local staging_repo_id
+    staging_repo_id=$(nexus_stage_repo_create "${nexus_url}" "${staging_profile_id}")
+    echo "Staging repository $staging_repo_id created."
+
+    deploy_nexus "${nexus_url}/service/local/staging/deployByRepositoryId/${staging_repo_id}" "${deploy_dir}"
+
+    nexus_stage_repo_close "${nexus_url}" "${staging_profile_id}" "${staging_repo_id}"
+    echo "Completed uploading files to ${staging_repo_id}."
+}
+
+nexus_stage_repo_close() {
+    # Closes a Nexus staging repo
+    #
+    # Parameters:
+    #     nexus_url:  URL to Nexus server. (Ex: https://nexus.example.org)
+    #     staging_profile_id:  The staging profile id as defined in Nexus for the
+    #                          staging repo.
+    #     staging_repo_id:  The ID of the repo to close.
+    local nexus_url="${1%/}"
+    local staging_profile_id="$2"
+    local staging_repo_id="$3"
+
+    FILE_XML="$(mktemp)"
+    cat > "$FILE_XML" <<EOF
+<promoteRequest>
+  <data>
+    <stagedRepositoryId>$staging_repo_id</stagedRepositoryId>
+    <description>Close staging repository.</description>
+  </data>
+</promoteRequest>
+EOF
+
+    local resp
+    local status
+    resp=$(curl -s -w " %{http_code}" --netrc -X POST -d "@$FILE_XML" \
+        -H "Content-Type:application/xml" \
+        "${nexus_url}/service/local/staging/profiles/${staging_profile_id}/finish")
+    status=$(echo "$resp" | awk 'END {print $NF}')
+    rm -f "$FILE_XML"  # Cleanup
+
+    if echo "$resp" | grep -q nexus-error; then
+        local msg
+        msg=$(sed -n -e 's/.*<msg>\(.*\)<\/msg>.*/\1/p' <<< "$resp")
+        echo "ERROR: $msg"
+        exit "$status"
+    elif [ "$status" != "201" ]; then
+        echo "ERROR: Failed with status code $status"
+        exit "$status"
+    fi
+}
+
+nexus_stage_repo_create() {
+    # Create a Nexus staging repo
+    #
+    # Parameters:
+    #     nexus_url:  URL to Nexus server. (Ex: https://nexus.example.org)
+    #     staging_profile_id:  The staging profile id as defined in Nexus for the
+    #                          staging repo.
+    #
+    # Returns: staging_repo_id
+    local nexus_url="${1%/}"
+    local staging_profile_id="$2"
+
+    FILE_XML="$(mktemp)"
+    cat > "$FILE_XML" <<EOF
+<promoteRequest>
+  <data>
+    <description>Create staging repo.</description>
+  </data>
+</promoteRequest>
+EOF
+
+    local resp
+    local status
+    resp=$(curl -s -w " %{http_code}" --netrc -X POST -d "@$FILE_XML" \
+        -H "Content-Type:application/xml" \
+        "${nexus_url}/service/local/staging/profiles/${staging_profile_id}/start")
+    status=$(echo "$resp" | awk 'END {print $NF}')
+    rm -f "$FILE_XML"  # Cleanup
+
+    if echo "$resp" | grep -q nexus-error; then
+        local msg
+        msg=$(sed -n -e 's/.*<msg>\(.*\)<\/msg>.*/\1/p' <<< "$resp")
+        echo "ERROR: $msg"
+        exit "$status"
+    elif [ "$status" != "201" ]; then
+        echo "ERROR: Failed with status code $status"
+        exit "$status"
+    fi
+
+    sed -n -e 's/.*<stagedRepositoryId>\(.*\)<\/stagedRepositoryId>.*/\1/p' <<< "$resp"
+}
+
+deploy_nexus_zip() {
+    # Deploy zip file containing artifacts to Nexus using cURL
+    #
+    # This function simply takes a zip file preformatted in the correct
+    # directory for Nexus and uploads to a specified Nexus repo using the
+    # content-compressed URL.
+    #
+    # Requires the Nexus Unpack plugin and permission assigned to the upload user.
+    #
+    # Parameters:
+    #     nexus_url:    URL to Nexus server. (Ex: https://nexus.opendaylight.org)
+    #     nexus_repo:   The repository to push to. (Ex: site)
+    #     nexus_path:   The path to upload the artifacts to. Typically the
+    #                   project group_id depending on if a Maven or Site repo
+    #                   is being pushed.
+    #                   Maven Ex: org/opendaylight/odlparent
+    #                   Site Ex: org.opendaylight.odlparent
+    #     deploy_zip:   The zip to deploy. (Ex: /tmp/artifacts.zip)
+
+    local nexus_url="${1%/}"
+    local nexus_repo="$2"
+    local nexus_path="$3"
+    local deploy_zip="$4"
+
+    if [ -z "$4" ]; then
+        echo "Missing required arguments."
+        exit 1
+    fi
+
+    echo "Pushing $deploy_zip to $nexus_repo on $nexus_url to path $nexus_path"
+    resp=$(curl -s -w "\\n\\n%{http_code}" --netrc --upload-file "$deploy_zip" \
+        "${nexus_url}/service/local/repositories/${nexus_repo}/content-compressed/${nexus_path}")
+    status=$(echo "$resp" | awk 'END {print $NF}')
+
+    echo "HTTP status: $status"
+    if [[ "$status" != "20"* ]]; then
+        echo "Failed with: $resp"
+        echo "Zip contains: $(unzip -l "$deploy_zip")"
+        exit "$status"
+    fi
+}
+
+upload_maven_file_to_nexus() {
+    # Upload file to Nexus as a Maven artifact using cURL.
+    #
+    # This function will upload an artifact to Nexus while providing all of
+    # the usual Maven pom.xml information so that it conforms to Maven 2 repo
+    # specs.
+    #
+    # Parameters:
+    #     nexus_url:  The URL to the Nexus repo.
+    #         (Ex:  https://nexus.example.org)
+    #     nexus_repo_id:  Repo ID of repo to push artifact to.
+    #     group_id:  Maven style Group ID to upload artifact as.
+    #     artifact_id:  Maven style Artifact ID to upload artifact as.
+    #     version:  Maven style Version to upload artifact as.
+    #     packaging:  Packaging type to upload as (Eg. tar.xz)
+    #     file:  File to upload.
+    #     classifier: Maven classifier. (optional)
+
+    local nexus_url="${1%/}"
+    local nexus_repo_id="$2"
+    local group_id="$3"
+    local artifact_id="$4"
+    local version="$5"
+    local packaging="$6"
+    local file="$7"
+    local classifier="${8:-}"
+
+    declare -a params
+    params+=("-F r=$nexus_repo_id")
+    params+=("-F g=$group_id")
+    params+=("-F a=$artifact_id")
+    params+=("-F v=$version")
+    params+=("-F p=$packaging")
+    if [ -n "$classifier" ]; then
+        params+=("-F c=$classifier")
+    fi
+    params+=("-F file=@$file")
+
+    local resp
+    local status
+    # We need word splitting here to parse the params
+    # shellcheck disable=SC2086
+    resp=$(curl -s -w " %{http_code}" --netrc -X POST "${params[@]}" \
+        "${nexus_url}/service/local/artifact/maven/content")
+    status=$(echo "$resp" | awk 'END {print $NF}')
+
+    if echo "$resp" | grep -q nexus-error; then
+        local msg
+        msg=$(sed -n -e 's/.*<msg>\(.*\)<\/msg>.*/\1/p' <<< "$resp")
+        echo "ERROR: $msg"
+        exit "$status"
+    elif [ "$status" != "201" ]; then
+        echo "ERROR: Failed with status code $status"
+        exit "$status"
+    fi
+}
+
+upload_to_nexus() {
+    # Helper function to push a file to Nexus via cURL
+    #
+    # Parameters:
+    #
+    #     nexus_repo_url: The URL to the Nexus repo.
+    #         (Ex:  https://nexus.example.org/content/repositories/release)
+    #     file:     File that is to be pushed to Nexus.
+    local nexus_repo_url="${1%/}"
+    local file="$2"
+
+    echo "Uploading ${file}"
+
+    local resp
+    resp=$(curl -s -w "\\n\\n%{http_code}" --netrc --upload-file "$file" "$nexus_repo_url/$file")
+    data=$(echo "$resp" | head -n1)
+    status=$(echo "$resp" | awk 'END {print $NF}')
+
+    if [ "$status" != "201" ]; then
+        echo "ERROR: Failed to upload to Nexus with status code $status. Aborting..."
+        echo "HTTP Response: $data"
+        exit 1
+    fi
+}
+
+# Only run the script if it is being called directly and not sourced.
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
+then
+    deploy "$@"
+fi

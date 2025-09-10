@@ -1,0 +1,72 @@
+---
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2025 The Linux Foundation
+
+name: 'Standalone Linting'
+
+# yamllint disable-line rule:truthy
+on:
+  # Not supported when workflow contains: amannn/action-semantic-pull-request
+  # workflow_dispatch:
+  pull_request:
+    types: [opened, reopened, edited, synchronize]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linting:
+    name: 'Checks'
+    permissions:
+      contents: read
+    runs-on: 'ubuntu-latest'
+    timeout-minutes: 6
+    steps:
+      # Harden the runner used by this workflow
+      # yamllint disable-line rule:line-length
+      - uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
+      - name: "Pull request"
+        # yamllint disable-line rule:line-length
+        uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Don't care about capitalisation of commit types
+          types: |
+            Fix
+            fix
+            Feat
+            feat
+            Chore
+            chore
+            Docs
+            docs
+            Style
+            style
+            Refactor
+            refactor
+            Perf
+            perf
+            Test
+            test
+            Revert
+            revert
+            CI
+            ci
+            Build
+            build
+          validateSingleCommit: true
+          validateSingleCommitMatchesPrTitle: true
+
+      - name: 'Pre-commit'
+        # yamllint disable-line rule:line-length
+        uses: lfreleng-actions/standalone-linting-action@cd0e39a5420ae667ad3efe5c14aa39d7d2a159db # v0.1.0
+        with:
+          # yamllint disable-line rule:line-length
+          config_url: 'https://raw.githubusercontent.com/os-climate/ITR-examples/refs/heads/main/resources/standalone-linting/.pre-commit-config.yaml'

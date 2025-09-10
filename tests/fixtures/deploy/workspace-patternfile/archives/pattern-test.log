@@ -1,0 +1,6 @@
+This is a test archive log file for testing pattern-based copy_archives functionality.
+It should be copied when the deploy copy-archives command is run with patterns.
+
+Test log entry 1: Pattern matching test started
+Test log entry 2: File processing with glob patterns
+Test log entry 3: Archive pattern test completed at 2024-01-01 12:00:00

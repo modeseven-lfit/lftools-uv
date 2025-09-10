@@ -19,8 +19,8 @@ import click
 @click.group()
 @click.pass_context
 def no_ldap(ctx):
-    """(lftools[ldap]) Provides an ldap interface.
+    """(lftools-uv[ldap]) Provides an ldap interface.
 
-    To activate this interface run `pip install lftools[ldap]`.
+    To activate this interface run `pip install lftools-uv[ldap]`.
     """
     pass

@@ -43,8 +43,12 @@ log = logging.getLogger(__name__)
 @click.pass_context
 def jenkins_cli(ctx, server, user, password, conf):
     """Query information about the Jenkins Server."""
-    # Initial the Jenkins object and pass it to sub-commands
-    ctx.obj["jenkins"] = Jenkins(server, user, password, config_file=conf)
+    # Initialize the Jenkins object and pass it to sub-commands; also register in AppState if available
+    jenkins_client = Jenkins(server, user, password, config_file=conf)
+    ctx.obj["jenkins"] = jenkins_client
+    state = ctx.obj.get("state")
+    if state:
+        state.jenkins = jenkins_client
 
 
 @click.command()

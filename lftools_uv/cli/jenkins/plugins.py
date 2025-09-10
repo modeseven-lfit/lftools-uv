@@ -13,6 +13,9 @@ __author__ = "Trevor Bramwell"
 
 import click
 import requests
+import logging
+
+log = logging.getLogger(__name__)
 
 
 def checkmark(truthy):
@@ -23,8 +26,8 @@ def checkmark(truthy):
 
 
 def print_plugin(plugin, namefield="longName"):
-    """Print the plugin longName and version."""
-    print("%s:%s" % (plugin[namefield], plugin["version"]))
+    """Log the plugin longName and version."""
+    log.info("%s:%s", plugin[namefield], plugin["version"])
 
 
 @click.group()
@@ -175,7 +178,7 @@ def sec(ctx):
                 for version in w["versions"]:
                     lastversion = version.get("lastVersion")
                 if name == key and secdict[key] == lastversion:
-                    print("{0}:{1}\t{0}:{2}\t{3}".format(key, secdict[key], activedict[key], url))
+                    log.info("%s:%s\t%s:%s\t%s", key, secdict[key], key, activedict[key], url)
 
 
 plugins_init.add_command(list_plugins, name="list")

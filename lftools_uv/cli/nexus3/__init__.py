@@ -32,7 +32,14 @@ from .user import user
 def nexus_three(ctx, fqdn):
     """The Nexus3 API Interface."""
     nexus3_obj = nexus3.Nexus3(fqdn=fqdn)
-    ctx.obj = {"nexus3": nexus3_obj}
+    # Preserve existing context; add nexus3 client without overwriting other keys
+    if ctx.obj is None:
+        ctx.obj = {}
+    ctx.obj["nexus3"] = nexus3_obj
+    # Also register inside structured AppState if available
+    state = ctx.obj.get("state")
+    if state:
+        state.nexus3 = nexus3_obj
     pass
 
 

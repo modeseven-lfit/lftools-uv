@@ -35,6 +35,7 @@ from lftools_uv.cli.schema import schema
 from lftools_uv.cli.sign import sign
 from lftools_uv.cli.utils import utils
 from lftools_uv.cli.version import version
+from lftools_uv.cli.state import AppState
 
 log = logging.getLogger(__name__)
 
@@ -51,7 +52,14 @@ def cli(ctx, debug, interactive, password, username):
     if debug:
         logging.getLogger("").setLevel(logging.DEBUG)
 
-    ctx.obj["DEBUG"] = debug
+    if ctx.obj is None:
+        ctx.obj = {}
+    # Initialize or reuse structured application state
+    state = ctx.obj.get("state") or AppState()
+    state.debug = debug
+    state.interactive = interactive
+    ctx.obj["state"] = state
+    ctx.obj["DEBUG"] = debug  # Backward compatibility for legacy access
     log.debug("DEBUG mode enabled.")
 
     # Start > Credentials
@@ -73,9 +81,11 @@ def cli(ctx, debug, interactive, password, username):
             except (configparser.NoOptionError, configparser.NoSectionError):
                 password = None
 
-    ctx.obj["username"] = username
-    ctx.obj["password"] = password
+    state.update_credentials(username, password)
+    ctx.obj["username"] = state.username  # legacy compatibility
+    ctx.obj["password"] = state.password  # legacy compatibility
     # End > Credentials
+    log.debug("Initialized state: %s", ctx.obj["state"].describe())
 
 
 cli.add_command(config_sys)

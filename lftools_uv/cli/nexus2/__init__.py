@@ -29,7 +29,13 @@ from .user import user
 def nexus_two(ctx, fqdn):
     """The Nexus2 API Interface."""
     nexus2_obj = nexus2.Nexus2(fqdn=fqdn)
-    ctx.obj = {"nexus2": nexus2_obj}
+    if ctx.obj is None:
+        ctx.obj = {}
+    # Store client in raw context (legacy) and structured AppState if available
+    ctx.obj["nexus2"] = nexus2_obj
+    state = ctx.obj.get("state")
+    if state:
+        state.nexus2 = nexus2_obj
     pass
 
 

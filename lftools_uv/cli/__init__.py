@@ -128,7 +128,20 @@ except ImportError:
 
 def main():
     """Entry point for lftools-uv CLI."""
-    cli(obj={})
+    import os
+
+    # Check if legacy Click CLI is explicitly requested
+    if os.environ.get("LEGACY_CLI") == "1":
+        cli(obj={})
+    else:
+        # Default to modern Typer CLI
+        try:
+            from lftools_uv.cli_app import app as typer_app
+            typer_app()
+        except ImportError as e:
+            log.error("Failed to import Typer CLI: %s", e)
+            log.info("Falling back to legacy Click CLI")
+            cli(obj={})
 
 
 if __name__ == "__main__":

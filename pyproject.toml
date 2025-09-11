@@ -84,6 +84,7 @@ dependencies = [
     "tabulate",
     "toml",
     "tqdm",
+    "typer",
     "urllib3>=2.2.3,<3.0.0",
     "websocket-client",
     "wrapt",
@@ -281,3 +282,9 @@ ignore = [
 
 [tool.ruff.lint.isort]
 known-first-party = ["lftools_uv"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "pytest-cov>=5.0.0",
+]

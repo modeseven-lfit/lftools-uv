@@ -98,6 +98,15 @@ version_bump() {
         # Changes x.y.z-Helium to x.y.(z+1)-SNAPSHOT in pom.xml files (if z is missing treat as 0)
         find . -type f -name "$name" -exec perl -i -pe "s/([^\d.]\d+)\.(\d+)\.(\d+)-$RELEASE_TAG/\$1.\$2.@{[1+\$3]}-SNAPSHOT/g" {} +
         find . -type f -name "$name" -exec perl -i -pe "s/([^\d.]\d+)\.(\d+)-$RELEASE_TAG/\$1.\$2.1-SNAPSHOT/g" {} +
+
+        # Changes x.y.z-test-tag to x.(y+1).0-SNAPSHOT in pom.xml files (increment minor, reset patch to 0)
+        find . -type f -name "$name" -exec perl -i -pe "s/([^\d.]\d+)\.(\d+)\.(\d+)-test-tag/\$1.@{[1+\$2]}.0-SNAPSHOT/g" {} +
+        find . -type f -name "$name" -exec perl -i -pe "s/([^\d.]\d+)\.(\d+)-test-tag/\$1.@{[1+\$2]}.0-SNAPSHOT/g" {} +
+
+        # Changes YYYY.MM.DD.y.z-test-tag to YYYY.MM.DD.(y+1).0-SNAPSHOT in pom.xml files (increment minor, reset patch to 0)
+        find . -type f -name "$name" -exec perl -i -pe "s/(\d\d\d\d\.\d\d\.\d\d)\.(\d+)\.(\d+)-test-tag/\$1.@{[1+\$2]}.0-SNAPSHOT/g" {} +
+        find . -type f -name "$name" -exec perl -i -pe "s/(\d\d\d\d\.\d\d\.\d\d)\.(\d+)-test-tag/\$1.@{[1+\$2]}.0-SNAPSHOT/g" {} +
+        find . -type f -name "$name" -exec perl -i -pe "s/(\d\d\d\d\.\d\d\.\d\d)-test-tag/\$1.1.0-SNAPSHOT/g" {} +
     done
 }
 
@@ -105,6 +114,15 @@ version_release() {
     for name in $FILENAMES
     do
         find . -type f -name "$name" -exec perl -i -pe "s/SNAPSHOT/$RELEASE_TAG/g" {} +
+
+        # Changes x.y.z-test-tag to x.0.0-RELEASE_TAG in pom.xml files (reset minor and patch to 0)
+        find . -type f -name "$name" -exec perl -i -pe "s/([^\d.]\d+)\.(\d+)\.(\d+)-test-tag/\$1.0.0-$RELEASE_TAG/g" {} +
+        find . -type f -name "$name" -exec perl -i -pe "s/([^\d.]\d+)\.(\d+)-test-tag/\$1.0.0-$RELEASE_TAG/g" {} +
+
+        # Changes YYYY.MM.DD.y.z-test-tag to YYYY.MM.DD.0.0-RELEASE_TAG in pom.xml files (reset minor and patch to 0)
+        find . -type f -name "$name" -exec perl -i -pe "s/(\d\d\d\d\.\d\d\.\d\d)\.(\d+)\.(\d+)-test-tag/\$1.0.0-$RELEASE_TAG/g" {} +
+        find . -type f -name "$name" -exec perl -i -pe "s/(\d\d\d\d\.\d\d\.\d\d)\.(\d+)-test-tag/\$1.0.0-$RELEASE_TAG/g" {} +
+        find . -type f -name "$name" -exec perl -i -pe "s/(\d\d\d\d\.\d\d\.\d\d)-test-tag/\$1.0.0-$RELEASE_TAG/g" {} +
     done
 }
 

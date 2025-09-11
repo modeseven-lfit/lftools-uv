@@ -5,6 +5,7 @@ SPDX-FileCopyrightText: 2025 The Linux Foundation
 
 # LF Tools UV
 
+[![Source Code](https://img.shields.io/badge/GitHub-100000?logo=github&logoColor=white&color=blue)](https://github.com/modeseven-lfit/lftools-uv)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/modeseven-lfit/lftools-uv/badge)](https://scorecard.dev/viewer/?uri=github.com/modeseven-lfit/lftools-uv)
 [![License: EPL-1.0](https://img.shields.io/badge/License-EPL--1.0-blue.svg)](https://www.eclipse.org/legal/epl-v10.html)
 [![PyPI](https://img.shields.io/pypi/v/lftools-uv.svg?label=PyPi)](https://pypi.org/project/lftools-uv/)

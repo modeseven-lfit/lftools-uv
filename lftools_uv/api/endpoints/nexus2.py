@@ -43,7 +43,12 @@ class Nexus2(client.RestApi):
     # Privileges
     def privilege_list(self):
         """List privileges."""
-        result = self.get("service/local/privileges")[1]["data"]
+        response = self.get("service/local/privileges")
+        if isinstance(response, tuple):
+            result = response[1]["data"]
+        else:
+            response.raise_for_status()
+            return []
 
         privilege_list = []
         for privilege in result:
@@ -72,10 +77,14 @@ class Nexus2(client.RestApi):
         }
 
         json_data = json.dumps(data)
-        result = self.post("service/local/privileges_target", data=json_data)
+        response = self.post("service/local/privileges_target", data=json_data)
 
-        if result[0].status_code == 201:
-            return "Privilege successfully created."
+        if isinstance(response, tuple):
+            if response[0].status_code == 201:
+                return "Privilege successfully created."
+        else:
+            response.raise_for_status()
+            return "Failed to create privilege."
 
     def privilege_delete(self, privilege_id):
         """Delete a privilege.
@@ -91,7 +100,12 @@ class Nexus2(client.RestApi):
     # Repositories
     def repo_list(self):
         """Get a list of repositories."""
-        result = self.get("service/local/repositories")[1]["data"]
+        response = self.get("service/local/repositories")
+        if isinstance(response, tuple):
+            result = response[1]["data"]
+        else:
+            response.raise_for_status()
+            return []
 
         repo_list = []
         for repo in result:
@@ -156,11 +170,15 @@ class Nexus2(client.RestApi):
             )
 
         json_data = json.dumps(data)
-        result = self.post("service/local/repositories", data=json_data)
+        response = self.post("service/local/repositories", data=json_data)
 
-        if result[0].status_code == 201:
-            return "Repo successfully created."
+        if isinstance(response, tuple):
+            if response[0].status_code == 201:
+                return "Repo successfully created."
+            else:
+                return "Failed to create new repository"
         else:
+            response.raise_for_status()
             return "Failed to create new repository"
 
     def repo_delete(self, repo_id):
@@ -179,7 +197,12 @@ class Nexus2(client.RestApi):
     # Roles
     def role_list(self):
         """List all roles."""
-        result = self.get("service/local/roles")[1]
+        response = self.get("service/local/roles")
+        if isinstance(response, tuple):
+            result = response[1]
+        else:
+            response.raise_for_status()
+            return []
 
         role_list = []
         for role in result["data"]:
@@ -226,12 +249,15 @@ class Nexus2(client.RestApi):
             data["data"]["privileges"] = privs_list.split(",")
 
         json_data = json.dumps(data)
-        result = self.post("service/local/roles", data=json_data)
+        response = self.post("service/local/roles", data=json_data)
 
-        if result[0].status_code == 201:
-            return "Role successfully created."
-
-        return result
+        if isinstance(response, tuple):
+            if response[0].status_code == 201:
+                return "Role successfully created."
+            return response
+        else:
+            response.raise_for_status()
+            return "Failed to create role."
 
     def role_delete(self, role_id):
         """Permanently delete a role.
@@ -247,14 +273,26 @@ class Nexus2(client.RestApi):
     # Users
     def user_list(self):
         """List all users."""
-        result = self.get("service/local/plexus_users/allConfigured")[1]["data"]
+        response = self.get("service/local/plexus_users/allConfigured")
+        if isinstance(response, tuple):
+            result = response[1]["data"]
+        else:
+            response.raise_for_status()
+            return []
+
         user_list = []
         for user in result:
             role_list = []
-            for role in user["roles"]:
+            for role in user.get("roles", []):
                 role_list.append([role["roleId"]])
 
-            user_list.append([user["userId"], user["firstName"], user["lastName"], user["status"], role_list])
+            user_list.append([
+                user.get("userId", "N/A"),
+                user.get("firstName", "N/A"),
+                user.get("lastName", "N/A"),
+                user.get("status", "N/A"),
+                role_list
+            ])
 
         return user_list
 
@@ -283,11 +321,15 @@ class Nexus2(client.RestApi):
             data["data"]["password"] = password
 
         json_data = json.dumps(data)
-        result = self.post("service/local/users", data=json_data)
+        response = self.post("service/local/users", data=json_data)
 
-        if result[0].status_code == 201:
-            return "User successfully created."
+        if isinstance(response, tuple):
+            if response[0].status_code == 201:
+                return "User successfully created."
+            else:
+                return "Failed to create new user"
         else:
+            response.raise_for_status()
             return "Failed to create new user"
 
     def user_delete(self, username):

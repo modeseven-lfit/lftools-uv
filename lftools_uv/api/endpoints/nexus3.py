@@ -59,11 +59,15 @@ class Nexus3(client.RestApi):
         }
 
         json_data = json.dumps(data, indent=4)
-        result = self.post("beta/security/roles", data=json_data)
+        response = self.post("service/rest/beta/security/roles", data=json_data)
 
-        if result[0].status_code == 200:
-            return "Role {} created".format(name)
+        if isinstance(response, tuple):
+            if response[0].status_code == 200:
+                return "Role {} created".format(name)
+            else:
+                return "Failed to create role"
         else:
+            response.raise_for_status()
             return "Failed to create role"
 
     def create_script(self, name, content):
@@ -75,12 +79,19 @@ class Nexus3(client.RestApi):
         data = {"name": name, "content": content, "type": "groovy"}
 
         json_data = json.dumps(data)
-        result = self.post("v1/script", data=json_data)
+        response = self.post("service/rest/v1/script", data=json_data)
 
-        if result.status_code == 204:
-            return "Script {} successfully added.".format(name)
+        if isinstance(response, tuple):
+            if response[0].status_code == 204:
+                return "Script {} successfully added.".format(name)
+            else:
+                return "Failed to create script {}".format(name)
         else:
-            return "Failed to create script {}".format(name)
+            if response.status_code == 204:
+                return "Script {} successfully added.".format(name)
+            else:
+                response.raise_for_status()
+                return "Failed to create script {}".format(name)
 
     def create_tag(self, name, attributes):
         """Create a new tag.
@@ -96,12 +107,19 @@ class Nexus3(client.RestApi):
             data["attributes"] = attributes
 
         json_data = json.dumps(data)
-        result = self.post("v1/tags", data=json_data)[0]
+        response = self.post("service/rest/v1/tags", data=json_data)
 
-        if result.status_code == 200:
-            return "Tag {} successfully added.".format(name)
+        if isinstance(response, tuple):
+            if response[0].status_code == 200:
+                return "Tag {} successfully added.".format(name)
+            else:
+                return "Failed to create tag {}".format(name)
         else:
-            return "Failed to create tag {}".format(name)
+            if response.status_code == 200:
+                return "Tag {} successfully added.".format(name)
+            else:
+                response.raise_for_status()
+                return "Failed to create tag {}".format(name)
 
     def create_user(self, username, first_name, last_name, email_address, roles, password=None):
         """Create a new user.
@@ -130,121 +148,183 @@ class Nexus3(client.RestApi):
             data["password"] = helpers.generate_password()
 
         json_data = json.dumps(data)
-        result = self.post("beta/security/users", data=json_data)[0]
+        response = self.post("service/rest/beta/security/users", data=json_data)
 
-        if result.status_code == 200:
-            return "User {} successfully created with password {}".format(username, data["password"])
+        if isinstance(response, tuple):
+            if response[0].status_code == 200:
+                return "User {} successfully created with password {}".format(username, data["password"])
+            else:
+                log.error("Failed to create user {}".format(username))
         else:
-            log.error("Failed to create user {}".format(username))
+            if response.status_code == 200:
+                return "User {} successfully created with password {}".format(username, data["password"])
+            else:
+                response.raise_for_status()
+                log.error("Failed to create user {}".format(username))
 
     def delete_script(self, name):
         """Delete a script from the server.
 
         :param name: the script name
         """
-        result = self.delete("v1/script/{}".format(name))
+        response = self.delete("service/rest/v1/script/{}".format(name))
 
-        if result.status_code == 204:
-            return "Successfully deleted {}".format(name)
+        if isinstance(response, tuple):
+            if response[0].status_code == 204:
+                return "Successfully deleted {}".format(name)
+            else:
+                return "Failed to delete script {}".format(name)
         else:
-            return "Failed to delete script {}".format(name)
+            if response.status_code == 204:
+                return "Successfully deleted {}".format(name)
+            else:
+                response.raise_for_status()
+                return "Failed to delete script {}".format(name)
 
     def delete_tag(self, name):
         """Delete a tag from the server.
 
         :param name: the tag's name
         """
-        result = self.delete("v1/tags/{}".format(name))
+        response = self.delete("service/rest/v1/tags/{}".format(name))
 
-        if result.status_code == 204:
-            return "Tag {} successfully deleted.".format(name)
+        if isinstance(response, tuple):
+            if response[0].status_code == 204:
+                return "Tag {} successfully deleted.".format(name)
+            else:
+                return "Failed to delete tag {}.".format(name)
         else:
-            return "Failed to delete tag {}.".format(name)
+            if response.status_code == 204:
+                return "Tag {} successfully deleted.".format(name)
+            else:
+                response.raise_for_status()
+                return "Failed to delete tag {}.".format(name)
 
     def delete_user(self, username):
         """Delete a user.
 
         @param username:
         """
-        result = self.delete("beta/security/users/{}".format(username))
+        response = self.delete("service/rest/beta/security/users/{}".format(username))
 
-        if hasattr(result, "status_code"):
-            if result.status_code == 204:
+        if isinstance(response, tuple):
+            if response[0].status_code == 204:
                 return "Successfully deleted user {}".format(username)
+            else:
+                return "Failed to delete user {} with error: {}".format(username, response[1])
         else:
-            return "Failed to delete user {} with error: {}".format(username, result[1])
+            if response.status_code == 204:
+                return "Successfully deleted user {}".format(username)
+            else:
+                response.raise_for_status()
+                return "Failed to delete user {}".format(username)
 
     def list_assets(self, repository, **kwargs):
         """List the assets of a given repo.
 
         :param repository: repo name
         """
-        result = self.get("v1/assets?repository={}".format(repository))[1]["items"]
-        if not result:
-            return "This repository has no assets"
+        response = self.get("service/rest/v1/assets?repository={}".format(repository))
+        if isinstance(response, tuple):
+            result = response[1]["items"]
+            if not result:
+                return "This repository has no assets"
+            else:
+                item_list = []
+                for item in result:
+                    item_list.append(item["path"])
+                return item_list
         else:
-            item_list = []
-            for item in result:
-                item_list.append(item["path"])
-            return item_list
+            response.raise_for_status()
+            return "This repository has no assets"
 
     def list_blobstores(self, **kwargs):
         """List server blobstores."""
-        result = self.get("beta/blobstores")[1]
-        list_of_blobstores = []
-        for blob in result:
-            list_of_blobstores.append(blob["name"])
-        return list_of_blobstores
+        response = self.get("service/rest/beta/blobstores")
+        if isinstance(response, tuple):
+            result = response[1]
+            list_of_blobstores = []
+            for blob in result:
+                list_of_blobstores.append(blob["name"])
+            return list_of_blobstores
+        else:
+            response.raise_for_status()
+            return []
 
     def list_components(self, repository, **kwargs):
         """List components from a repo.
 
         :param repository: the repo name
         """
-        result = self.get("v1/components?repository={}".format(repository))[1]["items"]
-        if not result:
-            return "This repository has no components"
+        response = self.get("service/rest/v1/components?repository={}".format(repository))
+        if isinstance(response, tuple):
+            result = response[1]["items"]
+            if not result:
+                return "This repository has no components"
+            else:
+                return result
         else:
-            return result
+            response.raise_for_status()
+            return "This repository has no components"
 
     def list_privileges(self, **kwargs):
         """List server-configured privileges."""
-        result = self.get("beta/security/privileges")[1]
-        list_of_privileges = []
-        for privilege in result:
-            list_of_privileges.append(
-                [
-                    privilege["type"],
-                    privilege["name"],
-                    privilege["description"],
-                    privilege["readOnly"],
-                ]
-            )
-        return list_of_privileges
+        response = self.get("service/rest/beta/security/privileges")
+        if isinstance(response, tuple):
+            result = response[1]
+            list_of_privileges = []
+            for privilege in result:
+                list_of_privileges.append(
+                    [
+                        privilege["type"],
+                        privilege["name"],
+                        privilege["description"],
+                        privilege["readOnly"],
+                    ]
+                )
+            return list_of_privileges
+        else:
+            response.raise_for_status()
+            return []
 
     def list_repositories(self, **kwargs):
         """List server repositories."""
-        result = self.get("v1/repositories")[1]
-        list_of_repositories = []
-        for repository in result:
-            list_of_repositories.append(repository["name"])
-        return list_of_repositories
+        response = self.get("service/rest/v1/repositories")
+        if isinstance(response, tuple):
+            result = response[1]
+            list_of_repositories = []
+            for repository in result:
+                list_of_repositories.append(repository["name"])
+            return list_of_repositories
+        else:
+            response.raise_for_status()
+            return []
 
     def list_roles(self, **kwargs):
         """List server roles."""
-        result = self.get("beta/security/roles")[1]
-        list_of_roles = []
-        for role in result:
-            list_of_roles.append([role["name"]])
-        return list_of_roles
+        response = self.get("service/rest/beta/security/roles")
+        if isinstance(response, tuple):
+            result = response[1]
+            list_of_roles = []
+            for role in result:
+                list_of_roles.append([role["name"]])
+            return list_of_roles
+        else:
+            response.raise_for_status()
+            return []
 
     def list_scripts(self, **kwargs):
         """List server scripts."""
-        result = self.get("v1/script")[1]
-        list_of_scripts = []
-        for script in result:
-            list_of_scripts.append(script["name"])
-        return list_of_scripts
+        response = self.get("service/rest/v1/script")
+        if isinstance(response, tuple):
+            result = response[1]
+            list_of_scripts = []
+            for script in result:
+                list_of_scripts.append(script["name"])
+            return list_of_scripts
+        else:
+            response.raise_for_status()
+            return []
 
     def show_tag(self, name):
         """Get tag details.
@@ -252,80 +332,108 @@ class Nexus3(client.RestApi):
         :param name: tag name
         :return:
         """
-        result = self.get("v1/tags/{}".format(name))[1]
-        return result
+        response = self.get("service/rest/v1/tags/{}".format(name))
+        if isinstance(response, tuple):
+            return response[1]
+        else:
+            response.raise_for_status()
+            return {}
 
     def list_tags(self):
         """List all tag."""
-        result = self.get("v1/tags")[1]
-        list_of_tags = []
-        token = result["continuationToken"]
-        if token is not None:
-            while token is not None:
+        response = self.get("service/rest/v1/tags")
+        if isinstance(response, tuple):
+            result = response[1]
+            list_of_tags = []
+            token = result["continuationToken"]
+            if token is not None:
+                while token is not None:
+                    for tag in result["items"]:
+                        list_of_tags.append(tag["name"])
+                    next_response = self.get("service/rest/v1/tags?continuationToken={}".format(result["continuationToken"]))
+                    if isinstance(next_response, tuple):
+                        result = next_response[1]
+                        token = result["continuationToken"]
+                    else:
+                        break
+            else:
                 for tag in result["items"]:
                     list_of_tags.append(tag["name"])
-                result = self.get("v1/tags?continuationToken={}".format(result["continuationToken"]))[1]
-                token = result["continuationToken"]
-        else:
-            for tag in result["items"]:
-                list_of_tags.append(tag["name"])
 
-        if list_of_tags:
-            return list_of_tags
+            if list_of_tags:
+                return list_of_tags
+            else:
+                return "There are no tags"
         else:
+            response.raise_for_status()
             return "There are no tags"
 
     def list_tasks(self, **kwargs):
         """List all tasks."""
-        result = self.get("v1/tasks")[1]["items"]
-        list_of_tasks = []
-        for task in result:
-            list_of_tasks.append(
-                [
-                    task["name"],
-                    task["message"],
-                    task["currentState"],
-                    task["lastRunResult"],
-                ]
-            )
-        return list_of_tasks
+        response = self.get("service/rest/v1/tasks")
+        if isinstance(response, tuple):
+            result = response[1]["items"]
+            list_of_tasks = []
+            for task in result:
+                list_of_tasks.append(
+                    [
+                        task["name"],
+                        task["message"],
+                        task["currentState"],
+                        task["lastRunResult"],
+                    ]
+                )
+            return list_of_tasks
+        else:
+            response.raise_for_status()
+            return []
 
     def list_user(self, username, **kwargs):
         """Show user details.
 
         :param username: the user's username
         """
-        result = self.get("beta/security/users?userId={}".format(username))[1]
-        user_info = []
-        for user in result:
-            user_info.append(
-                [
-                    user["userId"],
-                    user["firstName"],
-                    user["lastName"],
-                    user["emailAddress"],
-                    user["status"],
-                    user["roles"],
-                ]
-            )
-        return user_info
+        response = self.get("service/rest/beta/security/users?userId={}".format(username))
+        if isinstance(response, tuple):
+            result = response[1]
+            user_info = []
+            for user in result:
+                user_info.append(
+                    [
+                        user["userId"],
+                        user["firstName"],
+                        user["lastName"],
+                        user["emailAddress"],
+                        user["status"],
+                        user["roles"],
+                    ]
+                )
+            return user_info
+        else:
+            response.raise_for_status()
+            return []
 
     def list_users(self, **kwargs):
         """List all users."""
-        result = self.get("beta/security/users")[1]
-        list_of_users = []
-        for user in result:
-            list_of_users.append(
-                [
-                    user["userId"],
-                    user["firstName"],
-                    user["lastName"],
-                    user["emailAddress"],
-                    user["status"],
-                    user["roles"],
-                ]
-            )
-        return list_of_users
+        response = self.get("service/rest/beta/security/users")
+        if isinstance(response, tuple):
+            result = response[1]
+            list_of_users = []
+            for user in result:
+                list_of_users.append(
+                    [
+                        user["userId"],
+                        user["firstName"],
+                        user["lastName"],
+                        user["emailAddress"],
+                        user["status"],
+                        user["roles"],
+                    ]
+                )
+            return list_of_users
+        else:
+            response.raise_for_status()
+            return []
 
     def staging_promotion(self, destination_repo, tag):
         """Promote repo assets to a new location.
@@ -335,32 +443,46 @@ class Nexus3(client.RestApi):
         """
         data = {"tag": tag}
         json_data = json.dumps(data)
-        result = self.post("v1/staging/move/{}".format(destination_repo), data=json_data)
-        return result
+        response = self.post("service/rest/v1/staging/move/{}".format(destination_repo), data=json_data)
+        return response
 
     def read_script(self, name):
         """Get the contents of a script.
 
         :param name: the script name
         """
-        result = self.get("v1/script/{}".format(name))
+        response = self.get("service/rest/v1/script/{}".format(name))
 
-        if result[0].status_code == 200:
-            return result[1]
+        if isinstance(response, tuple):
+            if response[0].status_code == 200:
+                return response[1]
+            else:
+                return "Failed to read script {}".format(name)
         else:
-            return "Failed to read script {}".format(name)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                response.raise_for_status()
+                return "Failed to read script {}".format(name)
 
     def run_script(self, name):
         """Run a script on the server.
 
         :param name: the script name
         """
-        result = self.post("v1/script/{}/run".format(name))
+        response = self.post("service/rest/v1/script/{}/run".format(name))
 
-        if result[0].status_code == 200:
-            return result[1]
+        if isinstance(response, tuple):
+            if response[0].status_code == 200:
+                return response[1]
+            else:
+                return "Failed to execute script {}".format(name)
         else:
-            return "Failed to execute script {}".format(name)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                response.raise_for_status()
+                return "Failed to execute script {}".format(name)
 
     def search_asset(self, query, repository, details=False):
         """Search for an asset.
@@ -374,21 +496,25 @@ class Nexus3(client.RestApi):
             "repository": repository,
         }
         json_data = json.dumps(data)
-        result = self.get(
-            "v1/search/assets?q={}&repository={}".format(query, repository),
+        response = self.get(
+            "service/rest/v1/search/assets?q={}&repository={}".format(query, repository),
             data=json_data,
-        )[
-            1
-        ]["items"]
-        list_of_assets = []
+        )
 
-        if details:
-            return json.dumps(result, indent=4)
+        if isinstance(response, tuple):
+            result = response[1]["items"]
+            list_of_assets = []
 
-        for item in result:
-            list_of_assets.append(item["path"])
+            if details:
+                return json.dumps(result, indent=4)
 
-        return list_of_assets
+            for item in result:
+                list_of_assets.append(item["path"])
+
+            return list_of_assets
+        else:
+            response.raise_for_status()
+            return []
 
     def update_script(self, name, content):
         """Update an existing script on the server.
@@ -400,9 +526,16 @@ class Nexus3(client.RestApi):
 
         json_data = json.dumps(data)
 
-        result = self.put("v1/script/{}".format(name), data=json_data)
+        response = self.put("service/rest/v1/script/{}".format(name), data=json_data)
 
-        if result.status_code == 204:
-            return "Successfully updated {}".format(name)
+        if isinstance(response, tuple):
+            if response[0].status_code == 204:
+                return "Successfully updated {}".format(name)
+            else:
+                return "Failed to update script {}".format(name)
         else:
-            return "Failed to update script {}".format(name)
+            if response.status_code == 204:
+                return "Successfully updated {}".format(name)
+            else:
+                response.raise_for_status()
+                return "Failed to update script {}".format(name)

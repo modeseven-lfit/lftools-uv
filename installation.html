@@ -1,0 +1,564 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Commands" href="commands/index.html" /><link rel="prev" title="Release Notes" href="release-notes.html" />
+
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.07.19 -->
+        <title>Installation - lftools-uv 0.0.1.dev1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=25af2a20" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #eeffcc;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #2b2b2b;
+  --color-code-foreground: #f8f8f2;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #2b2b2b;
+  --color-code-foreground: #f8f8f2;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">lftools-uv 0.0.1.dev1 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  <span class="sidebar-brand-text">lftools-uv 0.0.1.dev1 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="release-notes.html">Release Notes</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Installation</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="commands/index.html">Commands</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Commands</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="commands/config.html">config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/deploy.html">deploy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/dco.html">dco</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/gerrit.html">gerrit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/github.html">github</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/infofile.html">infofile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/lfidapi.html">lfidapi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/license.html">license</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/nexus.html">nexus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/nexus2.html">nexus2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/nexus3.html">nexus3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/openstack.html">openstack</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/rtd.html">rtd</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/schema.html">schema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/sign.html">sign</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/version.html">version</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="jenkins/index.html">Jenkins</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Jenkins</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="jenkins/plugins.html">plugins</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/lfit/lftools-uv/blob/main/docs/installation.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/lfit/lftools-uv/edit/main/docs/installation.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>LFtools-uv requires Python 3.8+ and virtual environment isolation.
+<a class="reference external" href="https://virtualenv.pypa.io/en/stable/">https://virtualenv.pypa.io/en/stable/</a>
+Not using proper isolation can have serious negative side effects!</p>
+</div>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<p>LFtools-uv is available on PyPI and supports different installation methods depending on your use case:</p>
+<ul class="simple">
+<li><p><strong>uvx</strong>: For CI/CD and one-off executions (recommended for automation)</p></li>
+<li><p><strong>uv pip</strong>: For development and persistent installations (recommended for development)</p></li>
+<li><p><strong>pip</strong>: For traditional Python package management</p></li>
+</ul>
+</section>
+<section id="using-uvx-recommended-for-ci-cd">
+<h2>Using uvx (Recommended for CI/CD)<a class="headerlink" href="#using-uvx-recommended-for-ci-cd" title="Link to this heading">¶</a></h2>
+<p><a class="reference external" href="https://docs.astral.sh/uv/guides/tools/">uvx</a> is the best choice for CI/CD environments and automated workflows where you need isolated execution without affecting the system Python environment.</p>
+<section id="prerequisites">
+<h3>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">¶</a></h3>
+<p>First, install uv (which includes uvx):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-LsSf<span class="w"> </span>https://astral.sh/uv/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
+</pre></div>
+</div>
+</section>
+<section id="basic-usage">
+<h3>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading">¶</a></h3>
+<p>Run lftools-uv commands without installation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Execute any lftools-uv command</span>
+uvx<span class="w"> </span>lftools-uv<span class="w"> </span>version
+uvx<span class="w"> </span>lftools-uv<span class="w"> </span>--help
+
+<span class="c1"># Deploy artifacts</span>
+uvx<span class="w"> </span>lftools-uv<span class="w"> </span>deploy<span class="w"> </span>nexus-zip<span class="w"> </span>--nexus-url<span class="w"> </span>https://nexus.example.com<span class="w"> </span>artifacts/
+</pre></div>
+</div>
+</section>
+<section id="optional-dependencies">
+<h3>Optional Dependencies<a class="headerlink" href="#optional-dependencies" title="Link to this heading">¶</a></h3>
+<p>When using features that require optional dependencies, specify the extras in quotes:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># LDAP functionality</span>
+uvx<span class="w"> </span><span class="s2">&quot;lftools-uv[ldap]&quot;</span><span class="w"> </span>ldap<span class="w"> </span>csv<span class="w"> </span>project-committers
+
+<span class="c1"># OpenStack functionality</span>
+uvx<span class="w"> </span><span class="s2">&quot;lftools-uv[openstack]&quot;</span><span class="w"> </span>openstack<span class="w"> </span>server<span class="w"> </span>list
+
+<span class="c1"># Combined extras</span>
+uvx<span class="w"> </span><span class="s2">&quot;lftools-uv[ldap,openstack]&quot;</span><span class="w"> </span>--help
+
+<span class="c1"># All functionality</span>
+uvx<span class="w"> </span><span class="s2">&quot;lftools-uv[all]&quot;</span><span class="w"> </span>--help
+</pre></div>
+</div>
+</section>
+<section id="alternative-syntax">
+<h3>Alternative Syntax<a class="headerlink" href="#alternative-syntax" title="Link to this heading">¶</a></h3>
+<p>You can also use the <code class="docutils literal notranslate"><span class="pre">--from</span></code> flag for clarity:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uvx<span class="w"> </span>--from<span class="w"> </span><span class="s2">&quot;lftools-uv[ldap]&quot;</span><span class="w"> </span>lftools-uv<span class="w"> </span>ldap<span class="w"> </span>--help
+</pre></div>
+</div>
+</section>
+<section id="ci-cd-benefits">
+<h3>CI/CD Benefits<a class="headerlink" href="#ci-cd-benefits" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Isolation</strong>: No interference with existing Python packages</p></li>
+<li><p><strong>Caching</strong>: Automatic environment caching for faster future runs</p></li>
+<li><p><strong>Consistency</strong>: Same tool version across pipeline stages</p></li>
+<li><p><strong>No Setup</strong>: No virtual environment management required</p></li>
+<li><p><strong>Clean</strong>: Environments automatically cleaned up after execution</p></li>
+</ul>
+</section>
+</section>
+<section id="using-uv-pip-recommended-for-development">
+<h2>Using uv pip (Recommended for Development)<a class="headerlink" href="#using-uv-pip-recommended-for-development" title="Link to this heading">¶</a></h2>
+<p>For development work or when you need persistent installations, use <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install uv first</span>
+curl<span class="w"> </span>-LsSf<span class="w"> </span>https://astral.sh/uv/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
+
+<span class="c1"># Create and activate a virtual environment</span>
+uv<span class="w"> </span>venv
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate<span class="w">  </span><span class="c1"># On Windows: .venv\Scripts\activate</span>
+
+<span class="c1"># Install lftools-uv</span>
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>lftools-uv
+
+<span class="c1"># Or with all extras for development</span>
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lftools-uv[all]&quot;</span>
+</pre></div>
+</div>
+<section id="specific-extras">
+<h3>Specific Extras<a class="headerlink" href="#specific-extras" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># LDAP support</span>
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lftools-uv[ldap]&quot;</span>
+
+<span class="c1"># OpenStack support</span>
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lftools-uv[openstack]&quot;</span>
+
+<span class="c1"># Development tools</span>
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lftools-uv[dev]&quot;</span>
+
+<span class="c1"># Testing tools</span>
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lftools-uv[test]&quot;</span>
+
+<span class="c1"># Documentation tools</span>
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lftools-uv[docs]&quot;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="using-pip-traditional-method">
+<h2>Using pip (Traditional Method)<a class="headerlink" href="#using-pip-traditional-method" title="Link to this heading">¶</a></h2>
+<p>For environments where uv is not available:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create virtual environment</span>
+python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>lftools-env
+<span class="nb">source</span><span class="w"> </span>lftools-env/bin/activate<span class="w">  </span><span class="c1"># On Windows: lftools-env\Scripts\activate</span>
+
+<span class="c1"># Install lftools-uv</span>
+pip<span class="w"> </span>install<span class="w"> </span>lftools-uv
+
+<span class="c1"># Or with extras</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lftools-uv[all]&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="system-dependencies">
+<h2>System Dependencies<a class="headerlink" href="#system-dependencies" title="Link to this heading">¶</a></h2>
+<section id="ubuntu-debian">
+<h3>Ubuntu/Debian<a class="headerlink" href="#ubuntu-debian" title="Link to this heading">¶</a></h3>
+<p>For LDAP functionality on Ubuntu/Debian systems:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
+sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>build-essential<span class="w"> </span>python3-dev<span class="w"> </span>libldap2-dev<span class="w"> </span>libsasl2-dev<span class="w"> </span>libssl-dev
+</pre></div>
+</div>
+</section>
+<section id="rhel-centos-fedora">
+<h3>RHEL/CentOS/Fedora<a class="headerlink" href="#rhel-centos-fedora" title="Link to this heading">¶</a></h3>
+<p>For LDAP functionality on RHEL-based systems:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>yum<span class="w"> </span>install<span class="w"> </span>gcc<span class="w"> </span>python3-devel<span class="w"> </span>openldap-devel<span class="w"> </span>cyrus-sasl-devel<span class="w"> </span>openssl-devel
+<span class="c1"># Or on newer systems:</span>
+sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>gcc<span class="w"> </span>python3-devel<span class="w"> </span>openldap-devel<span class="w"> </span>cyrus-sasl-devel<span class="w"> </span>openssl-devel
+</pre></div>
+</div>
+</section>
+</section>
+<section id="for-development">
+<h2>For Development<a class="headerlink" href="#for-development" title="Link to this heading">¶</a></h2>
+<p>When developing lftools-uv itself, clone the repository and install in editable mode:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/lfit/lftools-uv.git
+<span class="nb">cd</span><span class="w"> </span>lftools-uv
+
+<span class="c1"># Using uv (recommended)</span>
+uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span>dev<span class="w"> </span>--extra<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--extra<span class="w"> </span>docs<span class="w"> </span>--extra<span class="w"> </span>ldap<span class="w"> </span>--extra<span class="w"> </span>openstack
+
+<span class="c1"># Or using traditional pip</span>
+python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[all]&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="verification">
+<h2>Verification<a class="headerlink" href="#verification" title="Link to this heading">¶</a></h2>
+<p>Verify your installation works:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check version</span>
+lftools-uv<span class="w"> </span>version
+<span class="c1"># Alternative method</span>
+uvx<span class="w"> </span>lftools-uv<span class="w"> </span>version
+
+<span class="c1"># List available commands</span>
+lftools-uv<span class="w"> </span>--help
+
+<span class="c1"># Test optional dependencies</span>
+lftools-uv<span class="w"> </span>ldap<span class="w"> </span>--help<span class="w">  </span><span class="c1"># Shows commands when [ldap] extra installed</span>
+lftools-uv<span class="w"> </span>openstack<span class="w"> </span>--help<span class="w">  </span><span class="c1"># Shows commands when [openstack] extra installed</span>
+</pre></div>
+</div>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">¶</a></h2>
+<section id="common-issues">
+<h3>Common Issues<a class="headerlink" href="#common-issues" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt><strong>Command not found after installation:</strong></dt><dd><p>Activate your virtual environment or use the full path to the executable.</p>
+</dd>
+<dt><strong>LDAP/OpenStack commands show “To activate this interface” message:</strong></dt><dd><p>Install the appropriate extras: <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">&quot;lftools-uv[ldap]&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">uvx</span> <span class="pre">&quot;lftools-uv[ldap]&quot;</span> <span class="pre">...</span></code></p>
+</dd>
+<dt><strong>Permission errors:</strong></dt><dd><p>Always use virtual environments. Never install with <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">pip</span></code>.</p>
+</dd>
+<dt><strong>Import errors for optional dependencies:</strong></dt><dd><p>Make sure you installed the correct extras and they’re available in your environment.</p>
+</dd>
+</dl>
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="commands/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Commands</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="release-notes.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Release Notes</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Linux Foundation Release Engineering
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Installation</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#using-uvx-recommended-for-ci-cd">Using uvx (Recommended for CI/CD)</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li><a class="reference internal" href="#basic-usage">Basic Usage</a></li>
+<li><a class="reference internal" href="#optional-dependencies">Optional Dependencies</a></li>
+<li><a class="reference internal" href="#alternative-syntax">Alternative Syntax</a></li>
+<li><a class="reference internal" href="#ci-cd-benefits">CI/CD Benefits</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-uv-pip-recommended-for-development">Using uv pip (Recommended for Development)</a><ul>
+<li><a class="reference internal" href="#specific-extras">Specific Extras</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-pip-traditional-method">Using pip (Traditional Method)</a></li>
+<li><a class="reference internal" href="#system-dependencies">System Dependencies</a><ul>
+<li><a class="reference internal" href="#ubuntu-debian">Ubuntu/Debian</a></li>
+<li><a class="reference internal" href="#rhel-centos-fedora">RHEL/CentOS/Fedora</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#for-development">For Development</a></li>
+<li><a class="reference internal" href="#verification">Verification</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a><ul>
+<li><a class="reference internal" href="#common-issues">Common Issues</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=02f4819d"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

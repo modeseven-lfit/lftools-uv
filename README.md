@@ -15,6 +15,11 @@ Foundation projects' CI and Releng related activities. We try to create
 these tools to be as generic as possible such that they are reusable in other
 CI environments.
 
+## CLI Interface
+
+**lftools-uv** uses Typer as the CLI library. For CI/CD environments that
+require the previous Click-based output format, use `LEGACY_CLI=1`.
+
 ## Installation
 
 ### Using uv (Recommended)

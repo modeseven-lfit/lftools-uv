@@ -8,26 +8,27 @@
 # http://www.eclipse.org/legal/epl-v10.html
 ##############################################################################
 """REST API interface using Requests."""
+
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import requests
 
 
-class RestApi(object):
+class RestApi:
     """A generic REST API interface."""
 
-    def __init__(self, **kwargs: Dict[str, str]) -> None:
+    def __init__(self, **kwargs: dict[str, str]) -> None:
         """Initialize the REST API class."""
-        self.params: Dict[str, Dict[str, str]] = kwargs
+        self.params: dict[str, dict[str, str]] = kwargs
 
         if kwargs["creds"]:
-            self.creds: Dict[str, str] = kwargs["creds"]
+            self.creds: dict[str, str] = kwargs["creds"]
 
         if "timeout" not in self.params:
-            self.timeout: Optional[int] = None
+            self.timeout: int | None = None
 
         self.endpoint: str = self.creds["endpoint"]
 
@@ -45,8 +46,8 @@ class RestApi(object):
             self.r.headers.update({"Content-Type": "application/json"})
 
     def _request(
-        self, url: str, method: str, data: Optional[Any] = None, timeout: int = 30
-    ) -> requests.Response | Tuple[requests.Response, Optional[Dict[str, Any] | str]]:
+        self, url: str, method: str, data: Any | None = None, timeout: int = 30
+    ) -> requests.Response | tuple[requests.Response, dict[str, Any] | str | None]:
         """Execute the request."""
         resp: requests.Response = self.r.request(method, self.endpoint + url, data=data, timeout=timeout)
 
@@ -58,7 +59,7 @@ class RestApi(object):
             try:
                 if "application/json" in resp.headers["Content-Type"]:
                     remove_xssi_magic: str = resp.text.replace(")]}'", "")
-                    body: Optional[Dict[str, Any] | str] = json.loads(remove_xssi_magic)
+                    body: dict[str, Any] | str | None = json.loads(remove_xssi_magic)
                 else:
                     body = resp.text
             except ValueError:
@@ -69,24 +70,22 @@ class RestApi(object):
 
         return resp, body
 
-    def get(self, url: str, **kwargs) -> requests.Response | Tuple[requests.Response, Optional[Dict[str, Any] | str]]:
+    def get(self, url: str, **kwargs) -> requests.Response | tuple[requests.Response, dict[str, Any] | str | None]:
         """HTTP GET request."""
         return self._request(url, "GET", **kwargs)
 
-    def patch(self, url: str, **kwargs) -> requests.Response | Tuple[requests.Response, Optional[Dict[str, Any] | str]]:
+    def patch(self, url: str, **kwargs) -> requests.Response | tuple[requests.Response, dict[str, Any] | str | None]:
         """HTTP PATCH request."""
         return self._request(url, "PATCH", **kwargs)
 
-    def post(self, url: str, **kwargs) -> requests.Response | Tuple[requests.Response, Optional[Dict[str, Any] | str]]:
+    def post(self, url: str, **kwargs) -> requests.Response | tuple[requests.Response, dict[str, Any] | str | None]:
         """HTTP POST request."""
         return self._request(url, "POST", **kwargs)
 
-    def put(self, url: str, **kwargs) -> requests.Response | Tuple[requests.Response, Optional[Dict[str, Any] | str]]:
+    def put(self, url: str, **kwargs) -> requests.Response | tuple[requests.Response, dict[str, Any] | str | None]:
         """HTTP PUT request."""
         return self._request(url, "PUT", **kwargs)
 
-    def delete(
-        self, url: str, **kwargs
-    ) -> requests.Response | Tuple[requests.Response, Optional[Dict[str, Any] | str]]:
+    def delete(self, url: str, **kwargs) -> requests.Response | tuple[requests.Response, dict[str, Any] | str | None]:
         """HTTP DELETE request."""
         return self._request(url, "DELETE", **kwargs)

@@ -11,11 +11,11 @@
 
 __author__ = "Thanh Ha"
 
+import configparser
 import logging
 import sys
 
 import click
-import configparser
 
 from lftools_uv import config
 
@@ -43,7 +43,7 @@ def get_setting(ctx, section, option):
 
     if isinstance(result, list):
         for i in result:
-            log.info("{}: {}".format(i, config.get_setting(section, i)))
+            log.info(f"{i}: {config.get_setting(section, i)}")
     else:
         log.info(result)
 
@@ -55,7 +55,7 @@ def get_setting(ctx, section, option):
 @click.pass_context
 def set_setting(ctx, section, option, value):
     """Set a setting in the config file."""
-    log.debug("Set config\n[{}]\n{}:{}".format(section, option, value))
+    log.debug(f"Set config\n[{section}]\n{option}:{value}")
     config.set_setting(section, option, value)
 
 

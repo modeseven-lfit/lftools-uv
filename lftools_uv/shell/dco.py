@@ -39,7 +39,7 @@ def get_branches(path=getcwd(), invert=False):
             branch = branch.strip()
             hashes = (
                 subprocess.check_output(
-                    'git log {} --no-merges --pretty="%H %ae" --grep "Signed-off-by" {}'.format(branch, invert),
+                    f'git log {branch} --no-merges --pretty="%H %ae" --grep "Signed-off-by" {invert}',
                     shell=True,
                 )
                 .decode(encoding="UTF-8")
@@ -86,7 +86,7 @@ def check(path=getcwd(), signoffs_dir="dco_signoffs"):
 
             if missing_list:
                 for commit in missing_list:
-                    log.info("{}".format(commit))
+                    log.info(f"{commit}")
                 exit(1)
     except subprocess.CalledProcessError as e:
         log.error(e)
@@ -109,10 +109,10 @@ def match(path=getcwd(), signoffs_dir="dco_signoffs"):
             commit_id = commit.split(" ")[0]
             if commit_id:
                 commit_log_message = subprocess.check_output(
-                    "git log --format=%B -n 1 {}".format(commit_id), shell=True
+                    f"git log --format=%B -n 1 {commit_id}", shell=True
                 ).decode(encoding="UTF-8")
                 commit_author_email = (
-                    subprocess.check_output("git log --format='%ae' {}^!".format(commit_id), shell=True)
+                    subprocess.check_output(f"git log --format='%ae' {commit_id}^!", shell=True)
                     .decode(encoding="UTF-8")
                     .strip()
                 )
@@ -133,8 +133,8 @@ def match(path=getcwd(), signoffs_dir="dco_signoffs"):
                         continue
 
                 log.info(
-                    "For commit ID {}: \n\tCommitter is {}"
-                    "\n\tbut commit is signed off by {}\n".format(commit_id, commit_author_email, sob_results)
+                    f"For commit ID {commit_id}: \n\tCommitter is {commit_author_email}"
+                    f"\n\tbut commit is signed off by {sob_results}\n"
                 )
                 exit_code = 1
 

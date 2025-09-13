@@ -30,10 +30,10 @@ def test_check_license(cli_runner, datafiles):
 
     # Check that schema passes when schema and yaml are valid.
     result = cli_runner.invoke(cli.cli, ["schema", "verify", "release.yaml", "schema.yaml"], obj={})
-    # noqa: B101 .
+
     assert result.exit_code == 0
 
     # Check that schema fails when schema and yaml are invalid.
     result = cli_runner.invoke(cli.cli, ["schema", "verify", "release-broken.yaml", "schema.yaml"], obj={})
-    # noqa: B101 .
+
     assert result.exit_code == 1

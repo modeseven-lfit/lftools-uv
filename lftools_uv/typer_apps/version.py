@@ -12,11 +12,8 @@
 import logging
 import os
 import subprocess
-from typing import Optional
 
 import typer
-
-from lftools_uv.cli.state import AppState
 
 log = logging.getLogger(__name__)
 
@@ -61,10 +58,7 @@ def version_callback():
 @version_app.command("bump")
 def bump(
     ctx: typer.Context,
-    release_tag: str = typer.Argument(
-        ...,
-        help="Release tag to use for version bumping"
-    ),
+    release_tag: str = typer.Argument(..., help="Release tag to use for version bumping"),
 ):
     """Version bump pom files in a Maven project by x.(y+1).z or x.y.(z+1).
 
@@ -83,29 +77,22 @@ def bump(
         lftools-uv version bump "2024.01.15"
     """
     try:
-        result = subprocess.run(
-            ["version", "bump", release_tag],
-            check=True,
-            capture_output=False
-        )
+        subprocess.run(["version", "bump", release_tag], check=True, capture_output=False)
         typer.echo(f"Version bump completed successfully for release tag: {release_tag}")
     except subprocess.CalledProcessError as e:
         log.error(f"Version bump failed with exit code {e.returncode}")
         typer.echo(f"Error: Version bump failed with exit code {e.returncode}", err=True)
-        raise typer.Exit(e.returncode)
+        raise typer.Exit(e.returncode) from None
     except FileNotFoundError:
         log.error("'version' command not found in PATH")
         typer.echo("Error: 'version' command not found in PATH. Please ensure it's installed.", err=True)
-        raise typer.Exit(127)
+        raise typer.Exit(127) from None
 
 
 @version_app.command("release")
 def release(
     ctx: typer.Context,
-    release_tag: str = typer.Argument(
-        ...,
-        help="Release tag to replace SNAPSHOT versions"
-    ),
+    release_tag: str = typer.Argument(..., help="Release tag to replace SNAPSHOT versions"),
 ):
     """Version bump pom files in a Maven project from SNAPSHOT to RELEASE_TAG.
 
@@ -120,38 +107,24 @@ def release(
         lftools-uv version release "1.2.3"
     """
     try:
-        result = subprocess.run(
-            ["version", "release", release_tag],
-            check=True,
-            capture_output=False
-        )
+        subprocess.run(["version", "release", release_tag], check=True, capture_output=False)
         typer.echo(f"Version release completed successfully for tag: {release_tag}")
     except subprocess.CalledProcessError as e:
         log.error(f"Version release failed with exit code {e.returncode}")
         typer.echo(f"Error: Version release failed with exit code {e.returncode}", err=True)
-        raise typer.Exit(e.returncode)
+        raise typer.Exit(e.returncode) from None
     except FileNotFoundError:
         log.error("'version' command not found in PATH")
         typer.echo("Error: 'version' command not found in PATH. Please ensure it's installed.", err=True)
-        raise typer.Exit(127)
+        raise typer.Exit(127) from None
 
 
 @version_app.command("patch")
 def patch(
     ctx: typer.Context,
-    release_tag: str = typer.Argument(
-        ...,
-        help="Release tag to use for version bumping after patching"
-    ),
-    patch_dir: str = typer.Argument(
-        ...,
-        help="Directory containing git.bundle patches to apply"
-    ),
-    project: str = typer.Option(
-        "OpenDaylight",
-        "--project",
-        help="Project name to use when tagging"
-    ),
+    release_tag: str = typer.Argument(..., help="Release tag to use for version bumping after patching"),
+    patch_dir: str = typer.Argument(..., help="Directory containing git.bundle patches to apply"),
+    project: str = typer.Option("OpenDaylight", "--project", help="Project name to use when tagging"),
 ):
     """Patch a project with git.bundles and then version bump.
 
@@ -174,20 +147,16 @@ def patch(
         raise typer.Exit(404)
 
     try:
-        result = subprocess.run(
-            ["version", "patch", release_tag, patch_dir, project],
-            check=True,
-            capture_output=False
-        )
+        subprocess.run(["version", "patch", release_tag, patch_dir, project], check=True, capture_output=False)
         typer.echo(f"Version patch completed successfully for release tag: {release_tag}")
     except subprocess.CalledProcessError as e:
         log.error(f"Version patch failed with exit code {e.returncode}")
         typer.echo(f"Error: Version patch failed with exit code {e.returncode}", err=True)
-        raise typer.Exit(e.returncode)
+        raise typer.Exit(e.returncode) from None
     except FileNotFoundError:
         log.error("'version' command not found in PATH")
         typer.echo("Error: 'version' command not found in PATH. Please ensure it's installed.", err=True)
-        raise typer.Exit(127)
+        raise typer.Exit(127) from None
 
 
 def get_version_app() -> typer.Typer:

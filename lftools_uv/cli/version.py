@@ -8,6 +8,7 @@
 # http://www.eclipse.org/legal/epl-v10.html
 ##############################################################################
 """Version bump script for Maven based projects."""
+
 from __future__ import annotations
 
 __author__ = "Thanh Ha"
@@ -98,7 +99,7 @@ def patch(ctx, release_tag: str, patch_dir: str, project: str) -> None:
     using RELEASE_TAG in order to version bump by x.y.(z+1)-SNAPSHOT.
     """
     if not os.path.isdir(patch_dir):
-        log.error("{} is not a valid directory.".format(patch_dir))
+        log.error(f"{patch_dir} is not a valid directory.")
         sys.exit(404)
     # due to the nature of the subprocess call, this is not testable so disable coverage
     status: int = subprocess.call(["version", "patch", release_tag, patch_dir, project])  # pragma: no cover

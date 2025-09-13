@@ -33,7 +33,6 @@ def test_version_bump(cli_runner, datafiles):
     for _file in datafiles.iterdir():
         pom = str(_file) + "/pom.xml"
         expected_pom = str(_file) + "/pom.xml.expected"
-        # noqa: B101 .
         assert filecmp.cmp(pom, expected_pom)
 
 
@@ -48,7 +47,6 @@ def test_version_release(cli_runner, datafiles):
     for _file in datafiles.iterdir():
         pom = str(_file) + "/pom.xml"
         expected_pom = str(_file) + "/pom.xml.expected"
-        # noqa: B101 .
         assert filecmp.cmp(pom, expected_pom)
 
 

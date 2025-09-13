@@ -54,10 +54,11 @@ repos:
     rev: 60ef368a6f48dfb4317651017f66dbb055241a6c  # frozen: v0.12.12
     hooks:
       - id: ruff
-        files: ^(scripts|tests|custom_components)/.+\.py$
+        # Removed restrictive filter so Ruff covers all Python files
+        # (replaced prior black/isort scope, wrapped for yamllint)
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
-        files: ^(scripts|tests|custom_components)/.+\.py$
+        # Removed restrictive filter so formatting applies repo-wide
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: 412de98d50e846f31ea6f4b0ad036f2c24a7a024  # frozen: v1.17.1
@@ -67,9 +68,6 @@ repos:
           - types-requests
           - types-PyYAML
           - types-tabulate
-          - types-six
-          - types-pyxdg
-          - types-httplib2
           - types-jsonschema
           - types-tqdm
           - boto3-stubs

@@ -9,8 +9,6 @@
 ##############################################################################
 """Github stub."""
 
-from __future__ import print_function
-
 import logging
 import sys
 
@@ -28,7 +26,7 @@ def helper_list(ctx, organization, repos, audit, full, teams, team, repofeatures
     if config.has_section("github"):
         token = config.get_setting("github", "token")
     else:
-        section = "github.{}".format(organization)
+        section = f"github.{organization}"
         token = config.get_setting(section, "token")
 
     g = Github(token)
@@ -47,14 +45,14 @@ def helper_list(ctx, organization, repos, audit, full, teams, team, repofeatures
             log.info(repo.name)
 
     if audit:
-        log.info("{} members without 2fa:".format(orgName))
+        log.info(f"{orgName} members without 2fa:")
         try:
             members = org.get_members(filter_="2fa_disabled")
         except GithubException as ghe:
             log.error(ghe)
         for member in members:
             log.info(member.login)
-        log.info("{} outside collaborators without 2fa:".format(orgName))
+        log.info(f"{orgName} outside collaborators without 2fa:")
         try:
             collaborators = org.get_outside_collaborators(filter_="2fa_disabled")
         except GithubException as ghe:
@@ -65,41 +63,41 @@ def helper_list(ctx, organization, repos, audit, full, teams, team, repofeatures
     if repofeatures:
         repos = org.get_repos()
         for repo in repos:
-            log.info("{} wiki:{} issues:{}".format(repo.name, repo.has_wiki, repo.has_issues))
+            log.info(f"{repo.name} wiki:{repo.has_wiki} issues:{repo.has_issues}")
             issues = repo.get_issues
             for issue in issues():
-                log.info("{}".format(issue))
+                log.info(f"{issue}")
 
     if full:
         log.info("---")
-        log.info("#  All owners for {}:".format(orgName))
-        log.info("{}-owners:".format(orgName))
+        log.info(f"#  All owners for {orgName}:")
+        log.info(f"{orgName}-owners:")
 
         try:
             members = org.get_members(role="admin")
         except GithubException as ghe:
             log.error(ghe)
         for member in members:
-            log.info("  - '{}'".format(member.login))
-        log.info("#  All members for {}".format(orgName))
-        log.info("{}-members:".format(orgName))
+            log.info(f"  - '{member.login}'")
+        log.info(f"#  All members for {orgName}")
+        log.info(f"{orgName}-members:")
 
         try:
             members = org.get_members()
         except GithubException as ghe:
             log.error(ghe)
         for member in members:
-            log.info("  - '{}'".format(member.login))
-        log.info("#  All members and all teams for {}".format(orgName))
+            log.info(f"  - '{member.login}'")
+        log.info(f"#  All members and all teams for {orgName}")
 
         try:
             teams = org.get_teams
         except GithubException as ghe:
             log.error(ghe)
         for team in teams():
-            log.info("{}:".format(team.name))
+            log.info(f"{team.name}:")
             for user in team.get_members():
-                log.info("  - '{}'".format(user.login))
+                log.info(f"  - '{user.login}'")
             log.info("")
         teams = None
 
@@ -109,7 +107,7 @@ def helper_list(ctx, organization, repos, audit, full, teams, team, repofeatures
         except GithubException as ghe:
             log.error(ghe)
         for team in teams():
-            log.info("{}".format(team.name))
+            log.info(f"{team.name}")
 
     if team:
         try:
@@ -121,10 +119,10 @@ def helper_list(ctx, organization, repos, audit, full, teams, team, repofeatures
 
         for t in teams():
             if t.name == team:
-                log.info("{}".format(t.name))
+                log.info(f"{t.name}")
                 for user in t.get_members():
                     team_members.append(user.login)
-                    log.info("  - '{}'".format(user.login))
+                    log.info(f"  - '{user.login}'")
 
         return team_members
 
@@ -145,7 +143,7 @@ def prvotes(organization, repo, pr):
     approval_list.append(author)
 
     pr_mergable = repo.get_pull(pr).mergeable
-    log.info("MERGEABLE: {}".format(pr_mergable))
+    log.info(f"MERGEABLE: {pr_mergable}")
 
     approvals = repo.get_pull(pr).get_reviews()
     for approve in approvals:
@@ -168,12 +166,12 @@ def helper_user_github(ctx, organization, user, team, delete, admin):
         log.info(user_object)
     except GithubException as ghe:
         log.error(ghe)
-        log.info("user {} not found".format(user))
+        log.info(f"user {user} not found")
         sys.exit(1)
     # check if user is a member
     try:
         is_member = org.has_in_members(user_object)
-        log.info("Is {} a member of org {}".format(user, is_member))
+        log.info(f"Is {user} a member of org {is_member}")
     except GithubException as ghe:
         log.error(ghe)
     # get teams
@@ -197,9 +195,9 @@ def helper_user_github(ctx, organization, user, team, delete, admin):
                 team.remove_membership(user_object)
             except GithubException as ghe:
                 log.error(ghe)
-            log.info("Removing user {} from {}".format(user_object, team))
+            log.info(f"Removing user {user_object} from {team}")
         else:
-            log.info("{} is not a member of org cannot delete".format(user))
+            log.info(f"{user} is not a member of org cannot delete")
             # TODO add revoke invite
             log.info("Code does not handle revoking invitations.")
 
@@ -214,7 +212,7 @@ def helper_user_github(ctx, organization, user, team, delete, admin):
                 org.invite_user(user=user_object, role="admin", teams=teams)
             except GithubException as ghe:
                 log.error(ghe)
-            log.info("Sending Admin invite to {} for {}".format(user_object, team))
+            log.info(f"Sending Admin invite to {user_object} for {team}")
 
         if not admin and is_member:
             try:
@@ -227,4 +225,4 @@ def helper_user_github(ctx, organization, user, team, delete, admin):
                 org.invite_user(user=user_object, teams=teams)
             except GithubException as ghe:
                 log.error(ghe)
-            log.info("Sending invite to {} for {}".format(user_object, team))
+            log.info(f"Sending invite to {user_object} for {team}")

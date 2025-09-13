@@ -11,7 +11,6 @@
 """Typer Nexus2 CLI commands."""
 
 import logging
-from typing import Optional
 
 import typer
 from tabulate import tabulate
@@ -72,7 +71,7 @@ def privilege_list(ctx: typer.Context):
         log.info(tabulate(data, headers=["Name", "ID"]))
     except Exception as e:
         log.error(f"Failed to list privileges: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @privilege_app.command("create")
@@ -89,7 +88,7 @@ def privilege_create(
         log.info(data)
     except Exception as e:
         log.error(f"Failed to create privilege: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @privilege_app.command("delete")
@@ -104,7 +103,7 @@ def privilege_delete(
         log.info(data)
     except Exception as e:
         log.error(f"Failed to delete privilege: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 # Repository subcommands
@@ -117,7 +116,7 @@ def repo_list(ctx: typer.Context):
         log.info(tabulate(data, headers=["Name", "Type", "Provider", "ID"]))
     except Exception as e:
         log.error(f"Failed to list repositories: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @repo_app.command("create")
@@ -128,7 +127,7 @@ def repo_create(
     repo_name: str = typer.Argument(..., help="Repository name"),
     repo_provider: str = typer.Argument(..., help="Repository provider"),
     repo_policy: str = typer.Argument(..., help="Repository policy"),
-    repo_upstream_url: Optional[str] = typer.Option(None, "--upstream-repo", "-u", help="Upstream repository URL"),
+    repo_upstream_url: str | None = typer.Option(None, "--upstream-repo", "-u", help="Upstream repository URL"),
 ):
     """Create a new repository."""
     try:
@@ -137,7 +136,7 @@ def repo_create(
         log.info(data)
     except Exception as e:
         log.error(f"Failed to create repository: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @repo_app.command("delete")
@@ -152,7 +151,7 @@ def repo_delete(
         log.info(data)
     except Exception as e:
         log.error(f"Failed to delete repository: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 # Role subcommands
@@ -165,7 +164,7 @@ def role_list(ctx: typer.Context):
         log.info(tabulate(data, headers=["ID", "Name", "Roles", "Privileges"], tablefmt="grid"))
     except Exception as e:
         log.error(f"Failed to list roles: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @role_app.command("create")
@@ -173,9 +172,9 @@ def role_create(
     ctx: typer.Context,
     role_id: str = typer.Argument(..., help="Role ID"),
     role_name: str = typer.Argument(..., help="Role name"),
-    role_description: Optional[str] = typer.Option(None, "--description", "-d", help="Role description"),
-    roles_list: Optional[str] = typer.Option(None, "--roles", "-r", help="Comma-separated list of roles"),
-    privileges_list: Optional[str] = typer.Option(None, "--privileges", "-p", help="Comma-separated list of privileges"),
+    role_description: str | None = typer.Option(None, "--description", "-d", help="Role description"),
+    roles_list: str | None = typer.Option(None, "--roles", "-r", help="Comma-separated list of roles"),
+    privileges_list: str | None = typer.Option(None, "--privileges", "-p", help="Comma-separated list of privileges"),
 ):
     """Create a new role."""
     try:
@@ -184,7 +183,7 @@ def role_create(
         log.info(data)
     except Exception as e:
         log.error(f"Failed to create role: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @role_app.command("delete")
@@ -199,7 +198,7 @@ def role_delete(
         log.info(data)
     except Exception as e:
         log.error(f"Failed to delete role: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 # User subcommands
@@ -212,7 +211,7 @@ def user_list(ctx: typer.Context):
         log.info(tabulate(data, headers=["ID", "First Name", "Last Name", "Status", "Roles"]))
     except Exception as e:
         log.error(f"Failed to list users: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @user_app.command("add")
@@ -223,7 +222,7 @@ def user_create(
     lastname: str = typer.Argument(..., help="Last name"),
     email: str = typer.Argument(..., help="Email address"),
     roles: str = typer.Argument(..., help="Comma-separated list of roles"),
-    password: Optional[str] = typer.Argument(None, help="Password (will be generated if not provided)"),
+    password: str | None = typer.Argument(None, help="Password (will be generated if not provided)"),
 ):
     """Add a new user."""
     try:
@@ -232,7 +231,7 @@ def user_create(
         log.info(data)
     except Exception as e:
         log.error(f"Failed to create user: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @user_app.command("delete")
@@ -247,4 +246,4 @@ def user_delete(
         log.info(data)
     except Exception as e:
         log.error(f"Failed to delete user: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None

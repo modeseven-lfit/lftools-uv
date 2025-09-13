@@ -11,8 +11,9 @@
 
 __author__ = "Anil Belur"
 
-import click
 import logging
+
+import click
 
 log = logging.getLogger(__name__)
 

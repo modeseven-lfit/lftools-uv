@@ -19,9 +19,9 @@ import click
 import ruamel.yaml
 import yaml
 from pygerrit2 import GerritRestAPI, HTTPBasicAuth
-from lftools_uv.cli.errors import error_handler
 
 from lftools_uv import config
+from lftools_uv.cli.errors import error_handler
 from lftools_uv.github_helper import prvotes
 from lftools_uv.ldap_cli import helper_yaml4info
 
@@ -52,7 +52,7 @@ def create_info_file(ctx, gerrit_url, gerrit_project, directory, empty, tsc_appr
     gerrit_url example: gerrit.umbrella.com
     directory example: /gerrit/ (rather than most projects /r/)
     """
-    url = "https://{}/{}".format(gerrit_url, directory)
+    url = f"https://{gerrit_url}/{directory}"
     projectid_encoded = gerrit_project.replace("/", "%2F")
     # project name with only underscores for info file anchors.
     # project name with only dashes for ldap groups.
@@ -69,7 +69,7 @@ def create_info_file(ctx, gerrit_url, gerrit_project, directory, empty, tsc_appr
         pass1 = config.get_setting("gerrit", "password")
         auth = HTTPBasicAuth(user, pass1)
         rest = GerritRestAPI(url=url, auth=auth)
-        access_str = "projects/{}/access".format(projectid_encoded)
+        access_str = f"projects/{projectid_encoded}/access"
         headers = {"Content-Type": "application/json; charset=UTF-8"}
         result = rest.get(access_str, headers=headers)
 
@@ -96,54 +96,50 @@ def create_info_file(ctx, gerrit_url, gerrit_project, directory, empty, tsc_appr
 
     date = datetime.datetime.now().strftime("%Y-%m-%d")
 
-    ldap_group = "{}-gerrit-{}-committers".format(umbrella, project_dashed)
+    ldap_group = f"{umbrella}-gerrit-{project_dashed}-committers"
 
-    long_string = """---
-project: '{0}'
-project_creation_date: '{3}'
+    long_string = f"""---
+project: '{project_underscored}'
+project_creation_date: '{date}'
 project_category: ''
 lifecycle_state: 'Incubation'
-project_lead: &{1}_{0}_ptl
+project_lead: &{umbrella}_{project_underscored}_ptl
     name: ''
     email: ''
     id: ''
     company: ''
     timezone: ''
-primary_contact: *{1}_{0}_ptl
+primary_contact: *{umbrella}_{project_underscored}_ptl
 issue_tracking:
     type: 'jira'
-    url: 'https://jira.{2}/projects/'
-    key: '{0}'
+    url: 'https://jira.{umbrella_tld}/projects/'
+    key: '{project_underscored}'
 mailing_list:
     type: 'groups.io'
-    url: 'technical-discuss@lists.{2}'
+    url: 'technical-discuss@lists.{umbrella_tld}'
     tag: '[]'
 realtime_discussion:
     type: 'irc'
     server: 'freenode.net'
-    channel: '#{1}'
+    channel: '#{umbrella}'
 meetings:
     - type: 'gotomeeting+irc'
-      agenda: 'https://wiki.{2}/display/'
+      agenda: 'https://wiki.{umbrella_tld}/display/'
       url: ''
       server: 'freenode.net'
-      channel: '#{1}'
+      channel: '#{umbrella}'
       repeats: ''
-      time: ''""".format(
-        project_underscored, umbrella, umbrella_tld, date
-    )
+      time: ''"""
 
-    tsc_string = """
+    tsc_string = f"""
 tsc:
     # yamllint disable rule:line-length
-    approval: '{}'
+    approval: '{tsc_approval}'
     changes:
         - type: ''
           name: ''
           link: ''
-""".format(
-        tsc_approval
-    )
+"""
     empty_committer = """    - name: ''
       email: ''
       company: ''
@@ -175,7 +171,7 @@ tsc:
 @error_handler
 def get_committers(ctx, file, full, id):
     """Extract Committer info from INFO.yaml or LDAP dump."""
-    with open(file, "r") as yaml_file:
+    with open(file) as yaml_file:
         project = yaml.safe_load(yaml_file)
 
     def log_committer_info(committer, full):
@@ -213,7 +209,7 @@ def sync_committers(ctx, id, info_file, ldap_file, repo):
     ryaml.preserve_quotes = True
     ryaml.indent(mapping=4, sequence=6, offset=4)
     ryaml.explicit_start = True
-    with open(info_file, "r") as stream:
+    with open(info_file) as stream:
         try:
             yaml.safe_load(stream)
         except yaml.YAMLError as exc:
@@ -234,7 +230,7 @@ def sync_committers(ctx, id, info_file, ldap_file, repo):
         for idx, _ in enumerate(committer_info):
             committer = info_data["committers"][idx]["id"]
             if committer == id:
-                log.info("%s is already in %s", id, info_file)
+                log.info(f"{id} is already in {info_file}")
                 sys.exit(0)
 
         name = email = formatid = company = timezone = None
@@ -247,7 +243,7 @@ def sync_committers(ctx, id, info_file, ldap_file, repo):
                 company = ldap_data["committers"][idx].get("company")
                 timezone = ldap_data["committers"][idx].get("timezone")
         if name is None:
-            log.error("%s does not exist in %s", id, ldap_file)
+            log.error(f"{id} does not exist in {ldap_file}")
             sys.exit(1)
 
         user = ruamel.yaml.comments.CommentedMap(
@@ -259,7 +255,7 @@ def sync_committers(ctx, id, info_file, ldap_file, repo):
 
         with open(info_file, "w") as f:
             ryaml.dump(info_data, f)
-        log.info("Updated %s with committer %s", info_file, id)
+        log.info(f"Updated {info_file} with committer {id}")
 
     readfile(info_data, ldap_data, id)
 
@@ -310,7 +306,7 @@ def check_votes(ctx, info_file, endpoint, change_number, tsc, github_repo):
         else:
             id = "id"
             rest = GerritRestAPI(url=endpoint)
-            changes = rest.get("changes/{}/reviewers".format(change_number))
+            changes = rest.get(f"changes/{change_number}/reviewers")
             for change in changes:
                 line = (change["username"], change["approvals"]["Code-Review"])
                 if "+1" in line[1] or "+2" in line[1]:

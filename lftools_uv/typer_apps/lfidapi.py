@@ -39,10 +39,7 @@ def lfidapi_callback():
 
 @lfidapi_app.command("search-members")
 def search_members(
-    group: str = typer.Argument(
-        ...,
-        help="Group name to search for members"
-    ),
+    group: str = typer.Argument(..., help="Group name to search for members"),
 ):
     """List members of a group.
 
@@ -59,24 +56,14 @@ def search_members(
     except Exception as e:
         log.error(f"Failed to search members for group {group}: {e}")
         typer.echo(f"Error: Failed to search members for group {group}: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @lfidapi_app.command("user")
 def user_command(
-    user: str = typer.Argument(
-        ...,
-        help="Username to add or remove"
-    ),
-    group: str = typer.Argument(
-        ...,
-        help="Group name"
-    ),
-    delete: bool = typer.Option(
-        False,
-        "--delete",
-        help="Remove user from group instead of adding"
-    ),
+    user: str = typer.Argument(..., help="Username to add or remove"),
+    group: str = typer.Argument(..., help="Group name"),
+    delete: bool = typer.Option(False, "--delete", help="Remove user from group instead of adding"),
 ):
     """Add and remove users from groups.
 
@@ -96,19 +83,13 @@ def user_command(
     except Exception as e:
         log.error(f"Failed to manage user {user} in group {group}: {e}")
         typer.echo(f"Error: Failed to manage user {user} in group {group}: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @lfidapi_app.command("invite")
 def invite_command(
-    email: str = typer.Argument(
-        ...,
-        help="Email address to invite"
-    ),
-    group: str = typer.Argument(
-        ...,
-        help="Group name to invite to"
-    ),
+    email: str = typer.Argument(..., help="Email address to invite"),
+    group: str = typer.Argument(..., help="Group name to invite to"),
 ):
     """Email invitation to join group.
 
@@ -125,15 +106,12 @@ def invite_command(
     except Exception as e:
         log.error(f"Failed to send invitation to {email} for group {group}: {e}")
         typer.echo(f"Error: Failed to send invitation to {email} for group {group}: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @lfidapi_app.command("create-group")
 def create_group_command(
-    group: str = typer.Argument(
-        ...,
-        help="Group name to create"
-    ),
+    group: str = typer.Argument(..., help="Group name to create"),
 ):
     """Create group.
 
@@ -149,7 +127,7 @@ def create_group_command(
     except Exception as e:
         log.error(f"Failed to create group {group}: {e}")
         typer.echo(f"Error: Failed to create group {group}: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @lfidapi_app.command("match-ldap-info")
@@ -161,7 +139,7 @@ def match_ldap_info():
     except Exception as e:
         log.error(f"Failed to match LDAP to INFO: {e}")
         typer.echo(f"Error: Failed to match LDAP to INFO: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 def get_lfidapi_app() -> typer.Typer:

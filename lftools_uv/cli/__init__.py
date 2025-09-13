@@ -9,14 +9,13 @@
 ##############################################################################
 """CLI main for lftools-uv."""
 
-
 import configparser
 import getpass
 import logging
 
 import click
-# input is built-in in Python 3, no import needed
 
+# input is built-in in Python 3, no import needed
 from lftools_uv import config as conf
 from lftools_uv.cli.config import config_sys
 from lftools_uv.cli.dco import dco
@@ -33,6 +32,7 @@ from lftools_uv.cli.nexus3 import nexus_three
 from lftools_uv.cli.rtd import rtd
 from lftools_uv.cli.schema import schema
 from lftools_uv.cli.sign import sign
+from lftools_uv.cli.state import AppState
 from lftools_uv.cli.utils import utils
 from lftools_uv.cli.version import version
 
@@ -127,6 +127,7 @@ def main():
         # Default to modern Typer CLI
         try:
             from lftools_uv.cli_app import app as typer_app
+
             typer_app()
         except ImportError as e:
             log.error("Failed to import Typer CLI: %s", e)

@@ -34,14 +34,8 @@ def schema_callback():
 
 @schema_app.command("verify")
 def verify_schema(
-    yamlfile: Path = typer.Argument(
-        ...,
-        help="Release YAML file to be validated"
-    ),
-    schemafile: Path = typer.Argument(
-        ...,
-        help="SCHEMA file to validate against"
-    ),
+    yamlfile: Path = typer.Argument(..., help="Release YAML file to be validated"),
+    schemafile: Path = typer.Argument(..., help="SCHEMA file to validate against"),
 ):
     """Verify YAML Schema.
 
@@ -58,7 +52,7 @@ def verify_schema(
     except Exception as e:
         log.error(f"Schema validation failed: {e}")
         typer.echo(f"❌ Schema validation failed: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 def get_schema_app() -> typer.Typer:

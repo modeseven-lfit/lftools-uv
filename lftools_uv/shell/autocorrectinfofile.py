@@ -10,7 +10,6 @@
 ##############################################################################
 """Python wrapper for autocorrectinfofile shell script."""
 
-import os
 import subprocess
 import sys
 from pathlib import Path

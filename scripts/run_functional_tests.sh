@@ -213,6 +213,13 @@ openstack.volume.list:::1:::List OpenStack volumes:::${LFTOOLS_CMD} openstack --
 github.org.list:::1:::List GitHub organization repos (requires token config):::${LFTOOLS_CMD} github list "${GITHUB_ORG}" --repos:::GITHUB_ORG
 github.lfreleng.list:::1:::List lfreleng-actions organization repos:::${LFTOOLS_CMD} github list "lfreleng-actions" --repos:::-
 # ---------------------------
+# PYTHON-LDAP MODERNIZATION (Category 1) - Test modernized python-ldap dependency
+ldap.import.test:::1:::Test python-ldap import (modernization validation):::uv run --extra ldap python3 -c "import ldap; print(f'python-ldap version: {ldap.__version__}')":::-
+ldap.version.check:::1:::Verify python-ldap version meets modernization requirements:::uv run --extra ldap python3 -c "import ldap; from packaging import version; v=ldap.__version__; assert version.parse(v) >= version.parse('3.4.0'), f'Expected >=3.4.0, got {v}'; print(f'✓ python-ldap {v} meets modernization requirements')":::-
+ldap.api.compatibility:::1:::Test LDAP API compatibility with existing code:::uv run --extra ldap python3 -c "import ldap; ldap_obj = ldap.initialize('ldap://example.com'); assert hasattr(ldap_obj, 'simple_bind_s'); print('✓ LDAP API compatibility verified')":::-
+# Note: Actual LDAP server operations require credentials and would be Category 2
+# ldap.server.connect:::2:::Test LDAP server connection (requires LDAP_SERVER, credentials):::uv run --extra ldap python3 -c "import ldap; conn=ldap.initialize('${LDAP_SERVER}'); conn.simple_bind_s('','')":::LDAP_SERVER
+# ---------------------------
 # PLACEHOLDER Category 2 (Reversible) - disabled
 # Example: enabling/disabling Jenkins jobs (reversible) - disabled until harness ready
 # jenkins.jobs.disable:::2:::Disable Jenkins jobs by regex (REQUIRES CAUTION):::${LFTOOLS_CMD} jenkins --url "${JENKINS_URL}" jobs disable 'test-regex':::JENKINS_URL

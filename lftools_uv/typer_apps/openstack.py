@@ -11,7 +11,6 @@
 
 import re
 import subprocess
-from typing import List, Optional
 
 import typer
 
@@ -52,9 +51,7 @@ state = OpenStackState()
 
 
 @openstack_app.callback()
-def openstack_callback(
-    os_cloud: str = typer.Option(..., "--os-cloud", envvar="OS_CLOUD", help="OpenStack cloud name")
-):
+def openstack_callback(os_cloud: str = typer.Option(..., "--os-cloud", envvar="OS_CLOUD", help="OpenStack cloud name")):
     """Provide an interface to OpenStack."""
     state.os_cloud = os_cloud
 
@@ -62,13 +59,15 @@ def openstack_callback(
 # Image commands
 @image_app.command("cleanup")
 def image_cleanup(
-    ci_managed: bool = typer.Option(False, "--ci-managed", help="Filter only images that have the ci_managed=yes metadata set."),
+    ci_managed: bool = typer.Option(
+        False, "--ci-managed", help="Filter only images that have the ci_managed=yes metadata set."
+    ),
     days: int = typer.Option(0, "--days", help="Find images older than or equal to days."),
     hide_public: bool = typer.Option(False, "--hide-public", help="Ignore public images."),
-    clouds: Optional[str] = typer.Option(
+    clouds: str | None = typer.Option(
         None,
         "--clouds",
-        help="Clouds (as defined in clouds.yaml) to remove images from. If not passed will assume from os-cloud parameter. (optional)"
+        help="Clouds (as defined in clouds.yaml) to remove images from. If not passed will assume from os-cloud parameter. (optional)",
     ),
 ):
     """Cleanup old images."""
@@ -77,7 +76,9 @@ def image_cleanup(
 
 @image_app.command("list")
 def image_list(
-    ci_managed: bool = typer.Option(False, "--ci-managed", help="Filter only images that have the ci_managed=yes metadata set."),
+    ci_managed: bool = typer.Option(
+        False, "--ci-managed", help="Filter only images that have the ci_managed=yes metadata set."
+    ),
     days: int = typer.Option(0, "--days", help="Find images older than or equal to days."),
     hide_public: bool = typer.Option(False, "--hide-public", help="Ignore public images."),
 ):
@@ -88,7 +89,7 @@ def image_list(
 @image_app.command("share")
 def image_share(
     image: str = typer.Argument(..., help="Image to share"),
-    dest: List[str] = typer.Argument(..., help="Destination tenants"),
+    dest: list[str] = typer.Argument(..., help="Destination tenants"),
 ):
     """Share image with another tenant."""
     os_image.share(state.os_cloud, image, dest)
@@ -97,7 +98,7 @@ def image_share(
 @image_app.command("upload")
 def image_upload(
     image: str = typer.Argument(..., help="Image file to upload"),
-    name: List[str] = typer.Argument(..., help="Name for the uploaded image"),
+    name: list[str] = typer.Argument(..., help="Name for the uploaded image"),
     disk_format: str = typer.Option("raw", "--disk-format", help="Disk format of image. (default: raw)"),
 ):
     """Upload image to OpenStack cloud."""
@@ -107,9 +108,9 @@ def image_upload(
     pattern = disk_format
     result = re.search(pattern, disktype)
     if result:
-        print("PASS Image format matches {}".format(disk_format))
+        print(f"PASS Image format matches {disk_format}")
     else:
-        print("ERROR Image is not in {} format".format(disk_format))
+        print(f"ERROR Image is not in {disk_format} format")
         raise typer.Exit(1)
 
     os_image.upload(state.os_cloud, image, name_str, disk_format)
@@ -181,7 +182,7 @@ def stack_cost(
 
 @stack_app.command("delete-stale")
 def stack_delete_stale(
-    jenkins_urls: List[str] = typer.Argument(..., help="Jenkins URLs"),
+    jenkins_urls: list[str] = typer.Argument(..., help="Jenkins URLs"),
 ):
     """Delete stale stacks.
 

@@ -37,7 +37,7 @@ class Nexus3(client.RestApi):
             }
             params["creds"] = creds
 
-        super(Nexus3, self).__init__(**params)
+        super().__init__(**params)
 
     def create_role(self, name, description, privileges, roles):
         """Create a new role.
@@ -63,7 +63,7 @@ class Nexus3(client.RestApi):
 
         if isinstance(response, tuple):
             if response[0].status_code == 200:
-                return "Role {} created".format(name)
+                return f"Role {name} created"
             else:
                 return "Failed to create role"
         else:
@@ -83,15 +83,15 @@ class Nexus3(client.RestApi):
 
         if isinstance(response, tuple):
             if response[0].status_code == 204:
-                return "Script {} successfully added.".format(name)
+                return f"Script {name} successfully added."
             else:
-                return "Failed to create script {}".format(name)
+                return f"Failed to create script {name}"
         else:
             if response.status_code == 204:
-                return "Script {} successfully added.".format(name)
+                return f"Script {name} successfully added."
             else:
                 response.raise_for_status()
-                return "Failed to create script {}".format(name)
+                return f"Failed to create script {name}"
 
     def create_tag(self, name, attributes):
         """Create a new tag.
@@ -111,15 +111,15 @@ class Nexus3(client.RestApi):
 
         if isinstance(response, tuple):
             if response[0].status_code == 200:
-                return "Tag {} successfully added.".format(name)
+                return f"Tag {name} successfully added."
             else:
-                return "Failed to create tag {}".format(name)
+                return f"Failed to create tag {name}"
         else:
             if response.status_code == 200:
-                return "Tag {} successfully added.".format(name)
+                return f"Tag {name} successfully added."
             else:
                 response.raise_for_status()
-                return "Failed to create tag {}".format(name)
+                return f"Failed to create tag {name}"
 
     def create_user(self, username, first_name, last_name, email_address, roles, password=None):
         """Create a new user.
@@ -154,77 +154,77 @@ class Nexus3(client.RestApi):
             if response[0].status_code == 200:
                 return "User {} successfully created with password {}".format(username, data["password"])
             else:
-                log.error("Failed to create user {}".format(username))
+                log.error(f"Failed to create user {username}")
         else:
             if response.status_code == 200:
                 return "User {} successfully created with password {}".format(username, data["password"])
             else:
                 response.raise_for_status()
-                log.error("Failed to create user {}".format(username))
+                log.error(f"Failed to create user {username}")
 
     def delete_script(self, name):
         """Delete a script from the server.
 
         :param name: the script name
         """
-        response = self.delete("service/rest/v1/script/{}".format(name))
+        response = self.delete(f"service/rest/v1/script/{name}")
 
         if isinstance(response, tuple):
             if response[0].status_code == 204:
-                return "Successfully deleted {}".format(name)
+                return f"Successfully deleted {name}"
             else:
-                return "Failed to delete script {}".format(name)
+                return f"Failed to delete script {name}"
         else:
             if response.status_code == 204:
-                return "Successfully deleted {}".format(name)
+                return f"Successfully deleted {name}"
             else:
                 response.raise_for_status()
-                return "Failed to delete script {}".format(name)
+                return f"Failed to delete script {name}"
 
     def delete_tag(self, name):
         """Delete a tag from the server.
 
         :param name: the tag's name
         """
-        response = self.delete("service/rest/v1/tags/{}".format(name))
+        response = self.delete(f"service/rest/v1/tags/{name}")
 
         if isinstance(response, tuple):
             if response[0].status_code == 204:
-                return "Tag {} successfully deleted.".format(name)
+                return f"Tag {name} successfully deleted."
             else:
-                return "Failed to delete tag {}.".format(name)
+                return f"Failed to delete tag {name}."
         else:
             if response.status_code == 204:
-                return "Tag {} successfully deleted.".format(name)
+                return f"Tag {name} successfully deleted."
             else:
                 response.raise_for_status()
-                return "Failed to delete tag {}.".format(name)
+                return f"Failed to delete tag {name}."
 
     def delete_user(self, username):
         """Delete a user.
 
         @param username:
         """
-        response = self.delete("service/rest/beta/security/users/{}".format(username))
+        response = self.delete(f"service/rest/beta/security/users/{username}")
 
         if isinstance(response, tuple):
             if response[0].status_code == 204:
-                return "Successfully deleted user {}".format(username)
+                return f"Successfully deleted user {username}"
             else:
-                return "Failed to delete user {} with error: {}".format(username, response[1])
+                return f"Failed to delete user {username} with error: {response[1]}"
         else:
             if response.status_code == 204:
-                return "Successfully deleted user {}".format(username)
+                return f"Successfully deleted user {username}"
             else:
                 response.raise_for_status()
-                return "Failed to delete user {}".format(username)
+                return f"Failed to delete user {username}"
 
     def list_assets(self, repository, **kwargs):
         """List the assets of a given repo.
 
         :param repository: repo name
         """
-        response = self.get("service/rest/v1/assets?repository={}".format(repository))
+        response = self.get(f"service/rest/v1/assets?repository={repository}")
         if isinstance(response, tuple):
             result = response[1]["items"]
             if not result:
@@ -256,7 +256,7 @@ class Nexus3(client.RestApi):
 
         :param repository: the repo name
         """
-        response = self.get("service/rest/v1/components?repository={}".format(repository))
+        response = self.get(f"service/rest/v1/components?repository={repository}")
         if isinstance(response, tuple):
             result = response[1]["items"]
             if not result:
@@ -332,7 +332,7 @@ class Nexus3(client.RestApi):
         :param name: tag name
         :return:
         """
-        response = self.get("service/rest/v1/tags/{}".format(name))
+        response = self.get(f"service/rest/v1/tags/{name}")
         if isinstance(response, tuple):
             return response[1]
         else:
@@ -350,7 +350,9 @@ class Nexus3(client.RestApi):
                 while token is not None:
                     for tag in result["items"]:
                         list_of_tags.append(tag["name"])
-                    next_response = self.get("service/rest/v1/tags?continuationToken={}".format(result["continuationToken"]))
+                    next_response = self.get(
+                        "service/rest/v1/tags?continuationToken={}".format(result["continuationToken"])
+                    )
                     if isinstance(next_response, tuple):
                         result = next_response[1]
                         token = result["continuationToken"]
@@ -393,7 +395,7 @@ class Nexus3(client.RestApi):
 
         :param username: the user's username
         """
-        response = self.get("service/rest/beta/security/users?userId={}".format(username))
+        response = self.get(f"service/rest/beta/security/users?userId={username}")
         if isinstance(response, tuple):
             result = response[1]
             user_info = []
@@ -443,7 +445,7 @@ class Nexus3(client.RestApi):
         """
         data = {"tag": tag}
         json_data = json.dumps(data)
-        response = self.post("service/rest/v1/staging/move/{}".format(destination_repo), data=json_data)
+        response = self.post(f"service/rest/v1/staging/move/{destination_repo}", data=json_data)
         return response
 
     def read_script(self, name):
@@ -451,38 +453,38 @@ class Nexus3(client.RestApi):
 
         :param name: the script name
         """
-        response = self.get("service/rest/v1/script/{}".format(name))
+        response = self.get(f"service/rest/v1/script/{name}")
 
         if isinstance(response, tuple):
             if response[0].status_code == 200:
                 return response[1]
             else:
-                return "Failed to read script {}".format(name)
+                return f"Failed to read script {name}"
         else:
             if response.status_code == 200:
                 return response.json()
             else:
                 response.raise_for_status()
-                return "Failed to read script {}".format(name)
+                return f"Failed to read script {name}"
 
     def run_script(self, name):
         """Run a script on the server.
 
         :param name: the script name
         """
-        response = self.post("service/rest/v1/script/{}/run".format(name))
+        response = self.post(f"service/rest/v1/script/{name}/run")
 
         if isinstance(response, tuple):
             if response[0].status_code == 200:
                 return response[1]
             else:
-                return "Failed to execute script {}".format(name)
+                return f"Failed to execute script {name}"
         else:
             if response.status_code == 200:
                 return response.json()
             else:
                 response.raise_for_status()
-                return "Failed to execute script {}".format(name)
+                return f"Failed to execute script {name}"
 
     def search_asset(self, query, repository, details=False):
         """Search for an asset.
@@ -497,7 +499,7 @@ class Nexus3(client.RestApi):
         }
         json_data = json.dumps(data)
         response = self.get(
-            "service/rest/v1/search/assets?q={}&repository={}".format(query, repository),
+            f"service/rest/v1/search/assets?q={query}&repository={repository}",
             data=json_data,
         )
 
@@ -526,16 +528,16 @@ class Nexus3(client.RestApi):
 
         json_data = json.dumps(data)
 
-        response = self.put("service/rest/v1/script/{}".format(name), data=json_data)
+        response = self.put(f"service/rest/v1/script/{name}", data=json_data)
 
         if isinstance(response, tuple):
             if response[0].status_code == 204:
-                return "Successfully updated {}".format(name)
+                return f"Successfully updated {name}"
             else:
-                return "Failed to update script {}".format(name)
+                return f"Failed to update script {name}"
         else:
             if response.status_code == 204:
-                return "Successfully updated {}".format(name)
+                return f"Successfully updated {name}"
             else:
                 response.raise_for_status()
-                return "Failed to update script {}".format(name)
+                return f"Failed to update script {name}"

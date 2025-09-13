@@ -8,6 +8,7 @@
 # http://www.eclipse.org/legal/epl-v10.html
 ##############################################################################
 """Exceptions for the API client."""
+
 from __future__ import annotations
 
 

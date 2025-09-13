@@ -34,15 +34,9 @@ def license_callback():
 
 @license_app.command("check")
 def check_command(
-    source: Path = typer.Argument(
-        ...,
-        help="Source file or directory to check"
-    ),
+    source: Path = typer.Argument(..., help="Source file or directory to check"),
     license_file: str = typer.Option(
-        "license-header.txt",
-        "-l",
-        "--license",
-        help="License header file to compare against"
+        "license-header.txt", "-l", "--license", help="License header file to compare against"
     ),
 ):
     """Check files for missing license headers.
@@ -67,7 +61,7 @@ def check_command(
                 typer.echo(f"✅ License header found in {source}")
             else:
                 typer.echo(f"❌ License header missing in {source}", err=True)
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
         elif source.is_dir():
             # check_license_directory returns None but may exit with code 1 if issues found
             # We need to catch the SystemExit and handle it properly
@@ -77,16 +71,16 @@ def check_command(
             except SystemExit as e:
                 if e.code == 1:
                     typer.echo(f"❌ License header issues found in {source}", err=True)
-                    raise typer.Exit(1)
+                    raise typer.Exit(1) from None
                 else:
                     raise
         else:
             typer.echo(f"Error: {source} is not a valid file or directory", err=True)
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
     except Exception as e:
         log.error(f"License check failed: {e}")
         typer.echo(f"Error: License check failed: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 def get_license_app() -> typer.Typer:

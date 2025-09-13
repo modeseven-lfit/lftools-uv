@@ -8,6 +8,7 @@
 # http://www.eclipse.org/legal/epl-v10.html
 ##############################################################################
 """CLI entry point for nexus commands."""
+
 from os import environ
 
 import click
@@ -67,9 +68,9 @@ def create(ctx):
     type=str,
     required=False,
     help=(
-        "Nexus server URL. In the format https:// Can also be set as {} in the environment."
+        f"Nexus server URL. In the format https:// Can also be set as {NEXUS_URL_ENV} in the environment."
         "This will override any URL set in settings.yaml."
-    ).format(NEXUS_URL_ENV),
+    ),
 )
 @click.pass_context
 def repo(ctx, configfile, url, settings=False):
@@ -98,16 +99,16 @@ def docker(ctx):
 def docker_params(command):
     """Common options and arguments for all docker subcommands."""
     command = click.option(
-        "--settings", type=str, help=('Yaml file containing "nexus" (url), "user", and "password" ' "definitions.")
+        "--settings", type=str, help=('Yaml file containing "nexus" (url), "user", and "password" definitions.')
     )(command)
     command = click.option(
         "-s",
         "--server",
         type=str,
         help=(
-            "Nexus server URL. Can also be set as {} in the environment. "
+            f"Nexus server URL. Can also be set as {NEXUS_URL_ENV} in the environment. "
             "This will override any URL set in settings.yaml."
-        ).format(NEXUS_URL_ENV),
+        ),
     )(command)
     command = click.argument("REPO", type=str)(command)
     command = click.argument("PATTERN", type=str, default="*")(command)
@@ -144,7 +145,7 @@ def delete_images(ctx, settings, server, repo, pattern, yes):
     to delete images NOT matching the string.
     """
     images = nexuscmd.search(settings, server, repo, pattern)
-    if yes or click.confirm("Would you like to delete all {} images?".format(str(len(images)))):
+    if yes or click.confirm(f"Would you like to delete all {str(len(images))} images?"):
         nexuscmd.delete_images(settings, server, images)
 
 
@@ -157,9 +158,9 @@ def delete_images(ctx, settings, server, repo, pattern, yes):
     "--server",
     type=str,
     help=(
-        "Nexus server URL. Can also be set as {} in the environment. "
+        f"Nexus server URL. Can also be set as {NEXUS_URL_ENV} in the environment. "
         "This will override any URL set in settings.yaml."
-    ).format(NEXUS_URL_ENV),
+    ),
 )
 def release(ctx, repos, verify, server):
     """Release one or more staging repositories."""
@@ -176,7 +177,7 @@ def release(ctx, repos, verify, server):
     type=str,
     default="",
     required=False,
-    help="Only repos containing this string will be selected. " "Default set to blank string, which is every repo.",
+    help="Only repos containing this string will be selected. Default set to blank string, which is every repo.",
 )
 @click.option(
     "-e",
@@ -184,7 +185,7 @@ def release(ctx, repos, verify, server):
     is_flag=True,
     required=False,
     default=False,
-    help="Match the exact repo name. " "If used, --repo parameter can not be empty.",
+    help="Match the exact repo name. If used, --repo parameter can not be empty.",
 )
 @click.option("-s", "--summary", is_flag=True, required=False, help="Prints a summary of missing docker tags.")
 @click.option("-v", "--verbose", is_flag=True, required=False, help="Prints all collected repo/tag information.")

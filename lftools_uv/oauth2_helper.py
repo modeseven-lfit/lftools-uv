@@ -8,35 +8,35 @@
 # http://www.eclipse.org/legal/epl-v10.html
 ##############################################################################
 """Helper script to get access_token for lfid api."""
+
 from __future__ import annotations
 
 import logging
-from typing import Tuple
 
-import httplib2
-from oauth2client import client
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
 
 from lftools_uv import config
 
 
-def oauth_helper() -> Tuple[str, str]:
-    """Helper script to get access_token for lfid api."""
-    logging.getLogger("oauth2client").setLevel(logging.ERROR)
-    client_id: str = str(config.get_setting("lfid", "clientid"))
-    client_secret: str = str(config.get_setting("lfid", "client_secret"))
-    refresh_token: str = str(config.get_setting("lfid", "refresh_token"))
-    token_uri: str = str(config.get_setting("lfid", "token_uri"))
-    url: str = str(config.get_setting("lfid", "url"))
+def oauth_helper() -> tuple[str, str]:
+    """Helper script to get access_token for lfid api using google-auth refresh token flow."""
+    logging.getLogger("google.auth").setLevel(logging.ERROR)
+    client_id = str(config.get_setting("lfid", "clientid"))
+    client_secret = str(config.get_setting("lfid", "client_secret"))
+    refresh_token = str(config.get_setting("lfid", "refresh_token"))
+    token_uri = str(config.get_setting("lfid", "token_uri"))
+    url = str(config.get_setting("lfid", "url"))
 
-    credentials: client.Oauth2Credentials = client.OAuth2Credentials(
-        access_token=None,  # set access_token to None since we use a refresh token
+    credentials = Credentials(
+        token=None,  # Access token will be populated by refresh()
+        refresh_token=refresh_token,
+        token_uri=token_uri,
         client_id=client_id,
         client_secret=client_secret,
-        refresh_token=refresh_token,
-        token_expiry=None,
-        token_uri=token_uri,
-        user_agent=None,
+        scopes=None,  # Existing refresh token already encodes scopes
     )
-    credentials.refresh(httplib2.Http())
-    access_token: str = credentials.access_token
+    # Perform the refresh to obtain a new access token
+    credentials.refresh(Request())
+    access_token = credentials.token
     return access_token, url

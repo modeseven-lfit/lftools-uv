@@ -1,0 +1,296 @@
+---
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2025 The Linux Foundation
+
+name: "Functional Tests"
+
+"on":
+  workflow_dispatch:
+    inputs:
+      test_category:
+        description: 'Test categories to run (comma-separated: 1,2,3)'
+        required: false
+        default: '1'
+        type: string
+      test_filter:
+        description: 'Test filter substring (e.g., jenkins, ldap, nexus)'
+        required: false
+        default: ''
+        type: string
+      verbose:
+        description: 'Enable verbose output'
+        required: false
+        default: false
+        type: boolean
+  pull_request:
+    branches:
+      - main
+      - master
+    paths:
+      - 'lftools_uv/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'scripts/run_functional_tests.sh'
+      - '.github/workflows/functional-tests.yaml'
+  schedule:
+    # Daily at 06:00 UTC (after dependency updates)
+    - cron: '0 6 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  functional-test-matrix:
+    name: "Functional Tests"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Core functionality (fast)
+          - test_filter: "core"
+            description: "Core CLI functionality"
+            category: "1"
+
+          # Help screens (fast)
+          - test_filter: "help"
+            description: "CLI help screens"
+            category: "1"
+
+          # Jenkins integration (requires external services)
+          - test_filter: "jenkins"
+            description: "Jenkins integration"
+            category: "1"
+
+          # Python-LDAP modernization validation
+          - test_filter: "ldap"
+            description: "LDAP modernization"
+            category: "1"
+
+          # Nexus integration (external services)
+          - test_filter: "nexus"
+            description: "Nexus repository integration"
+            category: "1"
+
+          # OpenStack integration (external services)
+          - test_filter: "openstack"
+            description: "OpenStack integration"
+            category: "1"
+
+          # GitHub integration (external services)
+          - test_filter: "github"
+            description: "GitHub integration"
+            category: "1"
+
+    env:
+      TEST_CATEGORY: ${{ inputs.test_category || matrix.category }}
+      TEST_FILTER: ${{ inputs.test_filter || matrix.test_filter }}
+      VERBOSE: ${{ inputs.verbose && '1' || '0' }}
+      OUTPUT_FORMAT: "json"
+      # Environment variables for external service testing
+      JENKINS_URL: "https://jenkins.onap.org/"
+      NEXUS2_FQDN: "nexus.onap.org"
+      NEXUS3_FQDN: "nexus3.onap.org"
+      GITHUB_ORG: "onap"
+      OS_CLOUD: "devstack"
+
+    steps:
+      - name: "Harden Runner"
+        # yamllint disable-line rule:line-length
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        # yamllint disable-line rule:line-length
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: "Install uv"
+        # yamllint disable-line rule:line-length
+        uses: astral-sh/setup-uv@2c443be7a21e3b88a5b2ac39928c7e2e09e8b3a4 # v4.4.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: "Set up Python"
+        run: uv python install
+
+      - name: "Sync dependencies"
+        run: uv sync --all-extras
+
+      - name: "Run functional tests: ${{ matrix.description }}"
+        id: functional-tests
+        run: |
+          set -euo pipefail
+
+          # Create results directory
+          mkdir -p functional-test-results
+
+          # Run tests with JSON output
+          if ./scripts/run_functional_tests.sh \
+              > functional-test-results/results.json 2>&1; then
+            echo "exit_code=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "exit_code=1" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Extract summary for step output
+          if [[ -f functional-test-results/results.json ]]; then
+            {
+              echo "## Functional Test Results: ${{ matrix.description }}"
+              echo ""
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            # Extract test counts (simplified parsing)
+            total=$(grep -o '"Total:.*[0-9]' \
+              functional-test-results/results.json | \
+              grep -o '[0-9]*' | tail -1 || echo "0")
+            passed=$(grep -o '"Passed:.*[0-9]' \
+              functional-test-results/results.json | \
+              grep -o '[0-9]*' | tail -1 || echo "0")
+            failed=$(grep -o '"Failed:.*[0-9]' \
+              functional-test-results/results.json | \
+              grep -o '[0-9]*' | tail -1 || echo "0")
+            skipped=$(grep -o '"Skipped:.*[0-9]' \
+              functional-test-results/results.json | \
+              grep -o '[0-9]*' | tail -1 || echo "0")
+
+            {
+              echo "- **Total Tests**: $total"
+              echo "- **Passed**: ✅ $passed"
+              echo "- **Failed**: ❌ $failed"
+              echo "- **Skipped**: ⏭️ $skipped"
+              echo ""
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            if [[ "$failed" -gt 0 ]]; then
+              echo "❌ Some tests failed. Check logs for details." \
+                >> "$GITHUB_STEP_SUMMARY"
+            elif [[ "$passed" -gt 0 ]]; then
+              echo "✅ All tests passed!" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "⚠️ No tests were executed." >> "$GITHUB_STEP_SUMMARY"
+            fi
+          fi
+
+      - name: "Upload test results"
+        if: always()
+        # yamllint disable-line rule:line-length
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: functional-test-results-${{ matrix.test_filter }}
+          path: |
+            functional-test-results/
+            .functional_logs/
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: "Fail job if tests failed"
+        if: steps.functional-tests.outputs.exit_code != '0'
+        run: |
+          echo "Functional tests failed for filter: ${{ matrix.test_filter }}"
+          exit 1
+
+  # Aggregate results job
+  functional-test-summary:
+    name: "Functional Test Summary"
+    runs-on: ubuntu-latest
+    needs: functional-test-matrix
+    if: always()
+    timeout-minutes: 5
+    steps:
+      - name: "Check matrix results"
+        run: |
+          {
+            echo "## Overall Functional Test Results"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # Check if any jobs failed
+          matrix_result="${{ needs.functional-test-matrix.result }}"
+          if [[ "$matrix_result" == "failure" ]]; then
+            {
+              echo "❌ Some functional test categories failed."
+              echo ""
+              echo "Please check the individual job results above for details."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          elif [[ "$matrix_result" == "success" ]]; then
+            {
+              echo "✅ All functional test categories passed!"
+              echo ""
+              echo "The CLI functionality is working correctly across all"
+              echo "tested categories."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "⚠️ Some functional tests were cancelled or skipped."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+  # Security and compliance check (Category 1 tests only)
+  security-baseline:
+    name: "Security Baseline Check"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: "Harden Runner"
+        # yamllint disable-line rule:line-length
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        # yamllint disable-line rule:line-length
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: "Install uv"
+        # yamllint disable-line rule:line-length
+        uses: astral-sh/setup-uv@2c443be7a21e3b88a5b2ac39928c7e2e09e8b3a4 # v4.4.0
+        with:
+          enable-cache: true
+
+      - name: "Security check: No Category 2/3 tests in default run"
+        run: |
+          # Ensure that only Category 1 (harmless) tests run by default
+          if grep -E ":::[23]:::" scripts/run_functional_tests.sh | \
+              grep -v "^#"; then
+            {
+              echo "❌ Found uncommented Category 2 or 3 tests in"
+              echo "functional test script!"
+              echo "Only Category 1 (harmless/read-only) tests should be"
+              echo "enabled by default."
+            }
+            exit 1
+          else
+            echo "✅ Only Category 1 (harmless) tests are enabled by"
+            echo "default."
+          fi
+
+      - name: "Dependency audit"
+        run: |
+          uv python install
+          uv sync --all-extras
+          # Run basic security checks on the environment for functional tests
+          uv run python3 -c "
+          import sys
+          print(f'Python version: {sys.version}')
+
+          # Check that our modernized dependencies are properly installed
+          try:
+              import ldap
+              print(f'python-ldap version: {ldap.__version__}')
+              from packaging import version
+              if version.parse(ldap.__version__) >= \
+                  version.parse('3.4.0'):
+                  print('✅ python-ldap modernization verified')
+              else:
+                  print('❌ python-ldap version too old')
+                  sys.exit(1)
+          except ImportError:
+              print('⚠️ python-ldap not installed (ldap extra not used)')
+
+          print('✅ Dependency audit passed')
+          "

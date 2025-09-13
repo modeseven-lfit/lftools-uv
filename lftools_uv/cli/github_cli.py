@@ -9,8 +9,6 @@
 ##############################################################################
 """Github tools."""
 
-from __future__ import print_function
-
 import logging
 import sys
 
@@ -56,7 +54,7 @@ def submit_pr(ctx, organization, repo, pr):
         log.info(pr_mergable)
         repo.get_pull(pr).merge(commit_message="Vote Completed, merging INFO file")
     else:
-        log.error("PR NOT MERGEABLE {}".format(pr_mergable))
+        log.error(f"PR NOT MERGEABLE {pr_mergable}")
         sys.exit(1)
 
 
@@ -181,19 +179,17 @@ def updaterepo(ctx, organization, repository, has_issues, has_projects, has_wiki
             if repo.name == repository:
                 repo_actual = repo
 
-        try:
-            repo_actual
-        except NameError:
+        if "repo_actual" not in locals() or repo_actual is None:
             log.error("repo not found")
             exit(1)
 
         for team in teams:
             if team.name == add_team:
-                log.info("Adding team {}".format(team.id))
+                log.info(f"Adding team {team.id}")
                 team.add_to_repos(repo_actual)
                 team.update_team_repository(repo_actual, "push")
             elif team.name == remove_team:
-                log.info("Removing team {}".format(team.id))
+                log.info(f"Removing team {team.id}")
                 team.remove_from_repos(repo_actual)
 
 
@@ -216,7 +212,7 @@ def createteam(ctx, organization, name, repo, privacy):
 
     g = Github(token)
     orgName = organization
-    log.info("Creating team {} for repo {} under organization {} ".format(name, repo, orgName))
+    log.info(f"Creating team {name} for repo {repo} under organization {orgName} ")
     try:
         org = g.get_organization(orgName)
     except GithubException as ghe:
@@ -245,7 +241,7 @@ def createteam(ctx, organization, name, repo, privacy):
 
     for team in teams():
         if team.name == name:
-            log.error("team {} already exists".format(team))
+            log.error(f"team {team} already exists")
             sys.exit(1)
 
     if repo:

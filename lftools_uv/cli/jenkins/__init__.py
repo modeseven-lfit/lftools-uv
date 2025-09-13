@@ -13,9 +13,9 @@ __author__ = "Trevor Bramwell"
 
 
 import logging
+from urllib.error import HTTPError
 
 import click
-from urllib.error import HTTPError
 
 from lftools_uv.cli.jenkins.builds import builds
 from lftools_uv.cli.jenkins.jobs import jobs
@@ -134,7 +134,7 @@ for (c in creds) {
 @click.pass_context
 def groovy(ctx, groovy_file):
     """Run a groovy script."""
-    with open(groovy_file, "r") as f:
+    with open(groovy_file) as f:
         data = f.read()
 
     jenkins = ctx.obj["jenkins"]
@@ -156,9 +156,9 @@ def quiet_down(ctx, n):
         except HTTPError as m:
             if m.code == 405:
                 log.error(
-                    "\n[%s]\nJenkins %s does not support Quiet Down "
+                    f"\n[{m}]\nJenkins {version} does not support Quiet Down "
                     "without a CSRF Token. (CVE-2017-04-26)\nPlease "
-                    "file a bug with 'python-jenkins'" % (m, version)
+                    "file a bug with 'python-jenkins'"
                 )
             else:
                 raise m

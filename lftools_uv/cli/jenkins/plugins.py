@@ -11,8 +11,15 @@
 
 __author__ = "Trevor Bramwell"
 
+import logging
+
 import click
 import requests
+<<<<<<< HEAD
+=======
+
+log = logging.getLogger(__name__)
+>>>>>>> 35dec37 (Feat: Update base Python to 3.11)
 
 
 def checkmark(truthy):
@@ -165,9 +172,9 @@ def sec(ctx):
         shared.append(key)
         ourversion = activedict[key]
         theirversion = secdict[key]
-        t1 = tuple([ourversion])
-        t2 = tuple([theirversion])
-        if (t1) <= (t2):
+        t1 = (ourversion,)
+        t2 = (theirversion,)
+        if t1 <= t2:
             # Print Vulnerable Version\t Installed Version\t Link
             for w in warn:
                 name = w["name"]
@@ -175,7 +182,11 @@ def sec(ctx):
                 for version in w["versions"]:
                     lastversion = version.get("lastVersion")
                 if name == key and secdict[key] == lastversion:
+<<<<<<< HEAD
                     print("{0}:{1}\t{0}:{2}\t{3}".format(key, secdict[key], activedict[key], url))
+=======
+                    log.info(f"{key}:{secdict[key]}\t{key}:{activedict[key]}\t{url}")
+>>>>>>> 35dec37 (Feat: Update base Python to 3.11)
 
 
 plugins_init.add_command(list_plugins, name="list")

@@ -10,7 +10,6 @@
 """Typer version of Read the Docs commands."""
 
 import logging
-from typing import Optional
 
 import typer
 
@@ -55,15 +54,12 @@ def project_list():
     except Exception as e:
         log.error(f"Failed to get project list: {e}")
         typer.echo(f"Error: Failed to get project list: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @rtd_app.command("project-details")
 def project_details(
-    project_slug: str = typer.Argument(
-        ...,
-        help="Project slug name"
-    ),
+    project_slug: str = typer.Argument(..., help="Project slug name"),
 ):
     """Get details for a specific Read the Docs project.
 
@@ -89,29 +85,15 @@ def project_details(
     except Exception as e:
         log.error(f"Failed to get project details: {e}")
         typer.echo(f"Error: Failed to get project details: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @rtd_app.command("project-create")
 def project_create(
-    name: str = typer.Argument(
-        ...,
-        help="Project name"
-    ),
-    repo_url: str = typer.Argument(
-        ...,
-        help="Repository URL"
-    ),
-    description: Optional[str] = typer.Option(
-        None,
-        "--description",
-        help="Project description"
-    ),
-    language: str = typer.Option(
-        "en",
-        "--language",
-        help="Project language code"
-    ),
+    name: str = typer.Argument(..., help="Project name"),
+    repo_url: str = typer.Argument(..., help="Repository URL"),
+    description: str | None = typer.Option(None, "--description", help="Project description"),
+    language: str = typer.Option("en", "--language", help="Project language code"),
 ):
     """Create a new Read the Docs project.
 
@@ -134,7 +116,7 @@ def project_create(
             repository_type="git",
             homepage="",
             programming_language="python",
-            language=language
+            language=language,
         )
         if result:
             typer.echo(f"✅ Project '{name}' created successfully")
@@ -144,30 +126,15 @@ def project_create(
     except Exception as e:
         log.error(f"Failed to create project: {e}")
         typer.echo(f"Error: Failed to create project: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @rtd_app.command("project-update")
 def project_update(
-    project_slug: str = typer.Argument(
-        ...,
-        help="Project slug name"
-    ),
-    name: Optional[str] = typer.Option(
-        None,
-        "--name",
-        help="New project name"
-    ),
-    description: Optional[str] = typer.Option(
-        None,
-        "--description",
-        help="New project description"
-    ),
-    repo_url: Optional[str] = typer.Option(
-        None,
-        "--repo-url",
-        help="New repository URL"
-    ),
+    project_slug: str = typer.Argument(..., help="Project slug name"),
+    name: str | None = typer.Option(None, "--name", help="New project name"),
+    description: str | None = typer.Option(None, "--description", help="New project description"),
+    repo_url: str | None = typer.Option(None, "--repo-url", help="New repository URL"),
 ):
     """Update an existing Read the Docs project.
 
@@ -197,7 +164,7 @@ def project_update(
     except Exception as e:
         log.error(f"Failed to update project: {e}")
         typer.echo(f"Error: Failed to update project: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 def get_rtd_app() -> typer.Typer:

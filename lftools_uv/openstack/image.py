@@ -17,12 +17,12 @@ import re
 import subprocess
 import sys
 import tempfile
+import urllib
 from datetime import datetime, timedelta
 
 import openstack
 import openstack.config
 from openstack.cloud.exc import OpenStackCloudException
-import urllib
 
 log = logging.getLogger(__name__)
 
@@ -90,47 +90,45 @@ def cleanup(os_cloud, days=0, hide_public=False, ci_managed=True, clouds=None):
         log.warning("Use of " + attribute + " resulted in an exception")
 
     def _remove_images_from_cloud(images, cloud):
-        log.info("Removing {} images from {}.".format(len(images), cloud.config._name))
+        log.info(f"Removing {len(images)} images from {cloud.config._name}.")
         project_info = cloud._get_project_info()
         for image in images:
             # Safely handle potentially problematic attributes
             try:
                 if image.is_protected:
-                    log.warning("Image {} is protected. Cannot remove...".format(image.name))
+                    log.warning(f"Image {image.name} is protected. Cannot remove...")
                     continue
             except AttributeError:
                 _log_bad_attribute("image.is_protected")
             try:
                 if image.protected:
-                    log.warning("Image {} is protected. Cannot remove...".format(image.name))
+                    log.warning(f"Image {image.name} is protected. Cannot remove...")
                     continue
             except AttributeError:
                 _log_bad_attribute("image.protected")
 
             if image.visibility == "shared":
-                log.warning("Image {} is shared. Cannot remove...".format(image.name))
+                log.warning(f"Image {image.name} is shared. Cannot remove...")
                 continue
 
             if project_info["id"] != image.owner:
-                log.warning("Image {} not owned by project {}. Cannot remove...".format(image.name, cloud.config._name))
+                log.warning(f"Image {image.name} not owned by project {cloud.config._name}. Cannot remove...")
                 continue
 
             try:
                 result = cloud.delete_image(image.name)
             except OpenStackCloudException as e:
                 if str(e).startswith("Multiple matches found for"):
-                    log.warning("{}. Skipping image...".format(str(e)))
+                    log.warning(f"{str(e)}. Skipping image...")
                     continue
                 else:
-                    log.error("Unexpected exception: {}".format(str(e)))
+                    log.error(f"Unexpected exception: {str(e)}")
                     raise
 
             if not result:
-                log.warning(
-                    'Failed to remove "{}" from {}. Possibly already deleted.'.format(image.name, cloud.config._name)
-                )
+                log.warning(f'Failed to remove "{image.name}" from {cloud.config._name}. Possibly already deleted.')
             else:
-                log.info('Removed "{}" from {}.'.format(image.name, cloud.config._name))
+                log.info(f'Removed "{image.name}" from {cloud.config._name}.')
 
     cloud_list = []
     if clouds:
@@ -156,20 +154,20 @@ def share(os_cloud, image, clouds):
         cmd = ["openstack", "--os-cloud", os_cloud, "image", "list", "--name", image, "-f", "value", "-c", "ID"]
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
-        log.debug("exit code: {}".format(p.returncode))
+        log.debug(f"exit code: {p.returncode}")
         log.debug(stderr.decode("utf-8"))
         if p.returncode:
             sys.exit(1)
 
         image_id = stdout.decode("utf-8").strip()
-        log.debug("image_id: {}".format(image_id))
+        log.debug(f"image_id: {image_id}")
         return image_id
 
     def _mark_image_shared(os_cloud, image):
         cmd = ["openstack", "--os-cloud", os_cloud, "image", "set", "--shared", image]
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
-        log.debug("exit code: {}".format(p.returncode))
+        log.debug(f"exit code: {p.returncode}")
         log.debug(stderr.decode("utf-8"))
         if p.returncode:
             sys.exit(1)
@@ -178,21 +176,21 @@ def share(os_cloud, image, clouds):
         cmd = ["openstack", "--os-cloud", cloud, "token", "issue", "-c", "project_id", "-f", "value"]
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
-        log.debug("exit code: {}".format(p.returncode))
+        log.debug(f"exit code: {p.returncode}")
         log.debug(stderr.decode("utf-8"))
         if p.returncode:
             sys.exit(1)
 
         token = stdout.decode("utf-8").strip()
-        log.debug("token: {}".format(token))
+        log.debug(f"token: {token}")
         return token
 
     def _share_to_cloud(os_cloud, image, token):
-        log.debug("Sharing image {} to {}".format(image, token))
+        log.debug(f"Sharing image {image} to {token}")
         cmd = ["openstack", "--os-cloud", os_cloud, "image", "add", "project", image, token]
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
-        log.debug("exit code: {}".format(p.returncode))
+        log.debug(f"exit code: {p.returncode}")
         log.debug(stderr.decode("utf-8"))
 
         if p.returncode:
@@ -202,33 +200,33 @@ def share(os_cloud, image, clouds):
                 sys.exit(1)
 
     def _accept_shared_image(cloud, image):
-        log.debug("Accepting image {}".format(image))
+        log.debug(f"Accepting image {image}")
         cmd = ["openstack", "--os-cloud", cloud, "image", "set", "--accept", image]
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
-        log.debug("exit code: {}".format(p.returncode))
+        log.debug(f"exit code: {p.returncode}")
         log.debug(stderr.decode("utf-8"))
         if p.returncode:
             sys.exit(1)
 
-    log.info('Marking {}\'s image "{}" as shared.'.format(os_cloud, image))
+    log.info(f'Marking {os_cloud}\'s image "{image}" as shared.')
     image_id = _get_image_id(os_cloud, image)
     _mark_image_shared(os_cloud, image_id)
 
     for cloud in clouds:
-        log.info("Sharing to {}.".format(cloud))
+        log.info(f"Sharing to {cloud}.")
         _share_to_cloud(os_cloud, image_id, _get_token(cloud))
         _accept_shared_image(cloud, image_id)
 
 
 def upload(os_cloud, image, name, disk_format="raw"):
     """Upload image to openstack."""
-    log.info('Uploading image {} with name "{}".'.format(image, name))
+    log.info(f'Uploading image {image} with name "{name}".')
     cloud = openstack.connection.from_config(cloud=os_cloud)
 
     if re.match(r"^http[s]?://", image):
         tmp = tempfile.NamedTemporaryFile(suffix=".img")
-        log.info("URL provided downloading image locally to {}.".format(tmp.name))
+        log.info(f"URL provided downloading image locally to {tmp.name}.")
         urllib.request.urlretrieve(image, tmp.name)  # nosec
         image = tmp.name
 

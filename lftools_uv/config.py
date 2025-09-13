@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # SPDX-License-Identifier: EPL-1.0
 ##############################################################################
 # Copyright (c) 2018 The Linux Foundation and others.
@@ -9,13 +8,13 @@
 # http://www.eclipse.org/legal/epl-v10.html
 ##############################################################################
 """Configuration subsystem for lftools."""
+
 from __future__ import annotations
 
 import logging
 import os.path
 import sys
 from configparser import ConfigParser, NoOptionError, NoSectionError
-from typing import List, Optional
 
 from xdg import XDG_CONFIG_HOME  # type: ignore[attr-defined]
 
@@ -37,7 +36,7 @@ def has_section(section: str) -> bool:
     return config.has_section(section)
 
 
-def get_setting(section: str, option: Optional[str] = None) -> str | List[str]:
+def get_setting(section: str, option: str | None = None) -> str | list[str]:
     """Get a configuration from a section."""
     sys.tracebacklimit = 0
     config: ConfigParser = get_config()

@@ -8,6 +8,7 @@
 # http://www.eclipse.org/legal/epl-v10.html
 ##############################################################################
 """Jenkins."""
+
 from __future__ import annotations
 
 __author__ = "Thanh Ha"
@@ -46,16 +47,16 @@ class Jenkins:
     """lftools Jenkins object."""
 
     def __init__(
-        self, server: str, user: Optional[str] = None, password: Optional[str] = None, config_file: Optional[str] = None
+        self, server: str, user: str | None = None, password: str | None = None, config_file: str | None = None
     ) -> None:
         """Initialize a Jenkins object."""
-        self.config_file: Optional[str] = config_file
+        self.config_file: str | None = config_file
         if not self.config_file:
             self.config_file = JJB_INI
 
         if "://" not in server:
             if self.config_file:
-                log.debug("Using config from {}".format(self.config_file))
+                log.debug(f"Using config from {self.config_file}")
                 config: configparser.ConfigParser = configparser.ConfigParser()
                 config.read(self.config_file)
                 if config.has_section(server):
@@ -63,7 +64,7 @@ class Jenkins:
                     password = config.get(server, "password")
                     server = config.get(server, "url")
                 else:
-                    log.error("[{}] section not found in {}".format(server, self.config_file))
+                    log.error(f"[{server}] section not found in {self.config_file}")
             else:
                 log.debug("jenkins_jobs.ini not found in any of the default paths.")
                 server = "https://localhost:8080"

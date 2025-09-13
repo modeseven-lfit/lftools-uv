@@ -38,7 +38,7 @@ def search_members(ctx, group):
     """List members of a group."""
     members = helper_search_members(group)
     for member in members:
-        log.info("%s <%s>" % (member["username"], member["mail"]))
+        log.info(f"{member['username']} <{member['mail']}>")
 
 
 @click.command()

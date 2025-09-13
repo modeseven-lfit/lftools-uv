@@ -1,8 +1,36 @@
+<!--
+SPDX-License-Identifier: EPL-1.0
+SPDX-FileCopyrightText: 2025 The Linux Foundation
+-->
+
 # Dependency Modernization Report
 
 This report inventories current runtime and optional dependencies, identifies modernization opportunities, evaluates breaking‑change risks, recommends an incremental upgrade plan, and lists concrete actions you can take **without** raising the currently declared Python support (>=3.8). A supplemental section (Section 16) explicitly enumerates non‑breaking improvements achievable while preserving the present Python version matrix.
 
 ---
+
+## 0. Recently Completed (Progress Snapshot)
+
+| Category | Item | Status | Notes |
+|----------|------|--------|-------|
+| Python Baseline | Raise floor to >=3.10 | ✅ | Superseded by >=3.11 uplift |
+| Python Baseline | Raise floor to >=3.11 | ✅ | `requires-python = ">=3.11"`; classifiers updated |
+| Core SDK | Upgrade `openstacksdk` to 4.x | ✅ | Now `>=4.0.0,<5.0.0` |
+| OAuth | Replace `oauth2client` + `httplib2` with `google-auth` stack | ✅ | `oauth2_helper` refactored |
+| Pruning | Remove `six`, `bs4`, `aspy.yaml`, `appdirs`, `chardet`, `oauth2client`, `httplib2`, `multi-key-dict`, `munch`, `toml` | ✅ | Verified no imports remain |
+| Pruning | Drop explicit `pyasn1`, `pyasn1-modules`, `pyrsistent`, `rsa` | ✅ | Now resolved transitively if needed |
+| Formatting / Lint | Migrate from Black + isort to Ruff-only (lint + format) | ✅ | Config sections removed; pre-commit updated |
+| Lint Hygiene | Modernize `super()`, exception chaining, unused loop vars, f-strings | ✅ | Majority of mechanical fixes applied |
+| YAML Strategy | Restrict `ruamel.yaml` to round-trip INFO.yaml usage | ✅ | Other parsing via `yaml.safe_load` |
+| Lockfile | Regenerate with Python 3.11 constraints | ✅ | `uv.lock` refreshed |
+| Security Prep | Remove deprecated / legacy APIs pre-upgrade | ✅ | Enables safer forward upgrades |
+| Open Tasks | Introduce SBOM + audit workflow | ✅ | SBOM workflow added (.github/workflows/sbom.yaml); audit already covered by existing python-audit jobs |
+| Open Tasks | Add “latest permissive” environment / job | ✅ | Added tox env `latest-permissive` (eager upgrade + pytest) |
+| Open Tasks | PyJWT explicit `algorithms=[...]` audit | ⏳ | No `jwt.decode` patterns found; add guard if introduced |
+| Open Tasks | `python-ldap` modernization | ⏳ | Optional extra bumped to >=3.4,<4.0; further validation & wheel audit pending |
+| Open Tasks | Add migration docs (openstacksdk / python baseline) | ✅ | Added MIGRATING-openstacksdk.md placeholder |
+| Open Tasks | Dependency audit & SBOM automation | ⏳ | Not yet implemented |
+| Open Tasks | Evaluate replacing remaining direct transitive pins policy | ⏳ | Document decision in contributor guide |
 
 ## 1. Executive Summary
 
@@ -19,6 +47,7 @@ This report inventories current runtime and optional dependencies, identifies mo
 ## 2. Current Declared Runtime Dependencies (pyproject.toml)
 
 Unpinned (unless noted):
+
 ```
 appdirs
 aspy.yaml
@@ -74,6 +103,7 @@ xdg
 ```
 
 Optionals:
+
 - **ldap**: `python-ldap~=3.1.0`
 - **openstack**: `osc-lib~=2.2.0`
 - **test**: modern pytest plugins
@@ -95,26 +125,32 @@ Optionals:
 ## 4. Notable Individual Dependency Observations
 
 ### 4.1 `openstacksdk`
+
 - Latest series (4.x) requires Python >=3.10.
 - Progressive deprecations between 2.x → 3.x → 4.x (proxy method naming, attribute normalization, auth/session tweaks).
 - Needs targeted integration tests around your OpenStack command modules.
 
 ### 4.2 `oauth2client`
+
 - Deprecated; replace with `google-auth` + `google-auth-oauthlib`.
 - Enables removing `httplib2`.
 
 ### 4.3 `PyJWT`
+
 - Version 2+ enforces explicit `algorithms` argument in `jwt.decode`.
 - Audit any decode calls lacking `algorithms=['RS256', ...]`.
 
 ### 4.4 `jsonschema`
+
 - Current code uses `Draft4Validator`; still supported but modern v4.* introduces referencing & format nuances.
 - Keep pinned (<5) during incremental upgrade to avoid multi-layer churn.
 
 ### 4.5 `python-ldap~=3.1.0`
+
 - Very old; expect bytes/str handling differences and build environment requirement updates on bump.
 
 ### 4.6 Misc Legacy / Redundant
+
 - `six` (Python 2 shims; removable once code verified py3-only).
 - `appdirs` → `platformdirs`.
 - `toml` → `tomllib` (when Python >=3.11) or `tomli` backport interim.
@@ -127,9 +163,11 @@ Optionals:
 
 ## 5. Python Version Baseline Considerations
 
-Current: `>=3.8`.
+Current (original baseline): `>=3.8`.
+Current (now): `>=3.11` (completed uplift; 3.10 transitional phase skipped in favor of direct 3.11 adoption).
 
 Drivers to raise:
+
 - `openstacksdk` latest wants >=3.10.
 - Eliminating `toml` via stdlib `tomllib` needs >=3.11.
 
@@ -137,6 +175,7 @@ CentOS 7 Compatibility Context:
 Using `uvx` to fetch standalone CPython builds means raising the declared Python floor (first to 3.10, later optionally to 3.11) does **not** force an OS upgrade: CentOS 7’s glibc 2.17 baseline remains compatible with current manylinux2014 wheels for our dependency graph. Risk monitoring is only required for: (a) future dependencies that might publish wheels requiring newer glibc, (b) packages lacking wheels that would need a newer compiler than stock GCC 4.8.5 (mitigated by adding a Developer Toolset), and (c) ensuring `python-ldap` continues to resolve to a wheel during any version bump.
 
 Recommendation:
+
 1. Perform all **non-baseline-changing** modernization first (Section 16).
 2. Then raise to >=3.10 (unlock freshest OpenStack path) while validating CentOS 7 CI via a `uvx` matrix (3.8 legacy / 3.10 target).
 3. Optionally later raise to >=3.11 for further simplification (`tomllib` adoption), again validated on CentOS 7 with `uvx`.
@@ -159,10 +198,10 @@ Rationale: Smaller diffs first reduce false positives in test failures and isola
 | 1 | Prune & Replace | Drop duplicates & deprecated libs (`six`, `oauth2client`, `httplib2`, `bs4`, `appdirs`, unused) | None |
 | 2 | Low-risk bumps | Update utility libs & patch-level versions | None |
 | 3 | Medium-risk libs | `boto3`, `docker`, `jinja2`, `GitPython`, `jsonschema` (controlled) | None |
-| 4 | Python floor raise | Increase to >=3.10, adjust tooling (mypy target), CI matrix | YES |
-| 5 | High-risk core | `openstacksdk` to 3.x then 4.x; `python-ldap` modernization; finalize `PyJWT` semantics | Needs >=3.10 |
-| 6 | Optional uplift | Raise to >=3.11, adopt `tomllib`, unpin transitional constraints | YES (optional) |
-| 7 | Sustain | Dependabot (grouped), periodic audit, SBOM, doc updates | None |
+| 4 | Python floor raise | Increase to >=3.10, adjust tooling (mypy target), CI matrix | (Superseded) |
+| 5 | High-risk core | `openstacksdk` to 3.x then 4.x; `python-ldap` modernization; finalize `PyJWT` semantics | (Partially ✅: openstacksdk 4.x) |
+| 6 | Optional uplift | Raise to >=3.11, adopt `tomllib`, unpin transitional constraints | ✅ (Baseline at 3.11; `toml` removed) |
+| 7 | Sustain | Dependabot (grouped), periodic audit, SBOM, doc updates | ⏳ (SBOM + audit pending) |
 
 ---
 
@@ -191,6 +230,7 @@ Rationale: Smaller diffs first reduce false positives in test failures and isola
 ## 10. Security & Compliance
 
 Pre vs Post:
+
 1. Generate SBOM (e.g., CycloneDX) before changes.
 2. After each phase, diff SBOM (ensures no inadvertent license risk).
 3. Enforce dependency signing verification only for high-risk sources if feasible (optional future).
@@ -223,6 +263,7 @@ Key deprecations to track: `oauth2client` (remove), `httplib2` (remove), future 
 ## 13. “Pin Earlier” Contingency Guidance
 
 If constraints occur:
+
 - Keep `openstacksdk <3` on an LTS branch until consumers green‑light Python >=3.10.
 - Hold `jsonschema <5` until referencing model migration accepted.
 - Maintain `urllib3 <3` while ecosystem (notably `requests`) finalizes 3.x readiness.
@@ -259,6 +300,7 @@ Document answers before high-risk phases.
 This section enumerates **safe improvements you can implement now without raising the Python version floor** or introducing intentional breaking changes. All actions in this phase are explicitly validated to remain compatible with CentOS 7 runners by relying on `uvx` for interpreter provisioning (no dependency on the system Python), keeping native build exposure minimal.
 
 ### 16.1 Removals / Consolidations (Zero Functional Change Expected)
+
 | Action | Rationale | Risk Mitigation |
 |--------|-----------|-----------------|
 | Remove duplicate `bs4` (keep `beautifulsoup4`) | Redundant meta-package | Run tests involving HTML parsing. |
@@ -269,12 +311,14 @@ This section enumerates **safe improvements you can implement now without raisin
 | Remove unused `multi-key-dict` / `munch` (if usage trivial) | Shrink surface | Replace with dict / dataclass; add quick unit assertion. |
 
 ### 16.2 Replacements (Drop Deprecated APIs Without Baseline Change)
+
 | Target | Replace With | Notes |
 |--------|--------------|-------|
 | `oauth2client` + `httplib2` | `google-auth`, `google-auth-oauthlib`, `requests` | Works on Python 3.8+; refactor `oauth2_helper` to fetch/refresh tokens via `google.auth.transport.requests`. |
 | (Optional) `appdirs` | `platformdirs` backport (install `platformdirs`) | `platformdirs` supports Python 3.8; swap path retrieval logic. |
 
 ### 16.3 Safe Version Bumps
+
 All of these routinely update without changing public APIs significantly (still verify via tests):
 
 - `attrs`
@@ -298,6 +342,7 @@ All of these routinely update without changing public APIs significantly (still 
 - `urllib3` (already pinned `<3.0.0`; can advance within 2.x line)
 
 ### 16.4 Introduce Tooling Without Functional Impact
+
 | Action | Benefit |
 |--------|---------|
 | Add workflow to output “outdated dependency” table PR comment weekly | Visibility |
@@ -305,6 +350,7 @@ All of these routinely update without changing public APIs significantly (still 
 | Add SBOM (CycloneDX) generation step in release pipeline | Compliance & diff |
 
 ### 16.5 Codebase Hygiene (No Python Version Change)
+
 | Action | Impact |
 |--------|--------|
 | Refactor `oauth2_helper` to remove `oauth2client` types and update tests | Eliminates deprecated lib dependency early |
@@ -314,6 +360,7 @@ All of these routinely update without changing public APIs significantly (still 
 | Add explicit `algorithms=[...]` in any `jwt.decode` calls now (compat with PyJWT 2) | Future-proof; no breaking behavior |
 
 ### 16.6 “Fence” Mechanisms (Prevent Regression During Later Upgrades)
+
 | Mechanism | Description |
 |-----------|-------------|
 | Add contract tests for OpenStack image/server listing that only assert minimal invariants (e.g., presence of fields) | Safe baseline snapshot |
@@ -322,6 +369,7 @@ All of these routinely update without changing public APIs significantly (still 
 | CentOS 7 wheel audit job | Nightly `uvx` matrix run logs any dependency falling back to source build (signals imminent need for toolchain or dependency pin) |
 
 ### 16.7 Documentation & Metadata
+
 | Update | Reason |
 |--------|--------|
 | Add `MODERNISE_DEPENDENCIES.md` (this file) to repo index / README link | Visibility |
@@ -329,6 +377,7 @@ All of these routinely update without changing public APIs significantly (still 
 | Update contributor docs to outline phased dependency policy (prune → pin → upgrade) | Consistency |
 
 ### 16.8 Deferred (Intentionally NOT Done Until Python Baseline Raises)
+
 | Deferral | Reason |
 |----------|--------|
 | Replace `toml` with stdlib `tomllib` | Requires Python >=3.11 for clean removal |
@@ -336,6 +385,7 @@ All of these routinely update without changing public APIs significantly (still 
 | Upgrade `openstacksdk` beyond 2.x/early 3.x | Requires higher Python baseline to reach latest 4.x line comfortably |
 
 ### 16.9 Ordering Proposal (Non-Breaking Only)
+
 1. Prune duplicates (`bs4`), dead libs (`six`, `aspy.yaml`).
 2. Refactor oauth flow (remove `oauth2client`, `httplib2`).
 3. Low-risk version bumps batch commit (utility libs).
@@ -347,6 +397,7 @@ All of these routinely update without changing public APIs significantly (still 
 8. (Optional) Introduce `platformdirs`.
 
 ### 16.10 Success Criteria (Non-Breaking Phase)
+
 | Metric | Check |
 |--------|-------|
 | All deprecated libs removed | `grep` yields no imports |
@@ -359,15 +410,17 @@ All of these routinely update without changing public APIs significantly (still 
 
 ## 17. Summary of Immediate Actionable Items (While Staying on Python >=3.8)
 
-1. Remove: `bs4`, `six`, `aspy.yaml`, (maybe) `chardet`, `multi-key-dict`, `munch` if unused.
-2. Replace: `oauth2client` + `httplib2` → `google-auth` + `requests`.
-3. (Optional now) Introduce `platformdirs` (or postpone).
-4. Bump low-risk libraries to latest patch/minor versions.
-5. Add dependency audit + SBOM generation.
-6. Harden `jwt.decode` usage with explicit algorithms list.
-7. Consolidate YAML strategy (choose `ruamel.yaml` only for round-trip).
-8. Add migration scaffolding docs.
-9. Implement a permissive “latest” environment to forecast future breaks.
+1. Remove: `bs4`, `six`, `aspy.yaml`, (maybe) `chardet`, `multi-key-dict`, `munch` if unused. ✅ (all removed)
+2. Replace: `oauth2client` + `httplib2` → `google-auth` + `requests`. ✅
+3. (Optional now) Introduce `platformdirs` (or postpone). ⏳ (not introduced; still using `xdg`)
+4. Bump low-risk libraries to latest patch/minor versions. ✅ (lockfile refresh performed)
+5. Add dependency audit + SBOM generation. ⏳
+6. Harden `jwt.decode` usage with explicit algorithms list. ⏳ (no current decode calls located; monitor)
+7. Consolidate YAML strategy (choose `ruamel.yaml` only for round-trip). ✅
+8. Add migration scaffolding docs. ⏳
+9. Implement a permissive “latest” environment to forecast future breaks. ⏳
+10. Raise Python baseline to >=3.11 and adopt `tomllib` (remove `toml`). ✅ (`toml` removed; stdlib available)
+11. Upgrade `openstacksdk` to 4.x after baseline uplift. ✅
 
 These steps reduce technical debt and risk for the later high-impact Python baseline uplift and `openstacksdk` modernization.
 
@@ -376,6 +429,7 @@ These steps reduce technical debt and risk for the later high-impact Python base
 ## 18. Closing Notes
 
 By executing the non-breaking actions first you:
+
 - Shrink the dependency graph (fewer upgrade vectors later).
 - Remove deprecated/security-sensitive code paths early.
 - Gain clearer signal when truly breaking (high-risk) upgrades commence.
@@ -386,6 +440,7 @@ CentOS 7 Support Assurance:
 Maintaining CentOS 7 remains viable across all phases because we never depend on the system Python; instead we provision interpreters (3.8 → 3.10 → 3.11+) via `uvx`, relying on manylinux2014 (glibc 2.17) wheels. The only ongoing watchpoints are: (1) any dependency that begins publishing wheels targeting a newer glibc, (2) packages that drop wheels and trigger a source build (mitigate with a toolchain / Developer Toolset), (3) `python-ldap` wheel availability during its future uplift. A nightly or scheduled “wheel audit” job (matrix install with `--no-build-isolation --only-binary=:all:` fallback reporting) gives early warning without blocking mainline CI.
 
 Post-Baseline Uplift Checklist (CentOS 7 Context):
+
 1. Confirm all environments (3.10 target, 3.11 optional) install with zero local builds (record `pip debug` + wheel list).
 2. Run OpenStack integration smoke tests under new baseline (assert minimal invariants rather than strict field ordering).
 3. Replace `toml` with stdlib `tomllib` once 3.11 floor declared; remove backfill dependencies.

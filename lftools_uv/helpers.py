@@ -9,6 +9,7 @@
 ##############################################################################
 
 """Nexus3 REST API interface."""
+
 from __future__ import annotations
 
 import random

@@ -42,8 +42,9 @@ classes (Jenkins, Nexus, etc.). Attribute types are annotated as 'Any'.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional, Mapping
+from typing import Any
 
 MASK = "********"
 
@@ -65,8 +66,8 @@ class AppState:
 
     debug: bool = False
     interactive: bool = False
-    username: Optional[str] = None
-    password: Optional[str] = None
+    username: str | None = None
+    password: str | None = None
 
     # Lazy-loaded / optional external service clients
     jenkins: Any = None
@@ -74,12 +75,12 @@ class AppState:
     nexus3: Any = None
 
     # Arbitrary additional state storage
-    extra: Dict[str, Any] = field(default_factory=dict)
+    extra: dict[str, Any] = field(default_factory=dict)
 
     # ------------------------------------------------------------------
     # Credential handling
     # ------------------------------------------------------------------
-    def update_credentials(self, username: Optional[str], password: Optional[str]) -> None:
+    def update_credentials(self, username: str | None, password: str | None) -> None:
         """Set or update credential fields if provided (non-None)."""
         if username is not None:
             self.username = username

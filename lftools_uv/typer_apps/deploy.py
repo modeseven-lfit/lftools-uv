@@ -12,7 +12,6 @@
 __author__ = "Thanh Ha"
 
 import logging
-from typing import List, Optional
 
 import typer
 from requests.exceptions import HTTPError
@@ -27,7 +26,7 @@ deploy_app = typer.Typer(
     epilog="""Deploy commands use ~/.netrc for authentication. This file should be
 pre-configured with an entry for the Nexus server. Eg.
 
-    machine nexus.opendaylight.org login logs_user password logs_password"""
+    machine nexus.opendaylight.org login logs_user password logs_password""",
 )
 
 
@@ -42,7 +41,7 @@ def archives(
     nexus_url: str = typer.Argument(..., envvar="NEXUS_URL", help="Nexus server URL"),
     nexus_path: str = typer.Argument(..., envvar="NEXUS_PATH", help="Path on Nexus where files will be deployed"),
     workspace: str = typer.Argument(..., envvar="WORKSPACE", help="Workspace directory containing files to deploy"),
-    pattern: List[str] = typer.Option([], "-p", "--pattern", help="Unix glob patterns for files to deploy")
+    pattern: list[str] = typer.Option([], "-p", "--pattern", help="Unix glob patterns for files to deploy"),
 ):
     """Archive files to a Nexus site repository.
 
@@ -61,7 +60,7 @@ def archives(
 @deploy_app.command(name="copy-archives")
 def copy_archives(
     workspace: str = typer.Argument(..., envvar="WORKSPACE", help="Workspace directory to copy files from"),
-    pattern: List[str] = typer.Argument(None, help="Unix glob patterns of files to copy for archiving")
+    pattern: list[str] = typer.Argument(None, help="Unix glob patterns of files to copy for archiving"),
 ):
     """Copy files for archiving.
 
@@ -84,7 +83,7 @@ def file(
     version: str = typer.Argument(..., help="Maven version"),
     packaging: str = typer.Argument(..., help="Maven packaging type"),
     file_path: str = typer.Argument(..., help="Path to file to deploy"),
-    classifier: str = typer.Option("", "-c", "--classifier", help="Maven classifier")
+    classifier: str = typer.Option("", "-c", "--classifier", help="Maven classifier"),
 ):
     """Deploy a file to Nexus using Maven.
 
@@ -101,7 +100,7 @@ def file(
 def logs(
     nexus_url: str = typer.Argument(..., envvar="NEXUS_URL", help="Nexus server URL"),
     nexus_path: str = typer.Argument(..., envvar="NEXUS_PATH", help="Path on Nexus where logs will be deployed"),
-    build_url: str = typer.Argument(..., envvar="BUILD_URL", help="Build URL for log collection")
+    build_url: str = typer.Argument(..., envvar="BUILD_URL", help="Build URL for log collection"),
 ):
     """Deploy logs to a Nexus site repository.
 
@@ -120,7 +119,7 @@ def s3(
     s3_path: str = typer.Argument(..., help="S3 path where files will be deployed"),
     build_url: str = typer.Argument(..., envvar="BUILD_URL", help="Build URL for log collection"),
     workspace: str = typer.Argument(..., envvar="WORKSPACE", help="Workspace directory containing files to deploy"),
-    pattern: List[str] = typer.Option([], "-p", "--pattern", help="Unix glob patterns for files to deploy")
+    pattern: list[str] = typer.Option([], "-p", "--pattern", help="Unix glob patterns for files to deploy"),
 ):
     """Deploy logs and archives to a S3 bucket."""
     pattern_str = None if not pattern else pattern
@@ -133,19 +132,23 @@ def maven_file(
     repo_id: str = typer.Argument(..., envvar="REPO_ID", help="Repository ID"),
     file_name: str = typer.Argument(..., envvar="FILE_NAME", help="File name to deploy"),
     # Maven Config
-    maven_bin: Optional[str] = typer.Option(None, "-b", "--maven-bin", envvar="MAVEN_BIN", help="Path of maven binary."),
-    global_settings: Optional[str] = typer.Option(None, "-gs", "--global-settings", envvar="GLOBAL_SETTINGS_FILE", help="Global settings file."),
-    settings: Optional[str] = typer.Option(None, "-s", "--settings", envvar="SETTINGS_FILE", help="Settings file."),
-    maven_params: Optional[str] = typer.Option(None, "-p", "--maven-params", help="Pass Maven commandline options to the mvn command."),
+    maven_bin: str | None = typer.Option(None, "-b", "--maven-bin", envvar="MAVEN_BIN", help="Path of maven binary."),
+    global_settings: str | None = typer.Option(
+        None, "-gs", "--global-settings", envvar="GLOBAL_SETTINGS_FILE", help="Global settings file."
+    ),
+    settings: str | None = typer.Option(None, "-s", "--settings", envvar="SETTINGS_FILE", help="Settings file."),
+    maven_params: str | None = typer.Option(
+        None, "-p", "--maven-params", help="Pass Maven commandline options to the mvn command."
+    ),
     # Maven Artifact GAV
-    artifact_id: Optional[str] = typer.Option(None, "-a", "--artifact-id", help="Maven Artifact ID."),
-    classifier: Optional[str] = typer.Option(None, "-c", "--classifier", help="Maven Artifact classifier."),
-    group_id: Optional[str] = typer.Option(None, "-g", "--group-id", help="Maven Group ID."),
-    packaging: Optional[str] = typer.Option(None, "-k", "--packaging", help="Maven packaging."),
-    version: Optional[str] = typer.Option(None, "-v", "--version", help="Maven Artifact version."),
+    artifact_id: str | None = typer.Option(None, "-a", "--artifact-id", help="Maven Artifact ID."),
+    classifier: str | None = typer.Option(None, "-c", "--classifier", help="Maven Artifact classifier."),
+    group_id: str | None = typer.Option(None, "-g", "--group-id", help="Maven Group ID."),
+    packaging: str | None = typer.Option(None, "-k", "--packaging", help="Maven packaging."),
+    version: str | None = typer.Option(None, "-v", "--version", help="Maven Artifact version."),
     # Repository Config
-    repo_url: Optional[str] = typer.Option(None, "-r", "--repo-url", help="Maven repository URL."),
-    repository_layout: str = typer.Option("default", "-l", "--repository-layout", help="Repository layout.")
+    repo_url: str | None = typer.Option(None, "-r", "--repo-url", help="Maven repository URL."),
+    repository_layout: str = typer.Option("default", "-l", "--repository-layout", help="Repository layout."),
 ):
     """Deploy a file to Nexus using Maven deploy:deploy-file.
 
@@ -158,17 +161,17 @@ def maven_file(
         typer.echo("Note: This functionality needs to be implemented")
     except FileNotFoundError as e:
         log.error("Maven binary not found: %s", e)
-        raise typer.Exit(127)
+        raise typer.Exit(127) from None
     except Exception as e:
         log.error("Maven deployment failed: %s", e)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @deploy_app.command(name="nexus")
 def nexus(
     nexus_repo_url: str = typer.Argument(..., envvar="NEXUS_REPO_URL", help="Nexus repository URL"),
     deploy_dir: str = typer.Argument(..., envvar="DEPLOY_DIR", help="Directory containing Maven repository to deploy"),
-    snapshot: bool = typer.Option(False, "-s", "--snapshot", help="Deploy a snapshot repo.")
+    snapshot: bool = typer.Option(False, "-s", "--snapshot", help="Deploy a snapshot repo."),
 ):
     """Deploy a Maven repository to a specified Nexus repository.
 
@@ -179,19 +182,19 @@ def nexus(
     """
     try:
         deploy_sys.deploy_nexus(nexus_repo_url, deploy_dir, snapshot)
-    except IOError as e:
+    except OSError as e:
         log.error(str(e))
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
     except HTTPError as e:
         log.error(str(e))
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @deploy_app.command(name="nexus-stage")
 def nexus_stage(
     nexus_url: str = typer.Argument(..., envvar="NEXUS_URL", help="Nexus server URL"),
     staging_profile_id: str = typer.Argument(..., envvar="STAGING_PROFILE_ID", help="Nexus staging profile ID"),
-    deploy_dir: str = typer.Argument(..., envvar="DEPLOY_DIR", help="Directory containing Maven repository to deploy")
+    deploy_dir: str = typer.Argument(..., envvar="DEPLOY_DIR", help="Directory containing Maven repository to deploy"),
 ):
     """Deploy a Maven repository to a Nexus staging repository.
 
@@ -205,7 +208,7 @@ def nexus_stage(
 def nexus_stage_repo_close(
     nexus_url: str = typer.Argument(..., envvar="NEXUS_URL", help="Nexus server URL"),
     staging_profile_id: str = typer.Argument(..., envvar="STAGING_PROFILE_ID", help="Nexus staging profile ID"),
-    staging_repo_id: str = typer.Argument(..., help="Nexus staging repository ID")
+    staging_repo_id: str = typer.Argument(..., help="Nexus staging repository ID"),
 ):
     """Close a Nexus staging repo."""
     deploy_sys.nexus_stage_repo_close(nexus_url, staging_profile_id, staging_repo_id)
@@ -214,7 +217,7 @@ def nexus_stage_repo_close(
 @deploy_app.command(name="nexus-stage-repo-create")
 def nexus_stage_repo_create(
     nexus_url: str = typer.Argument(..., envvar="NEXUS_URL", help="Nexus server URL"),
-    staging_profile_id: str = typer.Argument(..., envvar="STAGING_PROFILE_ID", help="Nexus staging profile ID")
+    staging_profile_id: str = typer.Argument(..., envvar="STAGING_PROFILE_ID", help="Nexus staging profile ID"),
 ):
     """Create a Nexus staging repo."""
     staging_repo_id = deploy_sys.nexus_stage_repo_create(nexus_url, staging_profile_id)
@@ -226,7 +229,7 @@ def nexus_zip(
     nexus_url: str = typer.Argument(..., envvar="NEXUS_URL", help="Nexus server URL"),
     nexus_repo: str = typer.Argument(..., envvar="NEXUS_REPO", help="Nexus repository name"),
     nexus_path: str = typer.Argument(..., envvar="NEXUS_PATH", help="Path on Nexus where zip will be deployed"),
-    deploy_zip: str = typer.Argument(..., envvar="DEPLOY_DIR", help="Path to zip file to deploy")
+    deploy_zip: str = typer.Argument(..., envvar="DEPLOY_DIR", help="Path to zip file to deploy"),
 ):
     """Deploy zip file containing artifacts to Nexus using cURL.
 
@@ -238,11 +241,11 @@ def nexus_zip(
     """
     try:
         deploy_sys.deploy_nexus_zip(nexus_url, nexus_repo, nexus_path, deploy_zip)
-    except IOError as e:
+    except OSError as e:
         log.error(str(e))
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
     except HTTPError as e:
         log.error(str(e))
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
     log.info("Zip file upload complete.")

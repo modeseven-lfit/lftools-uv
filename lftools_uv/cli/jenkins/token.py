@@ -11,13 +11,13 @@
 
 __author__ = "Thanh Ha"
 
+import configparser
 import logging
 import os
 import sys
 
 import click
 import requests
-import configparser
 
 from lftools_uv import config as lftools_cfg
 from lftools_uv.jenkins.token import get_token
@@ -152,16 +152,16 @@ def reset(ctx, servers):
             log.debug("Section does not contain a url, skipping...")
             continue
 
-        log.info("Resetting API key for {}".format(section))
+        log.info(f"Resetting API key for {section}")
         if _reset_key(config, section):
             success += 1
         else:
             fail += 1
-            log.error("Failed to reset API key for {}".format(section))
+            log.error(f"Failed to reset API key for {section}")
 
     log.info("Update configurations complete.")
-    log.info("Success: {}".format(success))
-    log.info("Failed: {}".format(fail))
+    log.info(f"Success: {success}")
+    log.info(f"Failed: {fail}")
 
 
 token.add_command(change)
@@ -172,5 +172,5 @@ token.add_command(reset)
 
 def _require_jjb_ini(config):
     if not os.path.isfile(config):
-        log.error("jenkins_jobs.ini not found in any of the search paths. " "Please provide one before proceeding.")
+        log.error("jenkins_jobs.ini not found in any of the search paths. Please provide one before proceeding.")
         sys.exit(1)

@@ -11,7 +11,6 @@
 
 __author__ = "DW Talton"
 
-from typing import Optional
 
 import typer
 
@@ -28,12 +27,10 @@ def dco_callback():
 
 @dco_app.command(name="check")
 def check(
-    repo_path: Optional[str] = typer.Argument(None, help="Path to git repository (defaults to current directory)"),
+    repo_path: str | None = typer.Argument(None, help="Path to git repository (defaults to current directory)"),
     signoffs: str = typer.Option(
-        "dco_signoffs",
-        "--signoffs",
-        help="Specify a directory to check for DCO signoff text files"
-    )
+        "dco_signoffs", "--signoffs", help="Specify a directory to check for DCO signoff text files"
+    ),
 ):
     """Check repository for commits missing DCO.
 
@@ -56,12 +53,10 @@ def check(
 
 @dco_app.command(name="match")
 def match(
-    repo_path: Optional[str] = typer.Argument(None, help="Path to git repository (defaults to current directory)"),
+    repo_path: str | None = typer.Argument(None, help="Path to git repository (defaults to current directory)"),
     signoffs: str = typer.Option(
-        "dco_signoffs",
-        "--signoffs",
-        help="Specify a directory to check for DCO signoff text files"
-    )
+        "dco_signoffs", "--signoffs", help="Specify a directory to check for DCO signoff text files"
+    ),
 ):
     """Check for commits whose DCO does not match the commit author's email.
 

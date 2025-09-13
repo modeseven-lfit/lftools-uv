@@ -14,7 +14,6 @@ sequence stripping to handle Rich-formatted output in tests.
 """
 
 import re
-from typing import Optional
 
 
 def strip_ansi_codes(text: str) -> str:
@@ -113,7 +112,7 @@ def clean_cli_output(output: str) -> str:
     return cleaned
 
 
-def assert_in_output(expected: str, output: str, message: Optional[str] = None) -> None:
+def assert_in_output(expected: str, output: str, message: str | None = None) -> None:
     """Assert that expected text is in cleaned CLI output.
 
     This is a convenience function that strips ANSI codes before assertion.
@@ -134,7 +133,7 @@ def assert_in_output(expected: str, output: str, message: Optional[str] = None) 
     assert expected in cleaned_output, f"{message}\n\nCleaned output:\n{cleaned_output}"
 
 
-def assert_not_in_output(unexpected: str, output: str, message: Optional[str] = None) -> None:
+def assert_not_in_output(unexpected: str, output: str, message: str | None = None) -> None:
     """Assert that unexpected text is NOT in cleaned CLI output.
 
     Args:

@@ -10,7 +10,6 @@
 """Typer version of infofile commands."""
 
 import logging
-from typing import Optional
 
 import typer
 
@@ -35,29 +34,11 @@ def infofile_callback():
 
 @infofile_app.command("create-info-file")
 def create_info_file(
-    gerrit_url: str = typer.Argument(
-        ...,
-        help="Gerrit URL (e.g., gerrit.example.com)"
-    ),
-    gerrit_project: str = typer.Argument(
-        ...,
-        help="Gerrit project path (e.g., project/full-name)"
-    ),
-    directory: str = typer.Option(
-        "r",
-        "--directory",
-        help="Custom gerrit directory, e.g. not /r/"
-    ),
-    empty: bool = typer.Option(
-        False,
-        "--empty",
-        help="Create info file for uncreated project"
-    ),
-    tsc_approval: str = typer.Option(
-        "missing",
-        "--tsc-approval",
-        help="Optionally provide a TSC approval link"
-    ),
+    gerrit_url: str = typer.Argument(..., help="Gerrit URL (e.g., gerrit.example.com)"),
+    gerrit_project: str = typer.Argument(..., help="Gerrit project path (e.g., project/full-name)"),
+    directory: str = typer.Option("r", "--directory", help="Custom gerrit directory, e.g. not /r/"),
+    empty: bool = typer.Option(False, "--empty", help="Create info file for uncreated project"),
+    tsc_approval: str = typer.Option("missing", "--tsc-approval", help="Optionally provide a TSC approval link"),
 ):
     """Create an initial INFO file.
 
@@ -81,32 +62,16 @@ def create_info_file(
     except Exception as e:
         log.error(f"Failed to create info file: {e}")
         typer.echo(f"Error: Failed to create info file: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @infofile_app.command("get-committers")
 def get_committers(
-    gerrit_url: str = typer.Argument(
-        ...,
-        help="Gerrit URL"
-    ),
-    gerrit_project: str = typer.Argument(
-        ...,
-        help="Gerrit project path"
-    ),
-    ldap_group: str = typer.Argument(
-        ...,
-        help="LDAP group name"
-    ),
-    info_file: str = typer.Argument(
-        ...,
-        help="Path to INFO.yaml file"
-    ),
-    directory: str = typer.Option(
-        "r",
-        "--directory",
-        help="Custom gerrit directory"
-    ),
+    gerrit_url: str = typer.Argument(..., help="Gerrit URL"),
+    gerrit_project: str = typer.Argument(..., help="Gerrit project path"),
+    ldap_group: str = typer.Argument(..., help="LDAP group name"),
+    info_file: str = typer.Argument(..., help="Path to INFO.yaml file"),
+    directory: str = typer.Option("r", "--directory", help="Custom gerrit directory"),
 ):
     """Get committers from LDAP and update INFO file.
 
@@ -129,15 +94,12 @@ def get_committers(
     except Exception as e:
         log.error(f"Failed to get committers: {e}")
         typer.echo(f"Error: Failed to get committers: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @infofile_app.command("validate-info-file")
 def validate_info_file(
-    info_file: str = typer.Argument(
-        ...,
-        help="Path to INFO.yaml file to validate"
-    ),
+    info_file: str = typer.Argument(..., help="Path to INFO.yaml file to validate"),
 ):
     """Validate INFO.yaml file format and content.
 
@@ -154,15 +116,12 @@ def validate_info_file(
     except Exception as e:
         log.error(f"INFO file validation failed: {e}")
         typer.echo(f"Error: INFO file validation failed: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @infofile_app.command("check-committers")
 def check_committers(
-    info_file: str = typer.Argument(
-        ...,
-        help="Path to INFO.yaml file"
-    ),
+    info_file: str = typer.Argument(..., help="Path to INFO.yaml file"),
 ):
     """Check committers in INFO file against LDAP.
 
@@ -179,15 +138,12 @@ def check_committers(
     except Exception as e:
         log.error(f"Committers check failed: {e}")
         typer.echo(f"Error: Committers check failed: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @infofile_app.command("match-ldap")
 def match_ldap(
-    info_file: str = typer.Argument(
-        ...,
-        help="Path to INFO.yaml file"
-    ),
+    info_file: str = typer.Argument(..., help="Path to INFO.yaml file"),
 ):
     """Match LDAP information to INFO file.
 
@@ -204,7 +160,7 @@ def match_ldap(
     except Exception as e:
         log.error(f"LDAP matching failed: {e}")
         typer.echo(f"Error: LDAP matching failed: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 def get_infofile_app() -> typer.Typer:

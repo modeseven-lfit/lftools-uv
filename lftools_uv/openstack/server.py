@@ -49,26 +49,24 @@ def cleanup(os_cloud, days=0):
     """
 
     def _remove_servers_from_cloud(servers, cloud):
-        print("Removing {} servers from {}.".format(len(servers), cloud.cloud_config.name))
+        print(f"Removing {len(servers)} servers from {cloud.cloud_config.name}.")
         for server in servers:
             try:
                 result = cloud.delete_server(server.name)
             except OpenStackCloudException as e:
                 if str(e).startswith("Multiple matches found for"):
-                    print("WARNING: {}. Skipping server...".format(str(e)))
+                    print(f"WARNING: {str(e)}. Skipping server...")
                     continue
                 else:
-                    print("ERROR: Unexpected exception: {}".format(str(e)))
+                    print(f"ERROR: Unexpected exception: {str(e)}")
                     raise
 
             if not result:
                 print(
-                    'WARNING: Failed to remove "{}" from {}. Possibly already deleted.'.format(
-                        server.name, cloud.cloud_config.name
-                    )
+                    f'WARNING: Failed to remove "{server.name}" from {cloud.cloud_config.name}. Possibly already deleted.'
                 )
             else:
-                print('Removed "{}" from {}.'.format(server.name, cloud.cloud_config.name))
+                print(f'Removed "{server.name}" from {cloud.cloud_config.name}.')
 
     cloud = openstack.connection.from_config(cloud=os_cloud)
     servers = cloud.list_servers()
@@ -90,6 +88,6 @@ def remove(os_cloud, server_name, minutes=0):
         sys.exit(1)
 
     if datetime.strptime(server.created, "%Y-%m-%dT%H:%M:%SZ") >= datetime.utcnow() - timedelta(minutes=minutes):
-        print('WARN: Server "{}" is not older than {} minutes.'.format(server.name, minutes))
+        print(f'WARN: Server "{server.name}" is not older than {minutes} minutes.')
     else:
         cloud.delete_server(server.name)

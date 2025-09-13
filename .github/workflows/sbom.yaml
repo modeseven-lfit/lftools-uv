@@ -1,0 +1,132 @@
+---
+# yamllint disable rule:line-length
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2025 The Linux Foundation
+#
+# Software Bill of Materials (SBOM) generation workflow.
+# Generates CycloneDX (JSON + XML) SBOMs for the resolved (locked) runtime
+# dependency graph. Artifacts are uploaded for every run and, when the
+# workflow is triggered by a tag push, they may also be attached to the
+# corresponding GitHub Release (optional step is provided but disabled
+# by default).
+#
+# Wave 2 Modernization Item:
+#  - Introduce SBOM + audit workflow (now implemented here).
+#
+# Notes:
+#  - Uses the existing uv.lock to ensure SBOM matches the exact, reproducible
+#    dependency set (runtime only; dev/test extras intentionally excluded).
+#  - If uv.lock changes, re-run this workflow (it will on push).
+#  - You can extend this with additional formats (SPDX) or integrate
+#    with external compliance systems later.
+#
+# Future Enhancements (non-blocking):
+#  - Add dependency diff against last successful run.
+#  - Add license policy checks.
+#  - Add vulnerability gating (currently handled in audit workflows).
+#  - Attach artifacts automatically to releases (uncomment final step).
+
+name: "SBOM (CycloneDX)"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/sbom.yaml"
+  schedule:
+    # Weekly (Monday 04:15 UTC) – adjust as desired
+    - cron: "15 4 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  sbom:
+    name: "Generate CycloneDX SBOM"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      UV_NO_SYNC_PROGRESS: "1"
+    steps:
+      - name: "Harden Runner"
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: "Install uv"
+        shell: bash
+        run: |
+            set -euo pipefail
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+            echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+            uv --version
+
+      - name: "Sync (runtime dependencies only)"
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Use the lockfile; exclude dev/test extras for a pure runtime SBOM
+          uv sync --locked --no-dev
+
+      - name: "Install cyclonedx-bom tool"
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Installed into the uv-managed virtual environment
+          uv pip install --no-cache-dir cyclonedx-bom
+
+      - name: "Generate SBOM (CycloneDX JSON)"
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv run cyclonedx-bom \
+            --format json \
+            --output sbom-cyclonedx.json \
+            --schema-version 1.5
+
+      - name: "Generate SBOM (CycloneDX XML)"
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv run cyclonedx-bom \
+            --format xml \
+            --output sbom-cyclonedx.xml \
+            --schema-version 1.5
+
+      - name: "Summarize"
+        shell: bash
+        run: |
+          {
+            echo "Generated CycloneDX SBOM artifacts:";
+            echo "";
+            echo "* sbom-cyclonedx.json";
+            echo "* sbom-cyclonedx.xml";
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: "Upload SBOM Artifacts"
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: sbom-cyclonedx
+          path: |
+            sbom-cyclonedx.json
+            sbom-cyclonedx.xml
+          if-no-files-found: error
+          retention-days: 30
+
+      # OPTIONAL: Attach to a release when triggered by a tag.
+      # Uncomment to enable.
+      # - name: "Attach SBOM to Release"
+      #   if: startsWith(github.ref, 'refs/tags/')
+      #   uses: alexellis/upload-assets@13926a61cdb2cb35f5fdef1c06b8b591523236d3 # 0.4.1
+      #   env:
+      #     GITHUB_TOKEN: "${{ github.token }}"
+      #   with:
+      #     asset_paths: '["sbom-cyclonedx.json","sbom-cyclonedx.xml"]'

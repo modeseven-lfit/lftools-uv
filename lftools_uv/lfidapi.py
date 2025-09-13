@@ -12,11 +12,11 @@
 import json
 import logging
 import sys
+import urllib
 
 import requests
 import yaml
 from email_validator import validate_email
-import urllib
 
 from lftools_uv.github_helper import helper_list, helper_user_github
 from lftools_uv.oauth2_helper import oauth_helper
@@ -30,7 +30,7 @@ def check_response_code(response):
     """Response Code Helper function."""
     if response.status_code != 200:
         raise requests.HTTPError(
-            "Authorization failed with the following " "error:\n{}: {}".format(response.status_code, response.text)
+            f"Authorization failed with the following error:\n{response.status_code}: {response.text}"
         )
 
 
@@ -48,7 +48,7 @@ def helper_search_members(group):
     """List members of a group."""
     response_code = helper_check_group_exists(group)
     if response_code != 200:
-        log.error("Code: {} Group {} does not exists exiting...".format(response_code, group))
+        log.error(f"Code: {response_code} Group {group} does not exists exiting...")
         sys.exit(1)
     else:
         access_token, url = oauth_helper()
@@ -73,10 +73,10 @@ def helper_user(user, group, delete):
     headers = {"Authorization": "Bearer " + access_token}
     data = {"username": user}
     if delete:
-        log.info("Deleting %s from %s" % (user, group))
+        log.info(f"Deleting {user} from {group}")
         response = requests.delete(url, json=data, headers=headers)
     else:
-        log.info("Adding %s to %s" % (user, group))
+        log.info(f"Adding {user} to {group}")
         response = requests.put(url, json=data, headers=headers)
     try:
         check_response_code(response)
@@ -94,9 +94,9 @@ def helper_invite(email, group):
     url = PARSE(url, prejoin)
     headers = {"Authorization": "Bearer " + access_token}
     data = {"mail": email}
-    log.info("Validating email %s" % email)
+    log.info(f"Validating email {email}")
     if validate_email(email):
-        log.info("Inviting %s to join %s" % (email, group))
+        log.info(f"Inviting {email} to join {group}")
         response = requests.post(url, json=data, headers=headers)
         try:
             check_response_code(response)
@@ -106,21 +106,21 @@ def helper_invite(email, group):
         result = response.json()
         log.debug(json.dumps(result, indent=4, sort_keys=True))
     else:
-        log.error("Email '%s' is not valid, not inviting to %s" % (email, group))
+        log.error(f"Email '{email}' is not valid, not inviting to {group}")
 
 
 def helper_create_group(group):
     """Create group."""
     response_code = helper_check_group_exists(group)
     if response_code == 200:
-        log.error("Group %s already exists. Exiting..." % group)
+        log.error(f"Group {group} already exists. Exiting...")
     else:
         access_token, url = oauth_helper()
-        url = "{}/".format(url)
+        url = f"{url}/"
         headers = {"Authorization": "Bearer " + access_token}
         data = {"title": group, "type": "group"}
         log.debug(data)
-        log.info("Creating group %s" % group)
+        log.info(f"Creating group {group}")
         response = requests.post(url, json=data, headers=headers)
         try:
             check_response_code(response)
@@ -160,7 +160,7 @@ def helper_match_ldap_to_info(info_file, group, githuborg, noop):
     committer_info = info_data["committers"]
 
     info_committers = []
-    for count, item in enumerate(committer_info):
+    for count, _item in enumerate(committer_info):
         committer = committer_info[count][id]
         info_committers.append(committer)
 
@@ -171,7 +171,7 @@ def helper_match_ldap_to_info(info_file, group, githuborg, noop):
             ldap_committers.append(committer)
 
     else:
-        for count, item in enumerate(ldap_data):
+        for count, _item in enumerate(ldap_data):
             committer = ldap_data[count]["username"]
             ldap_committers.append(committer)
 
@@ -188,9 +188,9 @@ def helper_match_ldap_to_info(info_file, group, githuborg, noop):
     for user in all_users:
         removed_by_patch = [item for item in ldap_committers if item not in info_committers]
         if user in removed_by_patch:
-            log.info("%s found in group %s " % (user, group))
+            log.info(f"{user} found in group {group} ")
             if noop is False:
-                log.info("Removing user %s from group %s" % (user, group))
+                log.info(f"Removing user {user} from group {group}")
                 if githuborg:
                     helper_user_github(
                         ctx=False, organization=githuborg, user=user, team=group, delete=True, admin=False
@@ -200,9 +200,9 @@ def helper_match_ldap_to_info(info_file, group, githuborg, noop):
 
         added_by_patch = [item for item in info_committers if item not in ldap_committers]
         if user in added_by_patch:
-            log.info("%s not found in group %s" % (user, group))
+            log.info(f"{user} not found in group {group}")
             if noop is False:
-                log.info("Adding user %s to group %s" % (user, group))
+                log.info(f"Adding user {user} to group {group}")
                 if githuborg:
                     helper_user_github(
                         ctx=False, organization=githuborg, user=user, team=group, delete=False, admin=False

@@ -9,10 +9,9 @@
 ##############################################################################
 """Verify YAML Schema."""
 
-from __future__ import annotations, print_function
+from __future__ import annotations
 
 import logging
-from typing import Dict
 
 import jsonschema
 import yaml
@@ -26,10 +25,10 @@ def check_schema_file(yamlfile: str, schemafile: str) -> None:
     SCHEMAFILE: SCHEMA file to validate against.
     """
     with open(yamlfile) as _:
-        yaml_file: Dict = yaml.safe_load(_)
+        yaml_file: dict = yaml.safe_load(_)
 
     with open(schemafile) as _:
-        schema_file: Dict = yaml.safe_load(_)
+        schema_file: dict = yaml.safe_load(_)
 
     # Load the schema
     validation: jsonschema.Draft4Validator = jsonschema.Draft4Validator(
@@ -43,4 +42,4 @@ def check_schema_file(yamlfile: str, schemafile: str) -> None:
         errors += 1
         logging.error(error)
     if errors > 0:
-        raise RuntimeError("{:d} issues invalidate the release schema".format(errors))
+        raise RuntimeError(f"{errors:d} issues invalidate the release schema")

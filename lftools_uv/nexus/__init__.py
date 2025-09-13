@@ -82,7 +82,7 @@ class Nexus:
         for priv in targets["data"]:
             if priv["name"] == name:
                 return priv["id"]
-        raise LookupError("No target found named '{}'".format(name))
+        raise LookupError(f"No target found named '{name}'")
 
     def create_target(self, name, patterns):
         """Create a target with the given patterns."""
@@ -101,13 +101,13 @@ class Nexus:
         r = requests.post(url, auth=self.auth, headers=self.headers, data=json_data)
 
         if r.status_code != requests.codes.created:
-            raise Exception("Target not created for '{}', code '{}'".format(name, r.status_code))
+            raise Exception(f"Target not created for '{name}', code '{r.status_code}'")
 
         return r.json()["data"]["id"]
 
     def get_priv(self, name, priv):
         """Get the ID for the privilege with the given name and privilege type."""
-        search_name = "{} - ({})".format(name, priv)
+        search_name = f"{name} - ({priv})"
         self.get_priv_by_name(search_name)
 
     def get_priv_by_name(self, name):
@@ -120,7 +120,7 @@ class Nexus:
             if priv["name"] == name:
                 return priv["id"]
 
-        raise LookupError("No privilege found named '{}'".format(name))
+        raise LookupError(f"No privilege found named '{name}'")
 
     def create_priv(self, name, target_id, priv):
         """Create a given privilege.
@@ -153,7 +153,7 @@ class Nexus:
         privileges = r.json()
 
         if r.status_code != requests.codes.created:
-            raise Exception("Privilege not created for '{}', code '{}'".format(name, r.status_code))
+            raise Exception(f"Privilege not created for '{name}', code '{r.status_code}'")
 
         return privileges["data"][0]["id"]
 
@@ -171,10 +171,12 @@ class Nexus:
             if role["id"] == name:
                 return role["id"]
 
-        raise LookupError("No role with name '{}'".format(name))
+        raise LookupError(f"No role with name '{name}'")
 
-    def create_role(self, name, privs, role_id="", description="", roles=[]):
+    def create_role(self, name, privs, role_id="", description="", roles=None):
         """Create a role with the given privileges."""
+        if roles is None:
+            roles = []
         url = os.path.join(self.baseurl, "roles")
 
         role = {
@@ -189,7 +191,7 @@ class Nexus:
         }
 
         json_data = json.dumps(role).encode(encoding="latin-1")
-        log.debug("Sending role {} to Nexus".format(json_data))
+        log.debug(f"Sending role {json_data} to Nexus")
 
         r = requests.post(url, auth=self.auth, headers=self.headers, data=json_data)
 
@@ -199,11 +201,11 @@ class Nexus:
                 for error in r.json()["errors"]:
                     error_msgs += error["msg"] + "\n"
                 raise Exception(
-                    "Role not created for '{}', code '{}', failed "
-                    "with the following errors: {}".format(name, r.status_code, error_msgs)
+                    f"Role not created for '{name}', code '{r.status_code}', failed "
+                    f"with the following errors: {error_msgs}"
                 )
             else:
-                raise Exception("Role not created for '{}', code '{}'".format(role_id, r.status_code))
+                raise Exception(f"Role not created for '{role_id}', code '{r.status_code}'")
 
         return r.json()["data"]["id"]
 
@@ -216,10 +218,12 @@ class Nexus:
             if user["userId"] == user_id:
                 return
 
-        raise LookupError("No user with id '{}'".format(user_id))
+        raise LookupError(f"No user with id '{user_id}'")
 
-    def create_user(self, name, domain, role_id, password, extra_roles=[]):
+    def create_user(self, name, domain, role_id, password, extra_roles=None):
         """Create a Deployment user with a specific role_id and potentially extra roles.
+        if extra_roles is None:
+            extra_roles = []
 
         User is created with the nx-deployment role attached
         """
@@ -228,7 +232,7 @@ class Nexus:
         user = {
             "data": {
                 "userId": name,
-                "email": "{}-deploy@{}".format(name, domain),
+                "email": f"{name}-deploy@{domain}",
                 "firstName": name,
                 "lastName": "Deployment",
                 "roles": [
@@ -248,7 +252,7 @@ class Nexus:
         user = requests.post(url, auth=self.auth, headers=self.headers, data=json_data)
 
         if user.status_code != requests.codes.created:
-            raise Exception("User not created for '{}', code '{}'".format(name, user.status_code))
+            raise Exception(f"User not created for '{name}', code '{user.status_code}'")
 
     def get_repo_group(self, name):
         """Get the repository ID for a repo group that has a specific name."""
@@ -260,7 +264,7 @@ class Nexus:
             if repo["name"] == name:
                 return repo["id"]
 
-        raise LookupError("No repository group named '{}'".format(name))
+        raise LookupError(f"No repository group named '{name}'")
 
     def get_repo_group_details(self, repoId):
         """Get the current configuration of a given repo group with a specific ID."""
@@ -280,19 +284,19 @@ class Nexus:
 
     def get_all_images(self, repo):
         """Get a list of all images in the given repository."""
-        url = "%s/search?repository=%s" % (self.baseurl, repo)
+        url = f"{self.baseurl}/search?repository={repo}"
         url_attr = requests.get(url)
         if url_attr:
             result = url_attr.json()
             items = result["items"]
             cont_token = result["continuationToken"]
         else:
-            log.error("{} returned {}".format(url, str(url_attr)))
+            log.error(f"{url} returned {str(url_attr)}")
             sys.exit(1)
 
         # Check if there are multiple pages of data
         while cont_token:
-            continue_url = "%s&continuationToken=%s" % (url, cont_token)
+            continue_url = f"{url}&continuationToken={cont_token}"
             url_attr = requests.get(continue_url)
             result = url_attr.json()
             items += result["items"]
@@ -302,19 +306,19 @@ class Nexus:
 
     def search_images(self, repo, pattern):
         """Find all images in the given repository matching the pattern."""
-        url = "{}/search?q={}&repository={}".format(self.baseurl, pattern, repo)
+        url = f"{self.baseurl}/search?q={pattern}&repository={repo}"
         url_attr = requests.get(url)
         if url_attr:
             result = url_attr.json()
             items = result["items"]
             cont_token = result["continuationToken"]
         else:
-            log.error("{} returned {}".format(url, str(url_attr)))
+            log.error(f"{url} returned {str(url_attr)}")
             sys.exit(1)
 
         # Check if there are multiple pages of data
         while cont_token:
-            continue_url = "%s&continuationToken=%s" % (url, cont_token)
+            continue_url = f"{url}&continuationToken={cont_token}"
             url_attr = requests.get(continue_url)
             result = url_attr.json()
             items += result["items"]
@@ -325,8 +329,8 @@ class Nexus:
     def delete_image(self, image):
         """Delete an image from the repo, using the id field."""
         url = os.path.join(self.baseurl, "components", image["id"])
-        log.info("Deleting {}:{}".format(image["name"], image["version"]))
+        log.info(f"Deleting {image['name']}:{image['version']}")
         url_attr = requests.delete(url, auth=self.auth)
         if url_attr.status_code != 204:
-            log.error("{} returned {}".format(url, str(url_attr)))
+            log.error(f"{url} returned {str(url_attr)}")
             sys.exit(1)

@@ -36,7 +36,7 @@ class ReadTheDocs(client.RestApi):
             }
             params["creds"] = creds
 
-        super(ReadTheDocs, self).__init__(**params)
+        super().__init__(**params)
 
     def project_list(self):
         """Return a list of projects.
@@ -64,7 +64,7 @@ class ReadTheDocs(client.RestApi):
         :param kwargs:
         :return: {result}
         """
-        result = self.get("projects/{}/?expand=active_versions".format(project))[1]
+        result = self.get(f"projects/{project}/?expand=active_versions")[1]
         return result
 
     def project_version_list(self, project):
@@ -73,7 +73,7 @@ class ReadTheDocs(client.RestApi):
         :param project: The project's slug
         :return: {result}
         """
-        result = self.get("projects/{}/versions/?active=True".format(project))[1]
+        result = self.get(f"projects/{project}/versions/?active=True")[1]
         more_results = None
         versions = []
 
@@ -87,7 +87,7 @@ class ReadTheDocs(client.RestApi):
 
         if more_results:
             while more_results is not None:
-                get_more_results = self.get("projects/{}/versions/".format(project) + more_results)[1]
+                get_more_results = self.get(f"projects/{project}/versions/" + more_results)[1]
                 more_results = get_more_results["next"]
 
                 for version in get_more_results["results"]:
@@ -105,7 +105,7 @@ class ReadTheDocs(client.RestApi):
         :param version: The version's slug
         :return: {result}
         """
-        result = self.get("projects/{}/versions/{}/".format(project, version))[1]
+        result = self.get(f"projects/{project}/versions/{version}/")[1]
         return json.dumps(result, indent=2)
 
     def project_version_update(self, project, version, active):
@@ -119,7 +119,7 @@ class ReadTheDocs(client.RestApi):
         data = {"active": active}
 
         json_data = json.dumps(data)
-        result = self.patch("projects/{}/versions/{}/".format(project, version), data=json_data)
+        result = self.patch(f"projects/{project}/versions/{version}/", data=json_data)
         return result
 
     def project_update(self, project, *args):
@@ -131,7 +131,7 @@ class ReadTheDocs(client.RestApi):
         """
         data = args[0]
         json_data = json.dumps(data)
-        result = self.patch("projects/{}/".format(project), data=json_data)
+        result = self.patch(f"projects/{project}/", data=json_data)
 
         if result.status_code == 204:
             return True, result.status_code
@@ -176,7 +176,7 @@ class ReadTheDocs(client.RestApi):
         :param kwargs:
         :return: {result}
         """
-        result = self.get("projects/{}/builds/?running=True".format(project), **kwargs)[1]
+        result = self.get(f"projects/{project}/builds/?running=True", **kwargs)[1]
 
         if result["count"] > 0:
             return json.dumps(result, indent=2)
@@ -191,7 +191,7 @@ class ReadTheDocs(client.RestApi):
         :param kwargs:
         :return: {result}
         """
-        result = self.get("projects/{}/builds/{}/".format(project, build_id))[1]
+        result = self.get(f"projects/{project}/builds/{build_id}/")[1]
         return json.dumps(result, indent=2)
 
     def project_build_trigger(self, project, version):
@@ -202,7 +202,7 @@ class ReadTheDocs(client.RestApi):
                         (must be an active version)
         :return: {result}
         """
-        result = self.post("projects/{}/versions/{}/builds/".format(project, version))[1]
+        result = self.post(f"projects/{project}/versions/{version}/builds/")[1]
         return json.dumps(result, indent=2)
 
     def subproject_list(self, project):
@@ -230,7 +230,7 @@ class ReadTheDocs(client.RestApi):
         :param subproject:
         :return:
         """
-        result = self.get("projects/{}/subprojects/{}/".format(project, subproject))[1]
+        result = self.get(f"projects/{project}/subprojects/{subproject}/")[1]
         return result
 
     def subproject_create(self, project, subproject, alias=None):
@@ -248,7 +248,7 @@ class ReadTheDocs(client.RestApi):
         """
         data = {"child": subproject, "alias": alias}
         json_data = json.dumps(data)
-        result = self.post("projects/{}/subprojects/".format(project), data=json_data)
+        result = self.post(f"projects/{project}/subprojects/", data=json_data)
         return result
 
     def subproject_delete(self, project, subproject):
@@ -258,7 +258,7 @@ class ReadTheDocs(client.RestApi):
         :param subproject:
         :return:
         """
-        result = self.delete("projects/{}/subprojects/{}/".format(project, subproject))
+        result = self.delete(f"projects/{project}/subprojects/{subproject}/")
 
         if hasattr(result, "status_code"):
             if result.status_code == 204:

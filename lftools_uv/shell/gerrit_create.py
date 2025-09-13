@@ -10,7 +10,6 @@
 ##############################################################################
 """Python wrapper for gerrit_create shell script."""
 
-import os
 import subprocess
 import sys
 from pathlib import Path

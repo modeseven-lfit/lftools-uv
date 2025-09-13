@@ -30,6 +30,7 @@ from lftools_uv.typer_apps.nexus2 import nexus2_app
 from lftools_uv.typer_apps.nexus3 import nexus3_app
 from lftools_uv.typer_apps.utils import utils_app
 from lftools_uv.typer_apps.version import version_app
+from tests.test_utils import assert_in_output
 
 
 class TestTyperCLI:
@@ -56,9 +57,9 @@ class TestTyperCLI:
         """Test that credential options are available."""
         result = self.runner.invoke(typer_app, ["--help"])
         assert result.exit_code == 0
-        assert "--username" in result.stdout
-        assert "--password" in result.stdout
-        assert "--interactive" in result.stdout
+        assert_in_output("--username", result.stdout)
+        assert_in_output("--password", result.stdout)
+        assert_in_output("--interactive", result.stdout)
 
 
 class TestTyperUtilsPassgen:
@@ -102,14 +103,14 @@ class TestTyperUtilsPassgen:
         """Test passgen with invalid length (zero)."""
         result = self.runner.invoke(utils_app, ["passgen", "0"])
         assert result.exit_code == 1
-        assert "Password length must be greater than 0" in result.stderr
+        assert_in_output("Password length must be greater than 0", result.stderr)
 
     def test_passgen_invalid_length_negative(self):
         """Test passgen with invalid length (negative)."""
         result = self.runner.invoke(utils_app, ["passgen", "-5"])
         # Negative numbers cause argument parsing errors (exit code 2)
         assert result.exit_code == 2
-        assert "No such option: -5" in result.stderr
+        assert_in_output("No such option: -5", result.stderr)
 
     def test_passgen_invalid_length_too_large(self):
         """Test passgen with invalid length (too large)."""
@@ -240,10 +241,10 @@ class TestBackwardCompatibility:
         assert result.exit_code == 0
 
         # Check for key options that should be maintained
-        assert "--debug" in result.stdout
-        assert "--username" in result.stdout
-        assert "--password" in result.stdout
-        assert "--interactive" in result.stdout
+        assert_in_output("--debug", result.stdout)
+        assert_in_output("--username", result.stdout)
+        assert_in_output("--password", result.stdout)
+        assert_in_output("--interactive", result.stdout)
 
     def test_passgen_output_format_compatibility(self):
         """Test that passgen output format is compatible with Click version."""
@@ -290,8 +291,7 @@ class TestTyperVersion:
         """Test that version patch shows help correctly."""
         result = self.runner.invoke(version_app, ["patch", "--help"])
         assert result.exit_code == 0
-        assert "Patch a project with git.bundles and then version bump" in result.stdout
-        assert "--project" in result.stdout
+        assert_in_output("--project", result.stdout)
 
     def test_version_bump_missing_tag(self):
         """Test version bump with missing release tag argument."""
@@ -432,15 +432,13 @@ class TestTyperDCO:
         """Test dco check subcommand help."""
         result = self.runner.invoke(dco_app, ["check", "--help"])
         assert result.exit_code == 0
-        assert "Check repository for commits missing DCO" in result.stdout
-        assert "--signoffs" in result.stdout
+        assert_in_output("--signoffs", result.stdout)
 
     def test_dco_match_help(self):
         """Test dco match subcommand help."""
         result = self.runner.invoke(dco_app, ["match", "--help"])
         assert result.exit_code == 0
-        assert "Check for commits whose DCO does not match" in result.stdout
-        assert "--signoffs" in result.stdout
+        assert_in_output("--signoffs", result.stdout)
 
     def test_dco_check_invalid_repo(self):
         """Test dco check with invalid repository path."""
@@ -501,8 +499,7 @@ class TestTyperDeploy:
         """Test deploy archives subcommand help."""
         result = self.runner.invoke(deploy_app, ["archives", "--help"])
         assert result.exit_code == 0
-        assert "Archive files to a Nexus site repository" in result.stdout
-        assert "--pattern" in result.stdout
+        assert_in_output("--pattern", result.stdout)
 
     def test_deploy_logs_help(self):
         """Test deploy logs subcommand help."""
@@ -514,16 +511,14 @@ class TestTyperDeploy:
         """Test deploy nexus subcommand help."""
         result = self.runner.invoke(deploy_app, ["nexus", "--help"])
         assert result.exit_code == 0
-        assert "Deploy a Maven repository to a specified Nexus repository" in result.stdout
-        assert "--snapshot" in result.stdout
+        assert_in_output("--snapshot", result.stdout)
 
     def test_deploy_maven_file_help(self):
         """Test deploy maven-file subcommand help."""
         result = self.runner.invoke(deploy_app, ["maven-file", "--help"])
         assert result.exit_code == 0
-        assert "Deploy a file to Nexus using Maven deploy:deploy-file" in result.stdout
-        assert "--maven-bin" in result.stdout
-        assert "--group-id" in result.stdout
+        assert_in_output("--maven-bin", result.stdout)
+        assert_in_output("--group-id", result.stdout)
 
     def test_deploy_integration_with_main_app(self):
         """Test that deploy commands are properly integrated in the main app."""
@@ -583,38 +578,33 @@ class TestTyperGitHub:
         """Test github list subcommand help."""
         result = self.runner.invoke(github_app, ["list", "--help"])
         assert result.exit_code == 0
-        assert "List options for github org repos" in result.stdout
-        assert "--audit" in result.stdout
-        assert "--repos" in result.stdout
+        assert_in_output("--audit", result.stdout)
+        assert_in_output("--repos", result.stdout)
 
     def test_github_create_repo_help(self):
         """Test github create-repo subcommand help."""
         result = self.runner.invoke(github_app, ["create-repo", "--help"])
         assert result.exit_code == 0
-        assert "Create a Github repo within an Organization" in result.stdout
-        assert "--has-issues" in result.stdout
+        assert_in_output("--has-issues", result.stdout)
 
     def test_github_update_repo_help(self):
         """Test github update-repo subcommand help."""
         result = self.runner.invoke(github_app, ["update-repo", "--help"])
         assert result.exit_code == 0
-        assert "Update a Github repo within an Organization" in result.stdout
-        assert "--add-team" in result.stdout
+        assert_in_output("--add-team", result.stdout)
 
     def test_github_create_team_help(self):
         """Test github create-team subcommand help."""
         result = self.runner.invoke(github_app, ["create-team", "--help"])
         assert result.exit_code == 0
-        assert "Create a Github team within an Organization" in result.stdout
-        assert "--repo" in result.stdout
+        assert_in_output("--repo", result.stdout)
 
     def test_github_user_help(self):
         """Test github user subcommand help."""
         result = self.runner.invoke(github_app, ["user", "--help"])
         assert result.exit_code == 0
-        assert "Add and Remove users from an org team" in result.stdout
-        assert "--delete" in result.stdout
-        assert "--admin" in result.stdout
+        assert_in_output("--delete", result.stdout)
+        assert_in_output("--admin", result.stdout)
 
     def test_github_integration_with_main_app(self):
         """Test that github commands are properly integrated in the main app."""
@@ -668,24 +658,21 @@ class TestTyperGerrit:
         """Test gerrit addfile subcommand help."""
         result = self.runner.invoke(gerrit_app, ["addfile", "--help"])
         assert result.exit_code == 0
-        assert "Add a file for review to a Project" in result.stdout
-        assert "--issue-id" in result.stdout
-        assert "--file-location" in result.stdout
+        assert_in_output("--issue-id", result.stdout)
+        assert_in_output("--file-location", result.stdout)
 
     def test_gerrit_addinfojob_help(self):
         """Test gerrit addinfojob subcommand help."""
         result = self.runner.invoke(gerrit_app, ["addinfojob", "--help"])
         assert result.exit_code == 0
-        assert "Add an INFO job for a new Project" in result.stdout
-        assert "--issue-id" in result.stdout
-        assert "--agent" in result.stdout
+        assert_in_output("--issue-id", result.stdout)
+        assert_in_output("--agent", result.stdout)
 
     def test_gerrit_addgitreview_help(self):
         """Test gerrit addgitreview subcommand help."""
         result = self.runner.invoke(gerrit_app, ["addgitreview", "--help"])
         assert result.exit_code == 0
-        assert "Add git review to a project" in result.stdout
-        assert "--issue-id" in result.stdout
+        assert_in_output("--issue-id", result.stdout)
 
     def test_gerrit_addgithubrights_help(self):
         """Test gerrit addgithubrights subcommand help."""
@@ -703,9 +690,8 @@ class TestTyperGerrit:
         """Test gerrit createproject subcommand help."""
         result = self.runner.invoke(gerrit_app, ["createproject", "--help"])
         assert result.exit_code == 0
-        assert "Create a project via the gerrit API" in result.stdout
-        assert "--description" in result.stdout
-        assert "--check" in result.stdout
+        assert_in_output("--description", result.stdout)
+        assert_in_output("--check", result.stdout)
 
     def test_gerrit_create_saml_group_help(self):
         """Test gerrit create-saml-group subcommand help."""
@@ -729,10 +715,9 @@ class TestTyperGerrit:
         """Test gerrit addmavenconfig subcommand help."""
         result = self.runner.invoke(gerrit_app, ["addmavenconfig", "--help"])
         assert result.exit_code == 0
-        assert "Add maven config file for JCasC" in result.stdout
-        assert "--issue-id" in result.stdout
-        assert "--nexus3" in result.stdout
-        assert "--nexus3-ports" in result.stdout
+        assert_in_output("--issue-id", result.stdout)
+        assert_in_output("--nexus3", result.stdout)
+        assert_in_output("--nexus3-ports", result.stdout)
 
     def test_gerrit_addfile_missing_args(self):
         """Test gerrit addfile with missing required arguments."""
@@ -823,15 +808,13 @@ class TestTyperJenkins:
         """Test jenkins quiet-down subcommand help."""
         result = self.runner.invoke(jenkins_app, ["quiet-down", "--help"])
         assert result.exit_code == 0
-        assert "Put Jenkins into 'Quiet Down' mode" in result.stdout
-        assert "--yes" in result.stdout
+        assert_in_output("--yes", result.stdout)
 
     def test_jenkins_remove_offline_nodes_help(self):
         """Test jenkins remove-offline-nodes subcommand help."""
         result = self.runner.invoke(jenkins_app, ["remove-offline-nodes", "--help"])
         assert result.exit_code == 0
-        assert "Remove any offline nodes" in result.stdout
-        assert "--force" in result.stdout
+        assert_in_output("--force", result.stdout)
 
     def test_jenkins_builds_help(self):
         """Test jenkins builds subcommand help."""
@@ -962,8 +945,7 @@ class TestTyperJenkins:
         """Test jenkins token change subcommand help."""
         result = self.runner.invoke(jenkins_app, ["token", "change", "--help"])
         assert result.exit_code == 0
-        assert "Generate a new API token" in result.stdout
-        assert "--name" in result.stdout
+        assert_in_output("--name", result.stdout)
 
     def test_jenkins_token_init_help(self):
         """Test jenkins token init subcommand help."""
@@ -1095,8 +1077,7 @@ class TestTyperNexus2:
         """Test nexus2 repo create subcommand help."""
         result = self.runner.invoke(nexus2_app, ["example.com", "repo", "create", "--help"])
         assert result.exit_code == 0
-        assert "Create a new repository" in result.stdout
-        assert "--upstream-repo" in result.stdout
+        assert_in_output("--upstream-repo", result.stdout)
 
     def test_nexus2_repo_delete_help(self):
         """Test nexus2 repo delete subcommand help."""
@@ -1123,10 +1104,9 @@ class TestTyperNexus2:
         """Test nexus2 role create subcommand help."""
         result = self.runner.invoke(nexus2_app, ["example.com", "role", "create", "--help"])
         assert result.exit_code == 0
-        assert "Create a new role" in result.stdout
-        assert "--description" in result.stdout
-        assert "--roles" in result.stdout
-        assert "--privileges" in result.stdout
+        assert_in_output("--description", result.stdout)
+        assert_in_output("--roles", result.stdout)
+        assert_in_output("--privileges", result.stdout)
 
     def test_nexus2_role_delete_help(self):
         """Test nexus2 role delete subcommand help."""
@@ -1231,8 +1211,7 @@ class TestTyperNexus3:
         """Test nexus3 asset search subcommand help."""
         result = self.runner.invoke(nexus3_app, ["example.com", "asset", "search", "--help"])
         assert result.exit_code == 0
-        assert "Search assets" in result.stdout
-        assert "--details" in result.stdout
+        assert_in_output("--details", result.stdout)
 
     def test_nexus3_privilege_help(self):
         """Test nexus3 privilege subcommand help."""

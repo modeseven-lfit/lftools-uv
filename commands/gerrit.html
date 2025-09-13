@@ -269,163 +269,244 @@
         <article role="main" id="furo-main-content">
           <section id="gerrit">
 <h1>gerrit<a class="headerlink" href="#gerrit" title="Link to this heading">¶</a></h1>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv gerrit [OPTIONS] COMMAND [ARGS]...
-
-  GERRIT TOOLS.
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  abandonchanges              Abandon all OPEN changes for a gerrit project.
-  addfile                     Add a file for review to a Project.
-  addgithubrights             Grant Github read for a project.
-  addgitreview                Add git review to a project.
-  addinfojob                  Add an INFO job for a new Project.
-  addmavenconfig              Add maven config file for JCasC.
-  create-saml-group           Create saml group based on ldap group.
-  createproject               Create a project via the gerrit API.
-  list-project-inherits-from  List who a project inherits from.
-  list-project-permissions    List Owners of a Project.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv gerrit [OPTIONS] COMMAND [ARGS]...                           
+                                                                                
+ GERRIT TOOLS.                                                                  
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ addfile                      Add a file for review to a Project.             │
+│ addinfojob                   Add an INFO job for a new Project.              │
+│ addgitreview                 Add git review to a project.                    │
+│ addgithubrights              Grant Github read for a project.                │
+│ abandonchanges               Abandon all OPEN changes for a gerrit project.  │
+│ createproject                Create a project via the gerrit API.            │
+│ create-saml-group            Create saml group based on ldap group.          │
+│ list-project-permissions     List Owners of a Project.                       │
+│ list-project-inherits-from   List who a project inherits from.               │
+│ addmavenconfig               Add maven config file for JCasC.                │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <section id="commands">
 <h2>Commands<a class="headerlink" href="#commands" title="Link to this heading">¶</a></h2>
 <section id="list-project-permissions">
 <h3>list-project-permissions<a class="headerlink" href="#list-project-permissions" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv gerrit list-project-permissions [OPTIONS] GERRIT_FQDN
-                                                  PROJECT
-
-  List Owners of a Project.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv gerrit list-project-permissions [OPTIONS] GERRIT_FQDN        
+                                                   PROJECT                      
+                                                                                
+ List Owners of a Project.                                                      
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    gerrit_fqdn      TEXT  Gerrit FQDN                                      │
+│                             [required]                                       │
+│ *    project          TEXT  Project name                                     │
+│                             [required]                                       │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="list-project-inherits-from">
 <h3>list-project-inherits-from<a class="headerlink" href="#list-project-inherits-from" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv gerrit list-project-inherits-from [OPTIONS] GERRIT_FQDN
-                                                    GERRIT_PROJECT
-
-  List who a project inherits from.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv gerrit list-project-inherits-from [OPTIONS] GERRIT_FQDN      
+                                                     GERRIT_PROJECT             
+                                                                                
+ List who a project inherits from.                                              
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    gerrit_fqdn         TEXT  Gerrit FQDN                                   │
+│                                [required]                                    │
+│ *    gerrit_project      TEXT  Gerrit project name                           │
+│                                [required]                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="abandonchanges">
 <h3>abandonchanges<a class="headerlink" href="#abandonchanges" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv gerrit abandonchanges [OPTIONS] GERRIT_FQDN GERRIT_PROJECT
-
-  Abandon all OPEN changes for a gerrit project.
-
-  gerrit_url gerrit.o-ran-sc.org gerrit_project test/test1
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv gerrit abandonchanges [OPTIONS] GERRIT_FQDN GERRIT_PROJECT   
+                                                                                
+ Abandon all OPEN changes for a gerrit project.                                 
+                                                                                
+ gerrit_url gerrit.o-ran-sc.org gerrit_project test/test1                       
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    gerrit_fqdn         TEXT  Gerrit FQDN                                   │
+│                                [required]                                    │
+│ *    gerrit_project      TEXT  Gerrit project name                           │
+│                                [required]                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="addgitreview">
 <h3>addgitreview<a class="headerlink" href="#addgitreview" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv gerrit addgitreview [OPTIONS] GERRIT_FQDN GERRIT_PROJECT
-
-  Add git review to a project.
-
-  Example: gerrit_url gerrit.o-ran-sc.org gerrit_project test/test1
-
-Options:
-  --issue_id TEXT  For projects that enforce an issue id for changesets
-  --help           Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv gerrit addgitreview [OPTIONS] GERRIT_FQDN GERRIT_PROJECT     
+                                                                                
+ Add git review to a project.                                                   
+                                                                                
+ Example: gerrit_url gerrit.o-ran-sc.org gerrit_project test/test1              
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    gerrit_fqdn         TEXT  Gerrit FQDN                                   │
+│                                [required]                                    │
+│ *    gerrit_project      TEXT  Gerrit project name                           │
+│                                [required]                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --issue-id        TEXT  For projects that enforce an issue id for changesets │
+│ --help                  Show this message and exit.                          │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="addgithubrights">
 <h3>addgithubrights<a class="headerlink" href="#addgithubrights" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv gerrit addgithubrights [OPTIONS] GERRIT_FQDN GERRIT_PROJECT
-
-  Grant Github read for a project.
-
-  gerrit_url gerrit.o-ran-sc.org gerrit_project test/test1
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv gerrit addgithubrights [OPTIONS] GERRIT_FQDN GERRIT_PROJECT  
+                                                                                
+ Grant Github read for a project.                                               
+                                                                                
+ gerrit_url gerrit.o-ran-sc.org gerrit_project test/test1                       
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    gerrit_fqdn         TEXT  Gerrit FQDN                                   │
+│                                [required]                                    │
+│ *    gerrit_project      TEXT  Gerrit project name                           │
+│                                [required]                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="addfile">
 <h3>addfile<a class="headerlink" href="#addfile" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv gerrit addfile [OPTIONS] GERRIT_FQDN GERRIT_PROJECT FILENAME
-
-  Add a file for review to a Project.
-
-  Requires gerrit directory.
-
-  Example:
-
-  gerrit_url gerrit.o-ran-sc.org/r gerrit_project test/test1
-
-Options:
-  --issue_id TEXT       For projects that enforce an issue id for changesets
-  --file_location TEXT  File path within the repository
-  --help                Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv gerrit addfile [OPTIONS] GERRIT_FQDN GERRIT_PROJECT FILENAME 
+                                                                                
+ Add a file for review to a Project.                                            
+                                                                                
+ Requires gerrit directory.                                                     
+                                                                                
+ Example:                                                                       
+                                                                                
+ gerrit_url gerrit.o-ran-sc.org/r gerrit_project test/test1                     
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    gerrit_fqdn         TEXT  Gerrit FQDN                                   │
+│                                [required]                                    │
+│ *    gerrit_project      TEXT  Gerrit project name                           │
+│                                [required]                                    │
+│ *    filename            TEXT  Filename to add                               │
+│                                [required]                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --issue-id             TEXT  For projects that enforce an issue id for       │
+│                              changesets                                      │
+│ --file-location        TEXT  File path within the repository                 │
+│ --help                       Show this message and exit.                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="createproject">
 <h3>createproject<a class="headerlink" href="#createproject" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv gerrit createproject [OPTIONS] GERRIT_FQDN GERRIT_PROJECT
-                                       LDAP_GROUP
-
-  Create a project via the gerrit API.
-
-  Creates a gerrit project. Sets ldap group as owner.
-
-  Example:
-
-  gerrit_url gerrit.o-ran-sc.org/r gerrit_project test/test1 ldap_group oran-
-  gerrit-test-test1-committers
-
-Options:
-  --description TEXT  Project Description  [required]
-  --check             just check if the project exists
-  --help              Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv gerrit createproject [OPTIONS] GERRIT_FQDN GERRIT_PROJECT    
+                                        LDAP_GROUP                              
+                                                                                
+ Create a project via the gerrit API.                                           
+                                                                                
+ Creates a gerrit project. Sets ldap group as owner.                            
+                                                                                
+ Example:                                                                       
+                                                                                
+ gerrit_url gerrit.o-ran-sc.org/r gerrit_project test/test1 ldap_group          
+ oran-gerrit-test-test1-committers                                              
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    gerrit_fqdn         TEXT  Gerrit FQDN                                   │
+│                                [required]                                    │
+│ *    gerrit_project      TEXT  Gerrit project name                           │
+│                                [required]                                    │
+│ *    ldap_group          TEXT  LDAP group name                               │
+│                                [required]                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ *  --description        TEXT  Project Description                            │
+│                               [required]                                     │
+│    --check                    just check if the project exists               │
+│    --help                     Show this message and exit.                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="create-saml-group">
 <h3>create-saml-group<a class="headerlink" href="#create-saml-group" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv gerrit create-saml-group [OPTIONS] GERRIT_FQDN LDAP_GROUP
-
-  Create saml group based on ldap group.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv gerrit create-saml-group [OPTIONS] GERRIT_FQDN LDAP_GROUP    
+                                                                                
+ Create saml group based on ldap group.                                         
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    gerrit_fqdn      TEXT  Gerrit FQDN                                      │
+│                             [required]                                       │
+│ *    ldap_group       TEXT  LDAP group name                                  │
+│                             [required]                                       │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="addinfojob">
 <h3>addinfojob<a class="headerlink" href="#addinfojob" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv gerrit addinfojob [OPTIONS] GERRIT_FQDN GERRIT_PROJECT
-                                    JJBREPO
-
-  Add an INFO job for a new Project.
-
-  Adds info verify jenkins job for project. result[&#39;id&#39;] can be used to amend
-  a review so that multiple projects can have info jobs added in a single
-  review
-
-  Example:
-
-  gerrit_url gerrit.o-ran-sc.org/r gerrit_project test/test1 jjbrepo ci-
-  mangement
-
-Options:
-  --issue_id TEXT  For projects that enforce an issue id for changesets
-  --agent TEXT     Specify the Jenkins agent label to run the job on
-  --help           Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv gerrit addinfojob [OPTIONS] GERRIT_FQDN GERRIT_PROJECT       
+                                     JJBREPO                                    
+                                                                                
+ Add an INFO job for a new Project.                                             
+                                                                                
+ Adds info verify jenkins job for project. result[&#39;id&#39;] can be used to amend a  
+ review so that multiple projects can have info jobs added in a single review   
+                                                                                
+ Example:                                                                       
+                                                                                
+ gerrit_url gerrit.o-ran-sc.org/r gerrit_project test/test1 jjbrepo             
+ ci-mangement                                                                   
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    gerrit_fqdn         TEXT  Gerrit FQDN                                   │
+│                                [required]                                    │
+│ *    gerrit_project      TEXT  Gerrit project name                           │
+│                                [required]                                    │
+│ *    jjbrepo             TEXT  JJB repository name                           │
+│                                [required]                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --issue-id        TEXT  For projects that enforce an issue id for changesets │
+│ --agent           TEXT  Specify the Jenkins agent label to run the job on    │
+│ --help                  Show this message and exit.                          │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <div class="admonition note">
@@ -452,27 +533,41 @@ signed_off_by = Your Name &lt;your@email.org&gt;
 </section>
 <section id="addmavenconfig">
 <h3>addmavenconfig<a class="headerlink" href="#addmavenconfig" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv gerrit addmavenconfig [OPTIONS] GERRIT_FQDN GERRIT_PROJECT
-                                        JJBREPO
-
-  Add maven config file for JCasC.
-
-  The following options can be set in the gerrit server&#39;s entry in lftools.ini:
-    * default_servers: Comma-separated list of servers using the &lt;projectname&gt;
-      credential. Default: releases,snapshots,staging,site
-    * additional_credentials: JSON-formatted string containing
-      servername:credentialname pairings. This should be on a single line,
-      without quotes surrounding the string.
-    * nexus3: The nexus3 server url for a given project.
-    * nexus3_ports: Comma-separated list of ports used by Nexus3.
-      Default: 10001,10002,10003,10004
-
-Options:
-  --issue_id TEXT      For projects that enforce an issue id for changesets
-  --nexus3 TEXT        Specify a Nexus 3 server, e.g. nexus3.example.org
-  --nexus3_ports TEXT  Comma-separated list of ports supported by the Nexus 3
-                       server specified
-  --help               Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv gerrit addmavenconfig [OPTIONS] GERRIT_FQDN GERRIT_PROJECT   
+                                         JJBREPO                                
+                                                                                
+ Add maven config file for JCasC.                                               
+                                                                                
+ The following options can be set in the gerrit server&#39;s entry in lftools.ini:  
+                                                                                
+                                                                                
+  • default_servers: Comma-separated list of servers using the  credential.     
+    Default: releases,snapshots,staging,site                                    
+  • additional_credentials: JSON-formatted string containing                    
+    servername:credentialname pairings. This should be on a single line,        
+    without quotes surrounding the string.                                      
+  • nexus3: The nexus3 server url for a given project.                          
+  • nexus3_ports: Comma-separated list of ports used by Nexus3. Default:        
+    10001,10002,10003,10004                                                     
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    gerrit_fqdn         TEXT  Gerrit FQDN                                   │
+│                                [required]                                    │
+│ *    gerrit_project      TEXT  Gerrit project name                           │
+│                                [required]                                    │
+│ *    jjbrepo             TEXT  JJB repository name                           │
+│                                [required]                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --issue-id            TEXT  For projects that enforce an issue id for        │
+│                             changesets                                       │
+│ --nexus3              TEXT  Specify a Nexus 3 server, e.g.                   │
+│                             nexus3.example.org                               │
+│ --nexus3-ports        TEXT  Comma-separated list of ports supported by the   │
+│                             Nexus 3 server specified                         │
+│ --help                      Show this message and exit.                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <p>An example of the lftools-uv.ini entry for a Gerrit server making use of a full

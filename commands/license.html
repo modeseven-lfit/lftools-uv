@@ -269,34 +269,48 @@
         <article role="main" id="furo-main-content">
           <section id="license">
 <h1>license<a class="headerlink" href="#license" title="Link to this heading">¶</a></h1>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv license [OPTIONS] COMMAND [ARGS]...
-
-  Scan code for license headers.
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  check      Check files for missing license headers.
-  check-dir  Check directory for files missing license headers.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv license [OPTIONS] COMMAND [ARGS]...                          
+                                                                                
+ Scan code for license headers                                                  
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ check   Check files for missing license headers.                             │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <section id="commands">
 <h2>Commands<a class="headerlink" href="#commands" title="Link to this heading">¶</a></h2>
 <section id="check">
 <h3>check<a class="headerlink" href="#check" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv license check [OPTIONS] SOURCE
-
-  Check files for missing license headers.
-
-  Does not care if about line formatting of the license as long as all of the
-  text is there and in the correct order.
-
-  Note: This code only supports &#39;#&#39; comments for license headers.
-
-Options:
-  -l, --license TEXT  License header file to compare against.
-  --help              Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv license check [OPTIONS] SOURCE                               
+                                                                                
+ Check files for missing license headers.                                       
+                                                                                
+ Does not care about line formatting of the license as long as all of the text  
+ is there and in the correct order.                                             
+                                                                                
+ Note: This code only supports &#39;#&#39; comments for license headers.                
+                                                                                
+ Args: source: Source file or directory to check for license headers            
+ license_file: License header file to compare against                           
+                                                                                
+ Examples: lftools-uv license check src/ lftools-uv license check myfile.py     
+ --license custom-header.txt                                                    
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    source      PATH  Source file or directory to check                     │
+│                        [required]                                            │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --license  -l      TEXT  License header file to compare against              │
+│                          [default: license-header.txt]                       │
+│ --help                   Show this message and exit.                         │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>

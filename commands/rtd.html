@@ -269,138 +269,149 @@
         <article role="main" id="furo-main-content">
           <section id="rtd">
 <h1>rtd<a class="headerlink" href="#rtd" title="Link to this heading">¶</a></h1>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv rtd [OPTIONS] COMMAND [ARGS]...
-
-  Read the Docs interface.
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  project-build-details    Retrieve specific project build details.
-  project-build-list       Retrieve a list of a project&#39;s builds.
-  project-build-trigger    Trigger a new build.
-  project-create           Create a new project.
-  project-details          Retrieve project details.
-  project-list             Get a list of Read the Docs projects.
-  project-update           Create a new project.
-  project-version-details  Retrieve project version details.
-  project-version-list     Retrieve project version list.
-  project-version-update   Update projects active version.
-  subproject-create        Create a project-subproject relationship.
-  subproject-delete        Delete a project-subproject relationship.
-  subproject-details       Retrieve subproject&#39;s details.
-  subproject-list          Get a list of Read the Docs subprojects for a...
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv rtd [OPTIONS] COMMAND [ARGS]...                              
+                                                                                
+ Read the Docs interface                                                        
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ project-list      Get a list of Read the Docs projects.                      │
+│ project-details   Get details for a specific Read the Docs project.          │
+│ project-create    Create a new Read the Docs project.                        │
+│ project-update    Update an existing Read the Docs project.                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <section id="commands">
 <h2>Commands<a class="headerlink" href="#commands" title="Link to this heading">¶</a></h2>
 <section id="project-list">
 <h3>project-list<a class="headerlink" href="#project-list" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv rtd project-list [OPTIONS]
-
-  Get a list of Read the Docs projects.
-
-  Returns a list of RTD projects for the account whose token is configured in
-  lftools.ini. This returns the slug name, not the pretty name.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv rtd project-list [OPTIONS]                                   
+                                                                                
+ Get a list of Read the Docs projects.                                          
+                                                                                
+ Returns a list of RTD projects for the account whose token is configured in    
+ lftools.ini. This returns the slug name, not the pretty name.                  
+                                                                                
+ Examples: lftools-uv rtd project-list                                          
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="project-details">
 <h3>project-details<a class="headerlink" href="#project-details" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv rtd project-details [OPTIONS] PROJECT_SLUG
-
-  Retrieve project details.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv rtd project-details [OPTIONS] PROJECT_SLUG                   
+                                                                                
+ Get details for a specific Read the Docs project.                              
+                                                                                
+ Args: project_slug: The slug name of the project                               
+                                                                                
+ Examples: lftools-uv rtd project-details my-project                            
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    project_slug      TEXT  Project slug name                               │
+│                              [required]                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="project-version-list">
 <h3>project-version-list<a class="headerlink" href="#project-version-list" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv rtd project-version-list [OPTIONS] PROJECT_SLUG
-
-  Retrieve project version list.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv rtd [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv rtd --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;project-version-list&#39;.                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="project-version-details">
 <h3>project-version-details<a class="headerlink" href="#project-version-details" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv rtd project-version-details [OPTIONS] PROJECT_SLUG
-                                              VERSION_SLUG
-
-  Retrieve project version details.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv rtd [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv rtd --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;project-version-details&#39;.                                   │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="project-version-update">
 <h3>project-version-update<a class="headerlink" href="#project-version-update" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv rtd project-version-update [OPTIONS] PROJECT_SLUG
-                                             VERSION_SLUG ACTIVE
-
-  Update projects active version.
-
-  active must be one of true or false
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv rtd [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv rtd --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;project-version-update&#39;.                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="project-create">
 <h3>project-create<a class="headerlink" href="#project-create" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv rtd project-create [OPTIONS] PROJECT_NAME REPOSITORY_URL
-                                     REPOSITORY_TYPE HOMEPAGE
-                                     PROGRAMMING_LANGUAGE LANGUAGE
-
-  Create a new project.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv rtd project-create [OPTIONS] NAME REPO_URL                   
+                                                                                
+ Create a new Read the Docs project.                                            
+                                                                                
+ Args: name: The name of the project repo_url: The repository URL description:  
+ Project description (optional) language: Project language code (default: en)   
+                                                                                
+ Examples: lftools-uv rtd project-create &quot;My Project&quot;                           
+ https://github.com/user/repo lftools-uv rtd project-create &quot;My Project&quot;        
+ https://github.com/user/repo --description &quot;A great project&quot;                   
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    name          TEXT  Project name                                        │
+│                          [required]                                          │
+│ *    repo_url      TEXT  Repository URL                                      │
+│                          [required]                                          │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --description        TEXT  Project description                               │
+│ --language           TEXT  Project language code                             │
+│                            [default: en]                                     │
+│ --help                     Show this message and exit.                       │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="project-build-list">
 <h3>project-build-list<a class="headerlink" href="#project-build-list" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv rtd project-build-list [OPTIONS] PROJECT_SLUG
-
-  Retrieve a list of a project&#39;s builds.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv rtd [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv rtd --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;project-build-list&#39;.                                        │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="project-build-details">
 <h3>project-build-details<a class="headerlink" href="#project-build-details" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv rtd project-build-details [OPTIONS] PROJECT_SLUG BUILD_ID
-
-  Retrieve specific project build details.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv rtd [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv rtd --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;project-build-details&#39;.                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="project-build-trigger">
 <h3>project-build-trigger<a class="headerlink" href="#project-build-trigger" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv rtd project-build-trigger [OPTIONS] PROJECT_SLUG
-                                            VERSION_SLUG
-
-  Trigger a new build.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv rtd [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv rtd --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;project-build-trigger&#39;.                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <p>API requires a [rtd] section in ~/.config/lftools/lftools.ini:</p>

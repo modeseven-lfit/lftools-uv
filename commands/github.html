@@ -269,125 +269,194 @@
         <article role="main" id="furo-main-content">
           <section id="github">
 <h1>github<a class="headerlink" href="#github" title="Link to this heading">¶</a></h1>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv github [OPTIONS] COMMAND [ARGS]...
-
-  GITHUB TOOLS.
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  create-repo  Create a Github repo within an Organization.
-  create-team  Create a Github team within an Organization.
-  list         List options for github org repos.
-  submit-pr    Submit a pr if mergeable.
-  update-repo  Update a Github repo within an Organization.
-  user         Add and Remove users from an org team.
-  votes        Helper for votes.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv github [OPTIONS] COMMAND [ARGS]...                           
+                                                                                
+ GitHub tools.                                                                  
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ submit-pr     Submit a pr if mergeable.                                      │
+│ votes         Helper for votes.                                              │
+│ list          List options for github org repos.                             │
+│ create-repo   Create a Github repo within an Organization.                   │
+│ update-repo   Update a Github repo within an Organization.                   │
+│ create-team   Create a Github team within an Organization.                   │
+│ user          Add and Remove users from an org team.                         │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <section id="commands">
 <h2>Commands<a class="headerlink" href="#commands" title="Link to this heading">¶</a></h2>
 <section id="create-repo">
 <h3>create-repo<a class="headerlink" href="#create-repo" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv github create-repo [OPTIONS] ORGANIZATION REPOSITORY
-                                     DESCRIPTION
-
-  Create a Github repo within an Organization.
-
-  By default has_issues has_wiki and has_projects is set to false. See --help
-  to create a repo with these enabled.
-
-Options:
-  --has_issues    Repo should have issues
-  --has_projects  Repo should have projects
-  --has_wiki      Repo should have wiki
-  --help          Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv github create-repo [OPTIONS] ORGANIZATION REPOSITORY         
+                                      DESCRIPTION                               
+                                                                                
+ Create a Github repo within an Organization.                                   
+                                                                                
+ Requires an admin token.                                                       
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    organization      TEXT  GitHub organization name                        │
+│                              [required]                                      │
+│ *    repository        TEXT  Repository name to create                       │
+│                              [required]                                      │
+│ *    description       TEXT  Repository description                          │
+│                              [required]                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --has-issues            Repo should have issues                              │
+│ --has-projects          Repo should have projects                            │
+│ --has-wiki              Repo should have wiki                                │
+│ --help                  Show this message and exit.                          │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="create-team">
 <h3>create-team<a class="headerlink" href="#create-team" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv github create-team [OPTIONS] ORGANIZATION NAME PRIVACY
-
-  Create a Github team within an Organization.
-
-  Privacy should be set to closed This allows us to control group membership.
-
-Options:
-  --repo TEXT  Assign team to repo
-  --help       Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv github create-team [OPTIONS] ORGANIZATION NAME PRIVACY       
+                                                                                
+ Create a Github team within an Organization.                                   
+                                                                                
+ Privacy should be set to closed This allows us to control group membership.    
+                                                                                
+ If you have two factor auth enabled and you get a 401 error, then you need to  
+ create a personal access token and add it to your ~/.netrc file.               
+                                                                                
+ Requires an admin token.                                                       
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    organization      TEXT  GitHub organization name                        │
+│                              [required]                                      │
+│ *    name              TEXT  Team name to create                             │
+│                              [required]                                      │
+│ *    privacy           TEXT  Team privacy setting (closed/secret)            │
+│                              [required]                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --repo        TEXT  Assign team to repo                                      │
+│ --help              Show this message and exit.                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="list">
 <h3>list<a class="headerlink" href="#list" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv github list [OPTIONS] ORGANIZATION
-
-  List options for github org repos.
-
-Options:
-  --audit         List members without 2fa
-  --repos         List all repos
-  --full          All members and their respective teams
-  --teams         List available teams
-  --team TEXT     List members of a team
-  --repofeatures  List enabled features for repos in an org
-  --help          Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv github list [OPTIONS] ORGANIZATION                           
+                                                                                
+ List options for github org repos.                                             
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    organization      TEXT  GitHub organization name                        │
+│                              [required]                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --audit                     List members without 2fa                         │
+│ --repos                     List all repos                                   │
+│ --full                      All members and their respective teams           │
+│ --teams                     List available teams                             │
+│ --team                TEXT  List members of a team                           │
+│ --repofeatures              List enabled features for repos in an org        │
+│ --help                      Show this message and exit.                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="update-repo">
 <h3>update-repo<a class="headerlink" href="#update-repo" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv github update-repo [OPTIONS] ORGANIZATION REPOSITORY
-
-  Update a Github repo within an Organization.
-
-  By default has_issues has_wiki and has_projects is set to false. See --help
-  to use this command to enable these options.
-
-Options:
-  --has_issues        Repo should have issues
-  --has_projects      Repo should have projects
-  --has_wiki          Repo should have wiki
-  --add_team TEXT     Add team to repo
-  --remove_team TEXT  remove team from repo
-  --help              Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv github update-repo [OPTIONS] ORGANIZATION REPOSITORY         
+                                                                                
+ Update a Github repo within an Organization.                                   
+                                                                                
+ Requires an admin token.                                                       
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    organization      TEXT  GitHub organization name                        │
+│                              [required]                                      │
+│ *    repository        TEXT  Repository name to update                       │
+│                              [required]                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --has-issues                Repo should have issues                          │
+│ --has-projects              Repo should have projects                        │
+│ --has-wiki                  Repo should have wiki                            │
+│ --add-team            TEXT  Add team to repo                                 │
+│ --remove-team         TEXT  Remove team from repo                            │
+│ --help                      Show this message and exit.                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="submit-pr">
 <h3>submit-pr<a class="headerlink" href="#submit-pr" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv github submit-pr [OPTIONS] ORGANIZATION REPO PR
-
-  Submit a pr if mergeable.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv github submit-pr [OPTIONS] ORGANIZATION REPO PR              
+                                                                                
+ Submit a pr if mergeable.                                                      
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    organization      TEXT     GitHub organization name                     │
+│                                 [required]                                   │
+│ *    repo              TEXT     GitHub repository name                       │
+│                                 [required]                                   │
+│ *    pr                INTEGER  Pull request number                          │
+│                                 [required]                                   │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="user">
 <h3>user<a class="headerlink" href="#user" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv github user [OPTIONS] ORGANIZATION USER TEAM
-
-  Add and Remove users from an org team.
-
-Options:
-  --delete  Remove user from org
-  --admin   User is admin for org, or a maintainer of a team
-  --help    Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv github user [OPTIONS] ORGANIZATION USER TEAM                 
+                                                                                
+ Add and Remove users from an org team.                                         
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    organization      TEXT  GitHub organization name                        │
+│                              [required]                                      │
+│ *    user              TEXT  GitHub username                                 │
+│                              [required]                                      │
+│ *    team              TEXT  Team name                                       │
+│                              [required]                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --delete          Remove user from org                                       │
+│ --admin           User is admin for org, or a maintainer of a team           │
+│ --help            Show this message and exit.                                │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="votes">
 <h3>votes<a class="headerlink" href="#votes" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv github votes [OPTIONS] ORGANIZATION REPO PR
-
-  Helper for votes.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv github votes [OPTIONS] ORGANIZATION REPO PR                  
+                                                                                
+ Helper for votes.                                                              
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    organization      TEXT     GitHub organization name                     │
+│                                 [required]                                   │
+│ *    repo              TEXT     GitHub repository name                       │
+│                                 [required]                                   │
+│ *    pr                INTEGER  Pull request number                          │
+│                                 [required]                                   │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <p>API requires a [github] or [github.OrgName] section in ~/.config/lftools-uv/lftools-uv.ini:</p>

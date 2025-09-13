@@ -269,88 +269,108 @@
         <article role="main" id="furo-main-content">
           <section id="version">
 <h1>version<a class="headerlink" href="#version" title="Link to this heading">¶</a></h1>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv version [OPTIONS] COMMAND [ARGS]...
-
-  Version bump script for Maven based projects.
-
-  In general, versions should be: &lt;major&gt;.&lt;minor&gt;.&lt;micro&gt;[-&lt;human-readable-
-  tag&gt;]
-
-  - Human readable tag should not have any dots in it
-  - SNAPSHOT is used for development
-
-  Scenarios:
-
-          master before release:        x.y.z-SNAPSHOT (or x.y-SNAPSHOT in which case we treat it as x.y.0-SNAPSHOT)
-          at release:                   x.y.z-Helium
-          stable/helium after release:  x.y.(z+1)-SNAPSHOT
-          master after release:         x.(y+1).0-SNAPSHOT
-          Autorelease on master:        &lt;human-readable-tag&gt; is &quot;PreLithium-&lt;date&gt;&quot;
-          Autorelease on stable/helium: &lt;human-readable-tag&gt; is &quot;PreHeliumSR1-&lt;date&gt;&quot;
-          Release job on master:        &lt;human-readable-tag&gt; is &quot;Lithium&quot;
-          Release job on stable/helium: &lt;human-readable-tag&gt; is &quot;HeliumSR1&quot;
-
-  Some things have a date for a version, e.g., 2014.09.24.4
-
-  * We treat this as YYYY.MM.DD.&lt;minor&gt;
-  * Note that all such dates currently in ODL are in YANG tools
-  * They are all now YYYY.MM.DD.7 since 7 is the minor version for yangtools
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  bump     Version bump pom files in a Maven project by x.(y+1).z or...
-  patch    Patch a project with git.bundles and then version bump.
-  release  Version bump pom files in a Maven project from SNAPSHOT to...
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv version [OPTIONS] COMMAND [ARGS]...                          
+                                                                                
+ Version bump script for Maven based projects                                   
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ bump      Version bump pom files in a Maven project by x.(y+1).z or          │
+│           x.y.(z+1).                                                         │
+│ release   Version bump pom files in a Maven project from SNAPSHOT to         │
+│           RELEASE_TAG.                                                       │
+│ patch     Patch a project with git.bundles and then version bump.            │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <section id="commands">
 <h2>Commands<a class="headerlink" href="#commands" title="Link to this heading">¶</a></h2>
 <section id="bump">
 <h3>bump<a class="headerlink" href="#bump" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv version bump [OPTIONS] RELEASE_TAG
-
-  Version bump pom files in a Maven project by x.(y+1).z or x.y.(z+1).
-
-  This script performs version bumping as follows:
-
-  1. Change YYYY.MM.DD.y.z-SNAPSHOT to YYYY.MM.DD.(y+1).0-SNAPSHOT
-  2. Change YYYY.MM.DD.y.z-Helium to YYMMDD.y.(z+1)-SNAPSHOT
-  3. Change x.y.z-SNAPSHOT versions to x.(y+1).0-SNAPSHOT
-  4. Change x.y.z-RELEASE_TAG versions to x.y.(z+1)-SNAPSHOT and
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv version bump [OPTIONS] RELEASE_TAG                           
+                                                                                
+ Version bump pom files in a Maven project by x.(y+1).z or x.y.(z+1).           
+                                                                                
+ This script performs version bumping as follows:                               
+                                                                                
+  1 Change YYYY.MM.DD.y.z-SNAPSHOT to YYYY.MM.DD.(y+1).0-SNAPSHOT               
+  2 Change YYYY.MM.DD.y.z-Helium to YYMMDD.y.(z+1)-SNAPSHOT                     
+  3 Change x.y.z-SNAPSHOT versions to x.(y+1).0-SNAPSHOT                        
+  4 Change x.y.z-RELEASE_TAG versions to x.y.(z+1)-SNAPSHOT                     
+                                                                                
+ Args: release_tag: The release tag to use for version bumping                  
+                                                                                
+ Examples: lftools-uv version bump &quot;Lithium-SR1&quot; lftools-uv version bump        
+ &quot;2024.01.15&quot;                                                                   
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    release_tag      TEXT  Release tag to use for version bumping           │
+│                             [required]                                       │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="patch">
 <h3>patch<a class="headerlink" href="#patch" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv version patch [OPTIONS] RELEASE_TAG PATCH_DIR
-
-  Patch a project with git.bundles and then version bump.
-
-  Applies git.bundle patches to the project and then performs a version bump
-  using RELEASE_TAG in order to version bump by x.y.(z+1)-SNAPSHOT.
-
-Options:
-  --project TEXT  Project name to use when tagging. (Default: OpenDaylight)
-  --help          Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv version patch [OPTIONS] RELEASE_TAG PATCH_DIR                
+                                                                                
+ Patch a project with git.bundles and then version bump.                        
+                                                                                
+ Applies git.bundle patches to the project and then performs a version bump     
+ using RELEASE_TAG in order to version bump by x.y.(z+1)-SNAPSHOT.              
+                                                                                
+ Args: release_tag: Release tag to use for version bumping after patching       
+ patch_dir: Directory containing git.bundle patches to apply project: Project   
+ name to use when tagging (default: OpenDaylight)                               
+                                                                                
+ Examples: lftools-uv version patch &quot;Lithium-SR1&quot; /path/to/patches lftools-uv   
+ version patch &quot;1.2.3&quot; /path/to/patches --project &quot;MyProject&quot;                   
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    release_tag      TEXT  Release tag to use for version bumping after     │
+│                             patching                                         │
+│                             [required]                                       │
+│ *    patch_dir        TEXT  Directory containing git.bundle patches to apply │
+│                             [required]                                       │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --project        TEXT  Project name to use when tagging                      │
+│                        [default: OpenDaylight]                               │
+│ --help                 Show this message and exit.                           │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="release">
 <h3>release<a class="headerlink" href="#release" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv version release [OPTIONS] RELEASE_TAG
-
-  Version bump pom files in a Maven project from SNAPSHOT to RELEASE_TAG.
-
-  Searches poms for all instances of SNAPSHOT version and changes it to
-  RELEASE_TAG.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv version release [OPTIONS] RELEASE_TAG                        
+                                                                                
+ Version bump pom files in a Maven project from SNAPSHOT to RELEASE_TAG.        
+                                                                                
+ Searches poms for all instances of SNAPSHOT version and changes it to          
+ RELEASE_TAG.                                                                   
+                                                                                
+ Args: release_tag: The release tag to replace SNAPSHOT versions with           
+                                                                                
+ Examples: lftools-uv version release &quot;Lithium&quot; lftools-uv version release      
+ &quot;1.2.3&quot;                                                                        
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    release_tag      TEXT  Release tag to replace SNAPSHOT versions         │
+│                             [required]                                       │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>

@@ -271,38 +271,44 @@
 <h1>openstack<a class="headerlink" href="#openstack" title="Link to this heading">¶</a></h1>
 <p>Requires a <cite>uv pip install “lftools-uv[openstack]”</cite> to activate this command.
 Requires <cite>qemu-img</cite> binary to upload images</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv openstack [OPTIONS] COMMAND [ARGS]...
-
-  Provide an interface to OpenStack.
-
-Options:
-  --os-cloud TEXT  [required]
-  --help           Show this message and exit.
-
-Commands:
-  image   Command for manipulating images.
-  object  Command for manipulating objects.
-  server  Command for manipulating servers.
-  stack   Command for manipulating stacks.
-  volume  Command for manipulating volumes.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv openstack [OPTIONS] COMMAND [ARGS]...                        
+                                                                                
+ Provide an interface to OpenStack.                                             
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ *  --os-cloud        TEXT  OpenStack cloud name                              │
+│                            [env var: OS_CLOUD]                               │
+│                            [required]                                        │
+│    --help                  Show this message and exit.                       │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ image    Command for manipulating images.                                    │
+│ object   Command for manipulating objects.                                   │
+│ server   Command for manipulating servers.                                   │
+│ stack    Command for manipulating stacks.                                    │
+│ volume   Command for manipulating volumes.                                   │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <section id="commands">
 <h2>Commands<a class="headerlink" href="#commands" title="Link to this heading">¶</a></h2>
 <section id="image">
 <h3>image<a class="headerlink" href="#image" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv openstack image [OPTIONS] COMMAND [ARGS]...
-
-  Command for manipulating images.
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  cleanup  Cleanup old images.
-  list     List cloud images.
-  share    Share image with another tenant.
-  upload   Upload image to OpenStack cloud.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv openstack image [OPTIONS] COMMAND [ARGS]...                  
+                                                                                
+ Command for manipulating images.                                               
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ cleanup   Cleanup old images.                                                │
+│ list      List cloud images.                                                 │
+│ share     Share image with another tenant.                                   │
+│ upload    Upload image to OpenStack cloud.                                   │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <section id="cleanup">
@@ -311,34 +317,40 @@ Commands:
 The OpenDaylight project has 2 clouds, a Private Cloud and a Public cloud which
 needs the <cite>–clouds</cite> option to automatically remove the same images from
 more than one cloud simultaneously.</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv openstack image cleanup [OPTIONS]
-
-  Cleanup old images.
-
-Options:
-  --ci-managed BOOLEAN   Filter only images that have the ci_managed=yes
-                         metadata set.
-  --days INTEGER         Find images older than or equal to days.
-  --hide-public BOOLEAN  Ignore public images.
-  --clouds TEXT          Clouds (as defined in clouds.yaml) to remove images
-                         from. If notpassed will assume from os-cloud
-                         parameter. (optional)
-  --help                 Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv openstack image cleanup [OPTIONS]                            
+                                                                                
+ Cleanup old images.                                                            
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --ci-managed                  Filter only images that have the               │
+│                               ci_managed=yes metadata set.                   │
+│ --days               INTEGER  Find images older than or equal to days.       │
+│                               [default: 0]                                   │
+│ --hide-public                 Ignore public images.                          │
+│ --clouds             TEXT     Clouds (as defined in clouds.yaml) to remove   │
+│                               images from. If not passed will assume from    │
+│                               os-cloud parameter. (optional)                 │
+│ --help                        Show this message and exit.                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="list">
 <h4>list<a class="headerlink" href="#list" title="Link to this heading">¶</a></h4>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv openstack image list [OPTIONS]
-
-  List cloud images.
-
-Options:
-  --ci-managed BOOLEAN   Filter only images that have the ci_managed=yes
-                         metadata set.
-  --days INTEGER         Find images older than or equal to days.
-  --hide-public BOOLEAN  Ignore public images.
-  --help                 Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv openstack image list [OPTIONS]                               
+                                                                                
+ List cloud images.                                                             
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --ci-managed                  Filter only images that have the               │
+│                               ci_managed=yes metadata set.                   │
+│ --days               INTEGER  Find images older than or equal to days.       │
+│                               [default: 0]                                   │
+│ --hide-public                 Ignore public images.                          │
+│ --help                        Show this message and exit.                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
@@ -346,25 +358,26 @@ Options:
 <section id="object">
 <h3>object<a class="headerlink" href="#object" title="Link to this heading">¶</a></h3>
 <p>Command for managing objects.</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv openstack object [OPTIONS] COMMAND [ARGS]...
-
-  Command for manipulating objects.
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  list-containers  List available containers.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv openstack object [OPTIONS] COMMAND [ARGS]...                 
+                                                                                
+ Command for manipulating objects.                                              
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ list   List available containers.                                            │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <section id="list-containers">
 <h4>list-containers<a class="headerlink" href="#list-containers" title="Link to this heading">¶</a></h4>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv openstack object list-containers [OPTIONS]
-
-  List available containers.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv openstack object [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv openstack object --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;list-containers&#39;.                                           │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
@@ -372,32 +385,46 @@ Options:
 <section id="stack">
 <h3>stack<a class="headerlink" href="#stack" title="Link to this heading">¶</a></h3>
 <p>Command for managing stacks.</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv openstack stack [OPTIONS] COMMAND [ARGS]...
-
-  Command for manipulating stacks.
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  cost          Get Total Stack Cost.
-  create        Create stack.
-  delete        Delete stack.
-  delete-stale  Delete stale stacks.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv openstack stack [OPTIONS] COMMAND [ARGS]...                  
+                                                                                
+ Command for manipulating stacks.                                               
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ create         Create stack.                                                 │
+│ delete         Delete stack.                                                 │
+│ cost           Get Total Stack Cost.                                         │
+│ delete-stale   Delete stale stacks.                                          │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <section id="create">
 <h4>create<a class="headerlink" href="#create" title="Link to this heading">¶</a></h4>
 <p>Create a new stack.</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv openstack stack create [OPTIONS] NAME TEMPLATE_FILE
-                                         PARAMETER_FILE
-
-  Create stack.
-
-Options:
-  --timeout INTEGER  Stack create timeout in seconds.
-  --tries INTEGER    Number of tries before giving up.
-  --help             Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv openstack stack create [OPTIONS] NAME TEMPLATE_FILE          
+                                          PARAMETER_FILE                        
+                                                                                
+ Create stack.                                                                  
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    name                TEXT  Stack name                                    │
+│                                [required]                                    │
+│ *    template_file       TEXT  Template file                                 │
+│                                [required]                                    │
+│ *    parameter_file      TEXT  Parameter file                                │
+│                                [required]                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --timeout        INTEGER  Stack create timeout in seconds.                   │
+│                           [default: 900]                                     │
+│ --tries          INTEGER  Number of tries before giving up.                  │
+│                           [default: 2]                                       │
+│ --help                    Show this message and exit.                        │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <p>The create command requires a parameters file in the following format to
@@ -406,26 +433,39 @@ build out the stack:</p>
 <section id="delete">
 <h4>delete<a class="headerlink" href="#delete" title="Link to this heading">¶</a></h4>
 <p>Delete existing stack.</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv openstack stack delete [OPTIONS] NAME_OR_ID
-
-  Delete stack.
-
-Options:
-  --force            Ignore timeout and continue with next stack.
-  --timeout INTEGER  Stack delete timeout in seconds.
-  --help             Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv openstack stack delete [OPTIONS] NAME_OR_ID                  
+                                                                                
+ Delete stack.                                                                  
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    name_or_id      TEXT  Stack name or ID                                  │
+│                            [required]                                        │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --force                   Ignore timeout and continue with next stack.       │
+│ --timeout        INTEGER  Stack delete timeout in seconds.                   │
+│                           [default: 900]                                     │
+│ --help                    Show this message and exit.                        │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="cost">
 <h4>cost<a class="headerlink" href="#cost" title="Link to this heading">¶</a></h4>
 <p>Get total cost of existing stack.</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv openstack stack cost [OPTIONS] STACK_NAME
-
-  Get Total Stack Cost.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv openstack stack cost [OPTIONS] STACK_NAME                    
+                                                                                
+ Get Total Stack Cost.                                                          
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    stack_name      TEXT  Stack name                                        │
+│                            [required]                                        │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <p>Return sum of costs for each member of the running stack.</p>

@@ -269,18 +269,21 @@
         <article role="main" id="furo-main-content">
           <section id="infofile">
 <h1>infofile<a class="headerlink" href="#infofile" title="Link to this heading">¶</a></h1>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv infofile [OPTIONS] COMMAND [ARGS]...
-
-  INFO.yaml TOOLS.
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  check-votes       Check votes on an INFO.yaml change.
-  create-info-file  Create an initial INFO file.
-  get-committers    Extract Committer info from INFO.yaml or LDAP dump.
-  sync-committers   Sync committer information from LDAP into INFO.yaml.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv infofile [OPTIONS] COMMAND [ARGS]...                         
+                                                                                
+ INFO.yaml file management tools                                                
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ create-info-file     Create an initial INFO file.                            │
+│ get-committers       Get committers from LDAP and update INFO file.          │
+│ validate-info-file   Validate INFO.yaml file format and content.             │
+│ check-committers     Check committers in INFO file against LDAP.             │
+│ match-ldap           Match LDAP information to INFO file.                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <section id="commands">
@@ -288,27 +291,11 @@ Commands:
 <section id="check-votes">
 <h3>check-votes<a class="headerlink" href="#check-votes" title="Link to this heading">¶</a></h3>
 <blockquote>
-<div><div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv infofile check-votes [OPTIONS] INFO_FILE ENDPOINT
-                                       CHANGE_NUMBER
-
-  Check votes on an INFO.yaml change.
-
-  Check for Majority of votes on a gerrit or github patchset which changes an
-  INFO.yaml file.
-
-  For Gerrit endpoint is the gerrit url For Github the endpoint is the
-  organization name
-
-  Examples: lftools infofile check-votes /tmp/test/INFO.yaml lfit-sandbox 18
-  --github_repo test
-
-  lftools infofile check-votes ~/lf/allrepos/onosfw/INFO.yaml
-  https://gerrit.opnfv.org/gerrit/ 67302
-
-Options:
-  --tsc TEXT          path to TSC INFO file
-  --github_repo TEXT  Provide github repo to Check against a Github Change
-  --help              Show this message and exit.
+<div><div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv infofile [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv infofile --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;check-votes&#39;.                                               │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </div></blockquote>
@@ -316,14 +303,34 @@ Options:
 <section id="get-committers">
 <h3>get-committers<a class="headerlink" href="#get-committers" title="Link to this heading">¶</a></h3>
 <blockquote>
-<div><div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv infofile get-committers [OPTIONS] FILE
-
-  Extract Committer info from INFO.yaml or LDAP dump.
-
-Options:
-  --full     Output name email and id for all committers in an infofile
-  --id TEXT  Full output for a specific LFID
-  --help     Show this message and exit.
+<div><div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv infofile get-committers [OPTIONS] GERRIT_URL GERRIT_PROJECT  
+                                           LDAP_GROUP INFO_FILE                 
+                                                                                
+ Get committers from LDAP and update INFO file.                                 
+                                                                                
+ Args: gerrit_url: Gerrit URL gerrit_project: Gerrit project path ldap_group:   
+ LDAP group name info_file: Path to INFO.yaml file directory: Custom gerrit     
+ directory                                                                      
+                                                                                
+ Examples: lftools-uv infofile get-committers gerrit.example.com project/name   
+ ldap-group INFO.yaml                                                           
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    gerrit_url          TEXT  Gerrit URL                                    │
+│                                [required]                                    │
+│ *    gerrit_project      TEXT  Gerrit project path                           │
+│                                [required]                                    │
+│ *    ldap_group          TEXT  LDAP group name                               │
+│                                [required]                                    │
+│ *    info_file           TEXT  Path to INFO.yaml file                        │
+│                                [required]                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --directory        TEXT  Custom gerrit directory                             │
+│                          [default: r]                                        │
+│ --help                   Show this message and exit.                         │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </div></blockquote>
@@ -331,13 +338,11 @@ Options:
 <section id="sync-committers">
 <h3>sync-committers<a class="headerlink" href="#sync-committers" title="Link to this heading">¶</a></h3>
 <blockquote>
-<div><div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv infofile sync-committers [OPTIONS] INFO_FILE LDAP_FILE ID
-
-  Sync committer information from LDAP into INFO.yaml.
-
-Options:
-  --repo TEXT  repo name
-  --help       Show this message and exit.
+<div><div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv infofile [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv infofile --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;sync-committers&#39;.                                           │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </div></blockquote>
@@ -353,20 +358,34 @@ prereqs:<span class="w"> </span>For<span class="w"> </span>ldap<span class="w"> 
 <section id="create-info-file">
 <h3>create-info-file<a class="headerlink" href="#create-info-file" title="Link to this heading">¶</a></h3>
 <blockquote>
-<div><div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv infofile create-info-file [OPTIONS] GERRIT_URL
-                                            GERRIT_PROJECT
-
-  Create an initial INFO file.
-
-  gerrit_project example: project/full-name gerrit_url example:
-  gerrit.umbrella.com directory example: /gerrit/ (rather than most projects
-  /r/)
-
-Options:
-  --directory TEXT     custom gerrit directory, eg not /r/
-  --empty              Create info file for uncreated project.
-  --tsc_approval TEXT  optionally provide a tsc approval link
-  --help               Show this message and exit.
+<div><div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv infofile create-info-file [OPTIONS] GERRIT_URL               
+                                             GERRIT_PROJECT                     
+                                                                                
+ Create an initial INFO file.                                                   
+                                                                                
+ Args: gerrit_url: Gerrit URL (e.g., gerrit.umbrella.com) gerrit_project:       
+ Gerrit project path (e.g., project/full-name) directory: Custom gerrit         
+ directory (e.g., /gerrit/ rather than /r/) empty: Create info file for         
+ uncreated project tsc_approval: TSC approval link                              
+                                                                                
+ Examples: lftools-uv infofile create-info-file gerrit.example.com project/name 
+ lftools-uv infofile create-info-file gerrit.example.com project/name --empty   
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    gerrit_url          TEXT  Gerrit URL (e.g., gerrit.example.com)         │
+│                                [required]                                    │
+│ *    gerrit_project      TEXT  Gerrit project path (e.g., project/full-name) │
+│                                [required]                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --directory           TEXT  Custom gerrit directory, e.g. not /r/            │
+│                             [default: r]                                     │
+│ --empty                     Create info file for uncreated project           │
+│ --tsc-approval        TEXT  Optionally provide a TSC approval link           │
+│                             [default: missing]                               │
+│ --help                      Show this message and exit.                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </div></blockquote>

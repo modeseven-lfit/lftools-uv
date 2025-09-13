@@ -269,31 +269,42 @@
         <article role="main" id="furo-main-content">
           <section id="schema">
 <h1>schema<a class="headerlink" href="#schema" title="Link to this heading">¶</a></h1>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv schema [OPTIONS] COMMAND [ARGS]...
-
-  Verify YAML Schema.
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  verify  Verify YAML Schema.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv schema [OPTIONS] COMMAND [ARGS]...                           
+                                                                                
+ Verify YAML Schema                                                             
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ verify   Verify YAML Schema.                                                 │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <section id="commands">
 <h2>Commands<a class="headerlink" href="#commands" title="Link to this heading">¶</a></h2>
 <section id="verify">
 <h3>verify<a class="headerlink" href="#verify" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv schema verify [OPTIONS] YAMLFILE SCHEMAFILE
-
-  Verify YAML Schema.
-
-  YAMLFILE: Release YAML file to be validated.
-
-  SCHEMAFILE: SCHEMA file to validate against.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv schema verify [OPTIONS] YAMLFILE SCHEMAFILE                  
+                                                                                
+ Verify YAML Schema.                                                            
+                                                                                
+ Args: yamlfile: Release YAML file to be validated schemafile: SCHEMA file to   
+ validate against                                                               
+                                                                                
+ Examples: lftools-uv schema verify release.yaml schema.yaml                    
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    yamlfile        PATH  Release YAML file to be validated                 │
+│                            [required]                                        │
+│ *    schemafile      PATH  SCHEMA file to validate against                   │
+│                            [required]                                        │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>

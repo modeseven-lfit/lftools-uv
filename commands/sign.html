@@ -269,105 +269,117 @@
         <article role="main" id="furo-main-content">
           <section id="sign">
 <h1>sign<a class="headerlink" href="#sign" title="Link to this heading">¶</a></h1>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv sign [OPTIONS] COMMAND [ARGS]...
-
-  GPG or Sigul sign files.
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  container     Sigul sign a Docker container.
-  deploy-nexus  Sign artifacts from a Nexus repo then upload to a staging...
-  dir           GPG signs all of the files in a directory.
-  git-tag       Sigul sign an annotated git tag.
-  nexus         Fetch and GPG or Sigul sign a Nexus repo.
-  sigul         Sigul signs all of the files in a directory.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv sign [OPTIONS] COMMAND [ARGS]...                             
+                                                                                
+ GPG or Sigul sign files                                                        
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ dir       GPG signs all of the files in a directory.                         │
+│ git-tag   GPG signs a git tag.                                               │
+│ nexus     GPG signs artifacts in a Nexus repository.                         │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <section id="commands">
 <h2>Commands<a class="headerlink" href="#commands" title="Link to this heading">¶</a></h2>
 <section id="container">
 <h3>container<a class="headerlink" href="#container" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv sign container [OPTIONS] MANIFEST TAG
-
-  Sigul sign a Docker container.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv sign [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv sign --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;container&#39;.                                                 │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="deploy-nexus">
 <h3>deploy-nexus<a class="headerlink" href="#deploy-nexus" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv sign deploy-nexus [OPTIONS] NEXUS_URL NEXUS_REPO
-                                    STAGING_PROFILE_ID
-
-  Sign artifacts from a Nexus repo then upload to a staging repo.
-
-  This is a porcelain command that ties the lftools sign and deploy tools
-  together for easier use. It calls the sign-nexus command and then the
-  deploy-nexus-stage command to create a signed staging repository in Nexus.
-
-  Signing is performed either with gpg (default) or via sigul.
-
-Options:
-  -d, --sign-dir TEXT     Local directory to clone repository. (default
-                          /tmp/gpg-signatures.*)
-  -m, --mode TEXT         Signing mode serial|parallel
-  -r, --root-domain TEXT  Root download path of staging repo. (default org)
-  -w, --sign-with TEXT    Sign artifacts with GPG or Sigul. (default gpg)
-  --help                  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv sign [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv sign --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;deploy-nexus&#39;.                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="directory">
 <h3>directory<a class="headerlink" href="#directory" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv sign dir [OPTIONS] DIRECTORY
-
-  GPG signs all of the files in a directory.
-
-Options:
-  -m, --mode TEXT  Signing mode serial|parallel
-  --help           Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv sign dir [OPTIONS] DIRECTORY                                 
+                                                                                
+ GPG signs all of the files in a directory.                                     
+                                                                                
+ Args: directory: Directory path containing files to sign mode: Signing mode    
+ (serial or parallel)                                                           
+                                                                                
+ Examples: lftools-uv sign dir /path/to/files lftools-uv sign dir               
+ /path/to/files --mode serial                                                   
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    directory      PATH  Directory containing files to sign                 │
+│                           [required]                                         │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --mode  -m      TEXT  Signing mode: serial or parallel                       │
+│                       [default: parallel]                                    │
+│ --help                Show this message and exit.                            │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="git-tag">
 <h3>git-tag<a class="headerlink" href="#git-tag" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv sign git-tag [OPTIONS] TAG
-
-  Sigul sign an annotated git tag.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv sign git-tag [OPTIONS] TAG                                   
+                                                                                
+ GPG signs a git tag.                                                           
+                                                                                
+ Args: tag: The git tag to sign                                                 
+                                                                                
+ Examples: lftools-uv sign git-tag v1.0.0 lftools-uv sign git-tag release-1.2.3 
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    tag      TEXT  Git tag to sign                                          │
+│                     [required]                                               │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="nexus">
 <h3>nexus<a class="headerlink" href="#nexus" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv sign nexus [OPTIONS] NEXUS_REPO_URL
-
-  Fetch and GPG or Sigul sign a Nexus repo.
-
-Options:
-  -d, --sign-dir TEXT   Local directory to clone repository. (default
-                        /tmp/gpg-signatures.*)
-  -m, --mode TEXT       Signing mode serial|parallel
-  -w, --sign-with TEXT  Sign artifacts with GPG or Sigul. (default gpg)
-  --help                Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv sign nexus [OPTIONS] NEXUS_REPO_URL                          
+                                                                                
+ GPG signs artifacts in a Nexus repository.                                     
+                                                                                
+ Args: nexus_repo_url: The Nexus repository URL to sign artifacts from          
+                                                                                
+ Examples: lftools-uv sign nexus https://nexus.example.com/repository/releases  
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    nexus_repo_url      TEXT  Nexus repository URL                          │
+│                                [required]                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="sigul">
 <h3>sigul<a class="headerlink" href="#sigul" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv sign sigul [OPTIONS] DIRECTORY
-
-  Sigul signs all of the files in a directory.
-
-Options:
-  -m, --mode TEXT  Signing mode serial|parallel
-  --help           Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv sign [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv sign --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;sigul&#39;.                                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>

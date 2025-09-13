@@ -269,76 +269,124 @@
         <article role="main" id="furo-main-content">
           <section id="lfidapi">
 <h1>lfidapi<a class="headerlink" href="#lfidapi" title="Link to this heading">¶</a></h1>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv lfidapi [OPTIONS] COMMAND [ARGS]...
-
-  LFID API TOOLS.
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  create              Create group.
-  invite              Email invitation to join group.
-  match-ldap-to-info  Match an LDAP or GITHUB group membership to an...
-  search-members      List members of a group.
-  user                Add and remove users from groups.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv lfidapi [OPTIONS] COMMAND [ARGS]...                          
+                                                                                
+ LFID API tools for managing groups and members                                 
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ search-members    List members of a group.                                   │
+│ user              Add and remove users from groups.                          │
+│ invite            Email invitation to join group.                            │
+│ create-group      Create group.                                              │
+│ match-ldap-info   Match LDAP information to INFO files.                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <section id="commands">
 <h2>Commands<a class="headerlink" href="#commands" title="Link to this heading">¶</a></h2>
 <section id="create-group">
 <h3>create-group<a class="headerlink" href="#create-group" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv lfidapi [OPTIONS] COMMAND [ARGS]...
-Try &#39;lftools-uv lfidapi --help&#39; for help.
-
-Error: No such command &#39;create-group&#39;.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv lfidapi create-group [OPTIONS] GROUP                         
+                                                                                
+ Create group.                                                                  
+                                                                                
+ Args: group: The name of the group to create                                   
+                                                                                
+ Examples: lftools-uv lfidapi create-group &quot;new-group&quot;                          
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    group      TEXT  Group name to create                                   │
+│                       [required]                                             │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="invite">
 <h3>invite<a class="headerlink" href="#invite" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv lfidapi invite [OPTIONS] EMAIL GROUP
-
-  Email invitation to join group.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv lfidapi invite [OPTIONS] EMAIL GROUP                         
+                                                                                
+ Email invitation to join group.                                                
+                                                                                
+ Args: email: The email address to send invitation to group: The group name to  
+ invite to                                                                      
+                                                                                
+ Examples: lftools-uv lfidapi invite &quot;user@example.com&quot; &quot;example-group&quot;         
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    email      TEXT  Email address to invite                                │
+│                       [required]                                             │
+│ *    group      TEXT  Group name to invite to                                │
+│                       [required]                                             │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="search-members">
 <h3>search-members<a class="headerlink" href="#search-members" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv lfidapi search-members [OPTIONS] GROUP
-
-  List members of a group.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv lfidapi search-members [OPTIONS] GROUP                       
+                                                                                
+ List members of a group.                                                       
+                                                                                
+ Args: group: The name of the group to search                                   
+                                                                                
+ Examples: lftools-uv lfidapi search-members &quot;example-group&quot;                    
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    group      TEXT  Group name to search for members                       │
+│                       [required]                                             │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="user">
 <h3>user<a class="headerlink" href="#user" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv lfidapi user [OPTIONS] USER GROUP
-
-  Add and remove users from groups.
-
-Options:
-  --delete  remove user from group
-  --help    Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv lfidapi user [OPTIONS] USER GROUP                            
+                                                                                
+ Add and remove users from groups.                                              
+                                                                                
+ Args: user: The username to add or remove group: The group name delete: If     
+ True, remove user from group instead of adding                                 
+                                                                                
+ Examples: lftools-uv lfidapi user &quot;john.doe&quot; &quot;example-group&quot; lftools-uv        
+ lfidapi user &quot;john.doe&quot; &quot;example-group&quot; --delete                               
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    user       TEXT  Username to add or remove                              │
+│                       [required]                                             │
+│ *    group      TEXT  Group name                                             │
+│                       [required]                                             │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --delete          Remove user from group instead of adding                   │
+│ --help            Show this message and exit.                                │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="match-ldap-to-info">
 <h3>match-ldap-to-info<a class="headerlink" href="#match-ldap-to-info" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv lfidapi match-ldap-to-info [OPTIONS] INFO_FILE GROUP
-
-  Match an LDAP or GITHUB group membership to an INFO.yaml file.
-
-Options:
-  --githuborg TEXT  github org name
-  --noop            show what would be changed
-  --help            Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv lfidapi [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv lfidapi --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;match-ldap-to-info&#39;.                                        │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <p>API requires an [lfid] section in ~/.config/lftools/lftools.ini:</p>

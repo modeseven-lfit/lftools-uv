@@ -269,39 +269,50 @@
         <article role="main" id="furo-main-content">
           <section id="dco">
 <h1>dco<a class="headerlink" href="#dco" title="Link to this heading">¶</a></h1>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv dco [OPTIONS] COMMAND [ARGS]...
-
-  Check repository for commits missing DCO.
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  check  Check repository for commits missing DCO.
-  match  Check for commits whose DCO does not match the commit author&#39;s...
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv dco [OPTIONS] COMMAND [ARGS]...                              
+                                                                                
+ Check repository for commits missing DCO.                                      
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ check   Check repository for commits missing DCO.                            │
+│ match   Check for commits whose DCO does not match the commit author&#39;s       │
+│         email.                                                               │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <section id="commands">
 <h2>Commands<a class="headerlink" href="#commands" title="Link to this heading">¶</a></h2>
 <section id="check">
 <h3>check<a class="headerlink" href="#check" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv dco check [OPTIONS] [REPO_PATH]
-
-  Check repository for commits missing DCO.
-
-  This check will exclude merge commits and empty commits. It operates in your
-  current working directory which has to be a git repository.  Alternatively,
-  you can opt to pass in the path to a git repo.
-
-  By default, this will also check for DCO signoff files in a directory named
-  &quot;dco_signoffs&quot;.  To check in a different directory, use the --signoffs
-  option.  To ignore signoff files, an empty string can be passed.
-
-  Refer to https://developercertificate.org/
-
-Options:
-  --signoffs TEXT  Specify a directory to check for DCO signoff text files
-  --help           Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv dco check [OPTIONS] [REPO_PATH]                              
+                                                                                
+ Check repository for commits missing DCO.                                      
+                                                                                
+ This check will exclude merge commits and empty commits. It operates in your   
+ current working directory which has to be a git repository.  Alternatively,    
+ you can opt to pass in the path to a git repo.                                 
+                                                                                
+ By default, this will also check for DCO signoff files in a directory named    
+ &quot;dco_signoffs&quot;.  To check in a different directory, use the --signoffs option. 
+ To ignore signoff files, an empty string can be passed.                        
+                                                                                
+ Refer to https://developercertificate.org/                                     
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│   repo_path      [REPO_PATH]  Path to git repository (defaults to current    │
+│                               directory)                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --signoffs        TEXT  Specify a directory to check for DCO signoff text    │
+│                         files                                                │
+│                         [default: dco_signoffs]                              │
+│ --help                  Show this message and exit.                          │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <div class="admonition note">

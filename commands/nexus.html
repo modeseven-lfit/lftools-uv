@@ -269,69 +269,42 @@
         <article role="main" id="furo-main-content">
           <section id="nexus">
 <span id="id1"></span><h1>nexus<a class="headerlink" href="#nexus" title="Link to this heading">¶</a></h1>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv nexus [OPTIONS] COMMAND [ARGS]...
-
-  (Deprecated) Use the Nexus2 API Interface.
-
-  Provide an interface to Nexus.
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  create                Create resources in Nexus.
-  docker                Docker repos in Nexus.
-  release               Release one or more staging repositories.
-  reorder-staged-repos  Reorder staging repositories in Nexus.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;nexus&#39;.                                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <section id="commands">
 <span id="nexus-commands"></span><h2>Commands<a class="headerlink" href="#commands" title="Link to this heading">¶</a></h2>
 <section id="create">
 <span id="nexus-create"></span><h3>create<a class="headerlink" href="#create" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv nexus create [OPTIONS] COMMAND [ARGS]...
-
-  Create resources in Nexus.
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  repo  Create a Nexus repository as defined by a repo-config.yaml file.
-  role  Create a Nexus role as defined by a role-config.yaml file.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;nexus&#39;.                                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <section id="repo">
 <span id="nexus-repo"></span><h4>repo<a class="headerlink" href="#repo" title="Link to this heading">¶</a></h4>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv nexus create repo [OPTIONS]
-
-  Create a Nexus repository as defined by a repo-config.yaml file.
-
-Options:
-  -c, --configfile TEXT  Repo config file for how the Nexus repository should
-                         be created.  [required]
-  -s, --settings TEXT    Optional config file containing administrative
-                         settings.
-  -u, --url TEXT         Nexus server URL. In the format https:// Can also be
-                         set as NEXUS_URL in the environment.This will
-                         override any URL set in settings.yaml.
-  --help                 Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;nexus&#39;.                                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <p>For details and examples, please see the nexus2 documentation.</p>
 </section>
 <section id="role">
 <span id="nexus-role"></span><h4>role<a class="headerlink" href="#role" title="Link to this heading">¶</a></h4>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv nexus create role [OPTIONS]
-
-  Create a Nexus role as defined by a role-config.yaml file.
-
-Options:
-  -c, --config TEXT    Role config file for how the Nexus role should be
-                       created.  [required]
-  -s, --settings TEXT  Config file containing administrative settings.
-                       [required]
-  --help               Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;nexus&#39;.                                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example role-config.yaml. The top-level keys will be the role&#39;s id.</span>
@@ -358,32 +331,21 @@ Options:
 </section>
 <section id="reorder-staged-repos">
 <span id="nexus-reorder-staged-repos"></span><h3>reorder-staged-repos<a class="headerlink" href="#reorder-staged-repos" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv nexus reorder-staged-repos [OPTIONS]
-
-  Reorder staging repositories in Nexus.
-
-  Reorders staging repositories in Nexus such that the newest repository gets
-  priority in the aggregate repo.
-
-Options:
-  -s, --settings TEXT  [required]
-  --help               Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;nexus&#39;.                                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="docker">
 <span id="nexus-docker"></span><h3>docker<a class="headerlink" href="#docker" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv nexus docker [OPTIONS] COMMAND [ARGS]...
-
-  Docker repos in Nexus.
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  delete            Delete all images matching the PATTERN.
-  list              List images matching the PATTERN.
-  releasedockerhub  Find missing repos in Docker Hub, Copy from Nexus3.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;nexus&#39;.                                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <p>While a settings.yaml file is still supported for <code class="docutils literal notranslate"><span class="pre">nexus</span> <span class="pre">docker</span></code> commands,
@@ -392,57 +354,32 @@ server address using the <code class="docutils literal notranslate"><span class=
 $HOME/.config/lftools-uv/lftools-uv.ini.</p>
 <section id="delete">
 <span id="nexus-docker-delete"></span><h4>delete<a class="headerlink" href="#delete" title="Link to this heading">¶</a></h4>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv nexus docker delete [OPTIONS] [PATTERN] REPO
-
-  Delete all images matching the PATTERN.
-
-  By default, prints to console only. Use &#39;*&#39; for wildcard, or begin with &#39;!&#39;
-  to delete images NOT matching the string.
-
-Options:
-  -s, --server TEXT  Nexus server URL. Can also be set as NEXUS_URL in the
-                     environment. This will override any URL set in
-                     settings.yaml.
-  --settings TEXT    Yaml file containing &quot;nexus&quot; (url), &quot;user&quot;, and
-                     &quot;password&quot; definitions.
-  -y, --yes          Answer yes to all prompts
-  --help             Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;nexus&#39;.                                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="list">
 <span id="nexus-docker-list"></span><h4>list<a class="headerlink" href="#list" title="Link to this heading">¶</a></h4>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv nexus docker list [OPTIONS] [PATTERN] REPO
-
-  List images matching the PATTERN.
-
-  Use &#39;*&#39; for wildcard, or begin with &#39;!&#39; to search for images NOT matching
-  the string.
-
-Options:
-  -s, --server TEXT  Nexus server URL. Can also be set as NEXUS_URL in the
-                     environment. This will override any URL set in
-                     settings.yaml.
-  --settings TEXT    Yaml file containing &quot;nexus&quot; (url), &quot;user&quot;, and
-                     &quot;password&quot; definitions.
-  --csv FILE         Write a csv file of the search results to PATH.
-  --help             Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;nexus&#39;.                                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 </section>
 <section id="release">
 <span id="nexus-release"></span><h3>release<a class="headerlink" href="#release" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv nexus release [OPTIONS] [REPOS]...
-
-  Release one or more staging repositories.
-
-Options:
-  -v, --verify-only
-  -s, --server TEXT  Nexus server URL. Can also be set as NEXUS_URL in the
-                     environment. This will override any URL set in
-                     settings.yaml.
-  --help             Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;nexus&#39;.                                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <p>While a settings.yaml file is still supported for <code class="docutils literal notranslate"><span class="pre">nexus</span> <span class="pre">release</span></code> commands,

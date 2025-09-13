@@ -269,39 +269,58 @@
         <article role="main" id="furo-main-content">
           <section id="config">
 <h1>config<a class="headerlink" href="#config" title="Link to this heading">¶</a></h1>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv config [OPTIONS] COMMAND [ARGS]...
-
-  Configuration subsystem.
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  get  Print section or setting from config file.
-  set  Set a setting in the config file.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv config [OPTIONS] COMMAND [ARGS]...                           
+                                                                                
+ Configuration subsystem.                                                       
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ get   Print section or setting from config file.                             │
+│ set   Set a setting in the config file.                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 <section id="commands">
 <h2>Commands<a class="headerlink" href="#commands" title="Link to this heading">¶</a></h2>
 <section id="get">
 <h3>get<a class="headerlink" href="#get" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv config get [OPTIONS] SECTION [OPTION]
-
-  Print section or setting from config file.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv config get [OPTIONS] SECTION [OPTION]                        
+                                                                                
+ Print section or setting from config file.                                     
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    section      TEXT      Configuration section name                       │
+│                             [required]                                       │
+│      option       [OPTION]  Configuration option name (optional)             │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>
 <section id="set">
 <h3>set<a class="headerlink" href="#set" title="Link to this heading">¶</a></h3>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv config set [OPTIONS] SECTION OPTION VALUE
-
-  Set a setting in the config file.
-
-Options:
-  --help  Show this message and exit.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
+ Usage: lftools-uv config set [OPTIONS] SECTION OPTION VALUE                    
+                                                                                
+ Set a setting in the config file.                                              
+                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────╮
+│ *    section      TEXT  Configuration section name                           │
+│                         [required]                                           │
+│ *    option       TEXT  Configuration option name                            │
+│                         [required]                                           │
+│ *    value        TEXT  Configuration option value                           │
+│                         [required]                                           │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
 </section>

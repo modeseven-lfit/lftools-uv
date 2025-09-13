@@ -51,26 +51,24 @@ def cleanup(os_cloud, days=0):
     """
 
     def _remove_volumes_from_cloud(volumes, cloud):
-        print("Removing {} volumes from {}.".format(len(volumes), cloud.cloud_config.name))
+        print(f"Removing {len(volumes)} volumes from {cloud.cloud_config.name}.")
         for volume in volumes:
             try:
                 result = cloud.delete_volume(volume.name)
             except OpenStackCloudException as e:
                 if str(e).startswith("Multiple matches found for"):
-                    print("WARNING: {}. Skipping volume...".format(str(e)))
+                    print(f"WARNING: {str(e)}. Skipping volume...")
                     continue
                 else:
-                    print("ERROR: Unexpected exception: {}".format(str(e)))
+                    print(f"ERROR: Unexpected exception: {str(e)}")
                     raise
 
             if not result:
                 print(
-                    'WARNING: Failed to remove "{}" from {}. Possibly already deleted.'.format(
-                        volume.name, cloud.cloud_config.name
-                    )
+                    f'WARNING: Failed to remove "{volume.name}" from {cloud.cloud_config.name}. Possibly already deleted.'
                 )
             else:
-                print('Removed "{}" from {}.'.format(volume.name, cloud.cloud_config.name))
+                print(f'Removed "{volume.name}" from {cloud.cloud_config.name}.')
 
     cloud = openstack.connection.from_config(cloud=os_cloud)
     volumes = cloud.list_volumes()
@@ -93,6 +91,6 @@ def remove(os_cloud, volume_id, minutes=0):
         sys.exit(1)
 
     if datetime.strptime(volume.created_at, "%Y-%m-%dT%H:%M:%S.%f") >= datetime.utcnow() - timedelta(minutes=minutes):
-        print('WARN: volume "{}" is not older than {} minutes.'.format(volume.name, minutes))
+        print(f'WARN: volume "{volume.name}" is not older than {minutes} minutes.')
     else:
         cloud.delete_volume(volume.id)

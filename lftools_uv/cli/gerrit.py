@@ -10,8 +10,6 @@
 ##############################################################################
 """Create a gerrit project."""
 
-from __future__ import print_function
-
 import logging
 from pprint import pformat
 

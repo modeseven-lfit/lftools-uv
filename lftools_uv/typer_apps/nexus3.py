@@ -12,7 +12,6 @@
 
 import logging
 from pprint import pformat
-from typing import Optional
 
 import typer
 from tabulate import tabulate
@@ -83,7 +82,7 @@ def asset_list(ctx: typer.Context, repository: str = typer.Argument(..., help="R
             log.info(pformat(item))
     except Exception as e:
         log.error(f"Failed to list assets: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @asset_app.command("search")
@@ -105,7 +104,7 @@ def asset_search(
                 log.info(item)
     except Exception as e:
         log.error(f"Failed to search assets: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 # Privilege subcommands
@@ -118,7 +117,7 @@ def list_privileges(ctx: typer.Context):
         log.info(tabulate(data, headers=["Type", "Name", "Description", "Read Only"]))
     except Exception as e:
         log.error(f"Failed to list privileges: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 # Repository subcommands
@@ -131,7 +130,7 @@ def list_repositories(ctx: typer.Context):
         log.info(pformat(data))
     except Exception as e:
         log.error(f"Failed to list repositories: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 # Role subcommands
@@ -144,7 +143,7 @@ def list_roles(ctx: typer.Context):
         log.info(tabulate(data, headers=["Roles"]))
     except Exception as e:
         log.error(f"Failed to list roles: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @role_app.command("create")
@@ -162,7 +161,7 @@ def create_role(
         log.info(pformat(data))
     except Exception as e:
         log.error(f"Failed to create role: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 # Script subcommands
@@ -179,7 +178,7 @@ def create_script(
         log.info(data)
     except Exception as e:
         log.error(f"Failed to create script: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @script_app.command("delete")
@@ -194,7 +193,7 @@ def delete_script(
         log.info(data)
     except Exception as e:
         log.error(f"Failed to delete script: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @script_app.command("list")
@@ -206,7 +205,7 @@ def list_scripts(ctx: typer.Context):
         log.info(data)
     except Exception as e:
         log.error(f"Failed to list scripts: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @script_app.command("read")
@@ -221,7 +220,7 @@ def read_script(
         log.info(data)
     except Exception as e:
         log.error(f"Failed to read script: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @script_app.command("run")
@@ -236,7 +235,7 @@ def run_script(
         log.info(data)
     except Exception as e:
         log.error(f"Failed to run script: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @script_app.command("update")
@@ -252,7 +251,7 @@ def update_script(
         log.info(data)
     except Exception as e:
         log.error(f"Failed to update script: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 # Tag subcommands
@@ -260,7 +259,7 @@ def update_script(
 def add_tag(
     ctx: typer.Context,
     name: str = typer.Argument(..., help="Tag name"),
-    attributes: Optional[str] = typer.Argument(None, help="Tag attributes"),
+    attributes: str | None = typer.Argument(None, help="Tag attributes"),
 ):
     """Add a tag."""
     try:
@@ -269,7 +268,7 @@ def add_tag(
         log.info(pformat(data))
     except Exception as e:
         log.error(f"Failed to add tag: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @tag_app.command("delete")
@@ -284,7 +283,7 @@ def delete_tag(
         log.info(pformat(data))
     except Exception as e:
         log.error(f"Failed to delete tag: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @tag_app.command("list")
@@ -296,7 +295,7 @@ def list_tags(ctx: typer.Context):
         log.info(pformat(data))
     except Exception as e:
         log.error(f"Failed to list tags: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @tag_app.command("show")
@@ -311,7 +310,7 @@ def show_tag(
         log.info(pformat(data))
     except Exception as e:
         log.error(f"Failed to show tag: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 # Task subcommands
@@ -329,7 +328,7 @@ def list_tasks(ctx: typer.Context):
         )
     except Exception as e:
         log.error(f"Failed to list tasks: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 # User subcommands
@@ -357,7 +356,7 @@ def search_user(
         )
     except Exception as e:
         log.error(f"Failed to search user: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @user_app.command("create")
@@ -368,7 +367,7 @@ def user_create(
     last_name: str = typer.Argument(..., help="Last name"),
     email_address: str = typer.Argument(..., help="Email address"),
     roles: str = typer.Argument(..., help="Comma-separated list of roles"),
-    password: Optional[str] = typer.Argument(None, help="Password (will be generated if not provided)"),
+    password: str | None = typer.Argument(None, help="Password (will be generated if not provided)"),
 ):
     """Create a new user account."""
     try:
@@ -377,7 +376,7 @@ def user_create(
         log.info(data)
     except Exception as e:
         log.error(f"Failed to create user: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @user_app.command("delete")
@@ -392,4 +391,4 @@ def user_delete(
         log.info(data)
     except Exception as e:
         log.error(f"Failed to delete user: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None

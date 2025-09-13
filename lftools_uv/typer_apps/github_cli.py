@@ -12,7 +12,6 @@
 __author__ = "DW Talton"
 
 import logging
-from typing import Optional
 
 import typer
 from github import Github, GithubException
@@ -35,7 +34,7 @@ def github_callback():
 def submit_pr(
     organization: str = typer.Argument(..., help="GitHub organization name"),
     repo: str = typer.Argument(..., help="GitHub repository name"),
-    pr: int = typer.Argument(..., help="Pull request number")
+    pr: int = typer.Argument(..., help="Pull request number"),
 ):
     """Submit a pr if mergeable."""
     if config.get_setting("github." + organization, "token"):
@@ -58,14 +57,14 @@ def submit_pr(
             raise typer.Exit(1)
     except GithubException as e:
         log.error("GitHub API error: %s", e)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @github_app.command(name="votes")
 def votes(
     organization: str = typer.Argument(..., help="GitHub organization name"),
     repo: str = typer.Argument(..., help="GitHub repository name"),
-    pr: int = typer.Argument(..., help="Pull request number")
+    pr: int = typer.Argument(..., help="Pull request number"),
 ):
     """Helper for votes."""
     approval_list = prvotes(organization, repo, pr)
@@ -79,8 +78,8 @@ def list_github(
     repos: bool = typer.Option(False, "--repos", help="List all repos"),
     full: bool = typer.Option(False, "--full", help="All members and their respective teams"),
     teams: bool = typer.Option(False, "--teams", help="List available teams"),
-    team: Optional[str] = typer.Option(None, "--team", help="List members of a team"),
-    repofeatures: bool = typer.Option(False, "--repofeatures", help="List enabled features for repos in an org")
+    team: str | None = typer.Option(None, "--team", help="List members of a team"),
+    repofeatures: bool = typer.Option(False, "--repofeatures", help="List enabled features for repos in an org"),
 ):
     """List options for github org repos."""
     helper_list(None, organization, repos, audit, full, teams, team, repofeatures)
@@ -93,7 +92,7 @@ def create_repo(
     description: str = typer.Argument(..., help="Repository description"),
     has_issues: bool = typer.Option(False, "--has-issues", help="Repo should have issues"),
     has_projects: bool = typer.Option(False, "--has-projects", help="Repo should have projects"),
-    has_wiki: bool = typer.Option(False, "--has-wiki", help="Repo should have wiki")
+    has_wiki: bool = typer.Option(False, "--has-wiki", help="Repo should have wiki"),
 ):
     """Create a Github repo within an Organization.
 
@@ -104,17 +103,17 @@ def create_repo(
 
     try:
         org = g.get_organization(organization)
-        repo_obj = org.create_repo(
+        org.create_repo(
             name=repository,
             description=description,
             has_issues=has_issues,
             has_projects=has_projects,
-            has_wiki=has_wiki
+            has_wiki=has_wiki,
         )
         log.info("Repository '%s' created successfully in organization '%s'", repository, organization)
     except GithubException as e:
         log.error("Failed to create repository: %s", e)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @github_app.command(name="update-repo")
@@ -124,8 +123,8 @@ def update_repo(
     has_issues: bool = typer.Option(False, "--has-issues", help="Repo should have issues"),
     has_projects: bool = typer.Option(False, "--has-projects", help="Repo should have projects"),
     has_wiki: bool = typer.Option(False, "--has-wiki", help="Repo should have wiki"),
-    add_team: Optional[str] = typer.Option(None, "--add-team", help="Add team to repo"),
-    remove_team: Optional[str] = typer.Option(None, "--remove-team", help="Remove team from repo")
+    add_team: str | None = typer.Option(None, "--add-team", help="Add team to repo"),
+    remove_team: str | None = typer.Option(None, "--remove-team", help="Remove team from repo"),
 ):
     """Update a Github repo within an Organization.
 
@@ -139,11 +138,7 @@ def update_repo(
         repo_obj = org.get_repo(repository)
 
         # Update repository settings
-        repo_obj.edit(
-            has_issues=has_issues,
-            has_projects=has_projects,
-            has_wiki=has_wiki
-        )
+        repo_obj.edit(has_issues=has_issues, has_projects=has_projects, has_wiki=has_wiki)
 
         # Handle team operations
         if add_team:
@@ -157,7 +152,7 @@ def update_repo(
         log.info("Repository '%s' updated successfully", repository)
     except GithubException as e:
         log.error("Failed to update repository: %s", e)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @github_app.command(name="create-team")
@@ -165,7 +160,7 @@ def create_team(
     organization: str = typer.Argument(..., help="GitHub organization name"),
     name: str = typer.Argument(..., help="Team name to create"),
     privacy: str = typer.Argument(..., help="Team privacy setting (closed/secret)"),
-    repo: Optional[str] = typer.Option(None, "--repo", help="Assign team to repo")
+    repo: str | None = typer.Option(None, "--repo", help="Assign team to repo"),
 ):
     """Create a Github team within an Organization.
 
@@ -192,7 +187,7 @@ def create_team(
         log.info("Team '%s' created successfully in organization '%s'", name, organization)
     except GithubException as e:
         log.error("Failed to create team: %s", e)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @github_app.command(name="user")
@@ -201,7 +196,7 @@ def user(
     user: str = typer.Argument(..., help="GitHub username"),
     team: str = typer.Argument(..., help="Team name"),
     delete: bool = typer.Option(False, "--delete", help="Remove user from org"),
-    admin: bool = typer.Option(False, "--admin", help="User is admin for org, or a maintainer of a team")
+    admin: bool = typer.Option(False, "--admin", help="User is admin for org, or a maintainer of a team"),
 ):
     """Add and Remove users from an org team."""
     try:
@@ -210,4 +205,4 @@ def user(
         log.info("User '%s' %s team '%s' successfully", user, action, team)
     except Exception as e:
         log.error("Failed to modify user team membership: %s", e)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None

@@ -10,6 +10,7 @@
 ##############################################################################
 """Contains functions for various Nexus tasks."""
 
+import configparser
 import csv
 import logging
 import re
@@ -17,10 +18,8 @@ import sys
 import xml.etree.ElementTree as et  # nosec
 from time import sleep
 
-import bs4
 import requests
 import yaml
-import configparser
 
 from lftools_uv import config
 from lftools_uv.nexus import Nexus, util
@@ -33,16 +32,16 @@ def get_credentials(settings_file, url=None):
 
     if settings_file:
         try:
-            with open(settings_file, "r") as f:
+            with open(settings_file) as f:
                 settings = yaml.safe_load(f)
-        except IOError:
-            log.error('Error reading settings file "{}"'.format(settings_file))
+        except OSError:
+            log.error(f'Error reading settings file "{settings_file}"')
             sys.exit(1)
 
-        if url and set(["user", "password"]).issubset(settings):
+        if url and {"user", "password"}.issubset(settings):
             settings["nexus"] = url
             return settings
-        elif set(["nexus", "user", "password"]).issubset(settings):
+        elif {"nexus", "user", "password"}.issubset(settings):
             return settings
     elif url:
         try:
@@ -50,7 +49,7 @@ def get_credentials(settings_file, url=None):
             user = config.get_setting(auth_url, "username")
             password = config.get_setting(auth_url, "password")
         except (configparser.NoOptionError, configparser.NoSectionError):
-            log.info("Failed to get nexus credentials; using empty username " "and password.")
+            log.info("Failed to get nexus credentials; using empty username and password.")
             return {"nexus": url, "user": "", "password": ""}
         return {"nexus": url, "user": user, "password": password}
     log.error("Please define a settings.yaml file, or include a url if using " + "lftools.ini")
@@ -61,10 +60,10 @@ def get_url(settings_file):
     """Return URL from settings file, if it exists."""
     if settings_file:
         try:
-            with open(settings_file, "r") as f:
+            with open(settings_file) as f:
                 settings = yaml.safe_load(f)
-        except IOError:
-            log.error('Error reading settings file "{}"'.format(settings_file))
+        except OSError:
+            log.error(f'Error reading settings file "{settings_file}"')
             sys.exit(1)
 
         if "nexus" in settings:
@@ -80,12 +79,12 @@ def reorder_staged_repos(settings_file):
     to be in the correct reverse sorted order. There is a problem with
     Nexus where it is not doing this like it should be.
     """
-    with open(settings_file, "r") as f:
+    with open(settings_file) as f:
         settings = yaml.safe_load(f)
 
     for setting in ["nexus", "user", "password"]:
         if setting not in settings:
-            log.error("{} needs to be defined".format(setting))
+            log.error(f"{setting} needs to be defined")
             sys.exit(1)
 
     _nexus = Nexus(settings["nexus"], settings["user"], settings["password"])
@@ -129,21 +128,21 @@ def create_repos(config_file, settings_file, url):
         password = config.get_setting(settings_url, "password")
         username = config.get_setting(settings_url, "username")
 
-    with open(config_file, "r") as f:
+    with open(config_file) as f:
         config = yaml.safe_load(f)
     if settings_file:
-        with open(settings_file, "r") as f:
+        with open(settings_file) as f:
             settings = yaml.safe_load(f)
 
     for setting in ["email_domain", "base_groupId", "repositories"]:
         if setting not in config:
-            log.error("{} needs to be defined in {}".format(setting, config_file))
+            log.error(f"{setting} needs to be defined in {config_file}")
             sys.exit(1)
 
     if settings_file:
         for setting in ["nexus", "user", "password"]:
             if setting not in settings:
-                log.error("{} needs to be defined in {}".format(setting, settings_file))
+                log.error(f"{setting} needs to be defined in {settings_file}")
                 sys.exit(1)
 
     if settings_file:
@@ -151,7 +150,9 @@ def create_repos(config_file, settings_file, url):
     else:
         _nexus = Nexus(url, username, password)
 
-    def create_nexus_perms(name, targets, email, password, extra_privs=[]):
+    def create_nexus_perms(name, targets, email, password, extra_privs=None):
+        if extra_privs is None:
+            extra_privs = []
         # Create target
         try:
             target_id = _nexus.get_target(name)
@@ -170,27 +171,27 @@ def create_repos(config_file, settings_file, url):
         for priv in privs_set:
             try:
                 privs[priv] = _nexus.get_priv(name, priv)
-                log.info("Creating {} privileges.".format(priv))
+                log.info(f"Creating {priv} privileges.")
             except LookupError:
                 privs[priv] = _nexus.create_priv(name, target_id, priv)
 
         # Create Role
         try:
             role_id = _nexus.get_role(name)
-            log.info("Role {} already exists.".format(role_id))
+            log.info(f"Role {role_id} already exists.")
         except LookupError:
             role_id = _nexus.create_role(name, privs)
 
         # Create user
         try:
             _nexus.get_user(name)
-            log.info("User {} already exists.".format(name))
+            log.info(f"User {name} already exists.")
         except LookupError:
             _nexus.create_user(name, email, role_id, password, extra_privs)
 
     def build_repo(repo, repoId, config, base_groupId, global_privs, email_domain, strict=True):
-        log.info("-> Building for {}.{} in Nexus".format(base_groupId, repo))
-        groupId = "{}.{}".format(base_groupId, repo)
+        log.info(f"-> Building for {base_groupId}.{repo} in Nexus")
+        groupId = f"{base_groupId}.{repo}"
         target = util.create_repo_target_regex(groupId, strict)
 
         if not global_privs and "extra_privs" not in config:
@@ -206,11 +207,11 @@ def create_repos(config_file, settings_file, url):
 
         create_nexus_perms(repoId, [target], email_domain, config["password"], extra_privs)
 
-        log.info("-> Finished successfully for {}.{}!!\n".format(base_groupId, repo))
+        log.info(f"-> Finished successfully for {base_groupId}.{repo}!!\n")
 
         if "repositories" in config:
             for sub_repo in config["repositories"]:
-                sub_repo_id = "{}-{}".format(repoId, sub_repo)
+                sub_repo_id = f"{repoId}-{sub_repo}"
                 build_repo(sub_repo, sub_repo_id, config["repositories"][sub_repo], groupId, extra_privs, email_domain)
 
     log.warning("Nexus repo creation started. Aborting now could leave tasks undone!")
@@ -243,15 +244,15 @@ def create_roles(config_file, settings_file):
     :arg str settings: Settings file containing administrative credentials and
         information.
     """
-    with open(config_file, "r") as f:
+    with open(config_file) as f:
         config = yaml.safe_load(f)
 
-    with open(settings_file, "r") as f:
+    with open(settings_file) as f:
         settings = yaml.safe_load(f)
 
     for setting in ["nexus", "user", "password"]:
         if setting not in settings:
-            log.error("{} needs to be defined in {}".format(setting, settings_file))
+            log.error(f"{setting} needs to be defined in {settings_file}")
             sys.exit(1)
 
     _nexus = Nexus(settings["nexus"], settings["user"], settings["password"])
@@ -261,8 +262,8 @@ def create_roles(config_file, settings_file):
         for setting in required_settings:
             if setting not in config[role]:
                 log.error(
-                    "{} not defined for role {}. Please ensure that {} "
-                    "are defined for each role in {}".format(setting, role, required_settings, config_file)
+                    f"{setting} not defined for role {role}. Please ensure that {required_settings} "
+                    f"are defined for each role in {config_file}"
                 )
                 sys.exit(1)
 
@@ -337,7 +338,7 @@ def output_images(images, csv_path=None):
     :arg str csv_path: Path to write out csv file of matching images.
     """
     if not images:
-        log.warning("{}.{} called with empty images list".format(__name__, sys._getframe().f_code.co_name))
+        log.warning(f"{__name__}.{sys._getframe().f_code.co_name} called with empty images list")
         return
     count = len(images)
     included_keys = images[0].keys()
@@ -351,7 +352,7 @@ def output_images(images, csv_path=None):
 
     for image in images:
         log.info("Name: {}\nVersion: {}\nID: {}\n\n".format(image["name"], image["version"], image["id"]))
-    log.info("Found {} images matching the query".format(count))
+    log.info(f"Found {count} images matching the query")
 
 
 def delete_images(settings_file, url, images):
@@ -368,35 +369,20 @@ def delete_images(settings_file, url, images):
         _nexus.delete_image(image)
 
 
-def get_activity_text(act):
-    """Concatenate the Value strings in the XML data and return it.
+def get_activity_text(act_element):
+    """Extract ordered `<value>` text strings from a stagingActivityEvent Element.
 
-    <stagingActivityEvent>
-        <timestamp>2019-10-18T09:39:24.841Z</timestamp>
-        <name>ruleFailed</name>
-        <severity>1</severity>
-        <properties>
-            <stagingProperty>
-                <name>typeId</name>
-                <value>javadoc-staging</value>
-            </stagingProperty>
-            <stagingProperty>
-                <name>failureMessage</name>
-                <value>
-                    Missing: no javadoc jar found in folder '/org/opendaylight/odlparent/leveldbjni-all/6.0.1'
-                </value>
-            </stagingProperty>
-        </properties>
-    </stagingActivityEvent>
+    Returns a single string joined by ' --> ' or empty string if none found.
     """
-    tmp_list = []
-    act_soup = bs4.BeautifulSoup(str(act), "xml")
-    stagingProperties = act_soup.find_all("stagingProperty")
-    for stagingProperty in stagingProperties:
-        value = stagingProperty.find("value")
-        tmp_list.append(value.text)
-    txt_str = " --> ".join(map(str, tmp_list))
-    return txt_str
+    values = []
+    # Each property lives under ./properties/stagingProperty/value
+    for prop in act_element.findall("./properties/stagingProperty"):
+        val = prop.find("value")
+        if val is not None and val.text is not None:
+            # Normalize internal whitespace like BeautifulSoup would
+            cleaned = " ".join(val.text.split())
+            values.append(cleaned)
+    return " --> ".join(values)
 
 
 def add_str_if_not_exist(new_str, existing_str_lst):
@@ -430,19 +416,23 @@ def release_staging_repos(repos, verify, nexus_url=""):
 
     for repo in repos:
         # Verify repo before releasing
-        activity_url = "{}/staging/repository/{}/activity".format(_nexus.baseurl, repo)
-        log.info("Request URL: {}".format(activity_url))
+        activity_url = f"{_nexus.baseurl}/staging/repository/{repo}/activity"
+        log.info(f"Request URL: {activity_url}")
         response = requests.get(activity_url, auth=_nexus.auth)
 
         if response.status_code != 200:
             raise requests.HTTPError(
-                "Verification of repo failed with the following error:"
-                "\n{}: {}".format(response.status_code, response.text)
+                f"Verification of repo failed with the following error:\n{response.status_code}: {response.text}"
             )
 
-        soup = bs4.BeautifulSoup(response.text, "xml")
-        values = soup.find_all("value")
-        activities = soup.find_all("stagingActivityEvent")
+        # Parse activity XML using ElementTree (removes BeautifulSoup dependency)
+        try:
+            root = et.fromstring(response.text)  # nosec
+        except et.ParseError as e:
+            raise requests.HTTPError(f"Failed to parse activity XML: {e}") from e
+
+        values = root.findall(".//value")
+        activities = root.findall(".//stagingActivityEvent")
         failures = []
         failures2 = []
         successes = []
@@ -450,26 +440,26 @@ def release_staging_repos(repos, verify, nexus_url=""):
 
         for act in activities:
             # Check for failures
-            if re.search("ruleFailed", act.text):
+            act_text = "".join(act.itertext())
+            if re.search("ruleFailed", act_text):
                 failures2.append(get_activity_text(act))
-            if re.search("repositoryCloseFailed", act.text):
+            if re.search("repositoryCloseFailed", act_text):
                 failures2.append(get_activity_text(act))
-            # Check if already released
-            if re.search("repositoryReleased", act.text):
+            if re.search("repositoryReleased", act_text):
                 successes.append(get_activity_text(act))
-            # Check if already Closed
-            if re.search("repositoryClosed", act.text):
+            if re.search("repositoryClosed", act_text):
                 is_repo_closed.append(get_activity_text(act))
 
         # Check for other failures (old code part). only add them if not already there
         # Should be possible to remove this part, but could not find a sample XML with these values.
         for message in values:
-            if re.search("StagingRulesFailedException", message.text):
+            msg_text = message.text or ""
+            if re.search("StagingRulesFailedException", msg_text):
                 if add_str_if_not_exist(message, failures2):
-                    failures.append(message.text)
-            if re.search("Invalid", message.text):
+                    failures.append(msg_text)
+            if re.search("Invalid", msg_text):
                 if add_str_if_not_exist(message, failures2):
-                    failures.append(message.text)
+                    failures.append(msg_text)
 
         # Start check result
         if len(failures) != 0 or len(failures2) != 0:
@@ -490,34 +480,34 @@ def release_staging_repos(repos, verify, nexus_url=""):
             log.info("Repository is not in closed state")
             sys.exit(1)
         else:
-            log.info("PASS: Repository {} is in closed state".format(is_repo_closed[0]))
+            log.info(f"PASS: Repository {is_repo_closed[0]} is in closed state")
 
-        log.info("Successfully verified {}".format(str(repo)))
+        log.info(f"Successfully verified {str(repo)}")
 
     if not verify:
         log.info("running release")
         for repo in repos:
             data = {"data": {"stagedRepositoryIds": [repo]}}
-            log.info("Sending data: {}".format(data))
-            request_url = "{}/staging/bulk/promote".format(_nexus.baseurl)
-            log.info("Request URL: {}".format(request_url))
-            log.info("Requesting Nexus to release {}".format(repo))
+            log.info(f"Sending data: {data}")
+            request_url = f"{_nexus.baseurl}/staging/bulk/promote"
+            log.info(f"Request URL: {request_url}")
+            log.info(f"Requesting Nexus to release {repo}")
 
             response = requests.post(request_url, json=data, auth=_nexus.auth)
 
             if response.status_code != 201:
                 raise requests.HTTPError(
-                    "Release failed with the following error:" "\n{}: {}".format(response.status_code, response.text)
+                    f"Release failed with the following error:\n{response.status_code}: {response.text}"
                 )
             else:
-                log.info("Nexus is now working on releasing {}".format(str(repo)))
+                log.info(f"Nexus is now working on releasing {str(repo)}")
 
             # Hang out until the repo is fully released
-            log.info("Waiting for Nexus to complete releasing {}".format(str(repo)))
+            log.info(f"Waiting for Nexus to complete releasing {str(repo)}")
             wait_seconds = 20
             wait_iteration = 0
             consecutive_failures = 0
-            activity_url = "{}/staging/repository/{}/activity".format(_nexus.baseurl, repo)
+            activity_url = f"{_nexus.baseurl}/staging/repository/{repo}/activity"
             sleep(5)  # Quick sleep to allow small repos to release.
             while True:
                 try:
@@ -526,7 +516,7 @@ def release_staging_repos(repos, verify, nexus_url=""):
                     root = et.fromstring(response)  # nosec
                     time = find_release_time(root.findall("./stagingActivity"))
                     if time is not None:
-                        log.info("Repo released at: {}".format(time))
+                        log.info(f"Repo released at: {time}")
                         break
 
                 except requests.exceptions.ConnectionError as e:
@@ -541,4 +531,4 @@ def release_staging_repos(repos, verify, nexus_url=""):
 
                 sleep(wait_seconds)
                 wait_iteration += 1
-                log.info("Still waiting... {:>4d} seconds gone".format(wait_seconds * wait_iteration))
+                log.info(f"Still waiting... {wait_seconds * wait_iteration:>4d} seconds gone")

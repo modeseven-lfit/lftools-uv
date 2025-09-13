@@ -12,7 +12,6 @@
 import logging
 import subprocess
 from pathlib import Path
-from typing import Optional
 
 import typer
 
@@ -34,16 +33,8 @@ def sign_callback():
 
 @sign_app.command("dir")
 def directory(
-    directory: Path = typer.Argument(
-        ...,
-        help="Directory containing files to sign"
-    ),
-    mode: str = typer.Option(
-        "parallel",
-        "-m",
-        "--mode",
-        help="Signing mode: serial or parallel"
-    ),
+    directory: Path = typer.Argument(..., help="Directory containing files to sign"),
+    mode: str = typer.Option("parallel", "-m", "--mode", help="Signing mode: serial or parallel"),
 ):
     """GPG signs all of the files in a directory.
 
@@ -60,28 +51,21 @@ def directory(
         raise typer.Exit(1)
 
     try:
-        result = subprocess.run(
-            ["sign", "dir", str(directory), mode],
-            check=True,
-            capture_output=False
-        )
+        subprocess.run(["sign", "dir", str(directory), mode], check=True, capture_output=False)
         typer.echo(f"✅ Successfully signed files in {directory} using {mode} mode")
     except subprocess.CalledProcessError as e:
         log.error(f"Signing failed with exit code {e.returncode}")
         typer.echo(f"Error: Signing failed with exit code {e.returncode}", err=True)
-        raise typer.Exit(e.returncode)
+        raise typer.Exit(e.returncode) from None
     except FileNotFoundError:
         log.error("'sign' command not found in PATH")
         typer.echo("Error: 'sign' command not found in PATH. Please ensure it's installed.", err=True)
-        raise typer.Exit(127)
+        raise typer.Exit(127) from None
 
 
 @sign_app.command("git-tag")
 def git_tag(
-    tag: str = typer.Argument(
-        ...,
-        help="Git tag to sign"
-    ),
+    tag: str = typer.Argument(..., help="Git tag to sign"),
 ):
     """GPG signs a git tag.
 
@@ -93,28 +77,21 @@ def git_tag(
         lftools-uv sign git-tag release-1.2.3
     """
     try:
-        result = subprocess.run(
-            ["sign", "git-tag", tag],
-            check=True,
-            capture_output=False
-        )
+        subprocess.run(["sign", "git-tag", tag], check=True, capture_output=False)
         typer.echo(f"✅ Successfully signed git tag: {tag}")
     except subprocess.CalledProcessError as e:
         log.error(f"Git tag signing failed with exit code {e.returncode}")
         typer.echo(f"Error: Git tag signing failed with exit code {e.returncode}", err=True)
-        raise typer.Exit(e.returncode)
+        raise typer.Exit(e.returncode) from None
     except FileNotFoundError:
         log.error("'sign' command not found in PATH")
         typer.echo("Error: 'sign' command not found in PATH. Please ensure it's installed.", err=True)
-        raise typer.Exit(127)
+        raise typer.Exit(127) from None
 
 
 @sign_app.command("nexus")
 def nexus(
-    nexus_repo_url: str = typer.Argument(
-        ...,
-        help="Nexus repository URL"
-    ),
+    nexus_repo_url: str = typer.Argument(..., help="Nexus repository URL"),
 ):
     """GPG signs artifacts in a Nexus repository.
 
@@ -125,20 +102,16 @@ def nexus(
         lftools-uv sign nexus https://nexus.example.com/repository/releases
     """
     try:
-        result = subprocess.run(
-            ["sign", "nexus", nexus_repo_url],
-            check=True,
-            capture_output=False
-        )
+        subprocess.run(["sign", "nexus", nexus_repo_url], check=True, capture_output=False)
         typer.echo(f"✅ Successfully signed Nexus artifacts at: {nexus_repo_url}")
     except subprocess.CalledProcessError as e:
         log.error(f"Nexus signing failed with exit code {e.returncode}")
         typer.echo(f"Error: Nexus signing failed with exit code {e.returncode}", err=True)
-        raise typer.Exit(e.returncode)
+        raise typer.Exit(e.returncode) from None
     except FileNotFoundError:
         log.error("'sign' command not found in PATH")
         typer.echo("Error: 'sign' command not found in PATH. Please ensure it's installed.", err=True)
-        raise typer.Exit(127)
+        raise typer.Exit(127) from None
 
 
 def get_sign_app() -> typer.Typer:

@@ -11,14 +11,12 @@
 
 __author__ = "Thanh Ha"
 
-import logging
-from typing import Optional
-
 import configparser
+import logging
+
 import typer
 
 from lftools_uv import config
-
 
 log = logging.getLogger(__name__)
 
@@ -34,18 +32,18 @@ def config_callback():
 @config_app.command(name="get")
 def get_setting(
     section: str = typer.Argument(..., help="Configuration section name"),
-    option: Optional[str] = typer.Argument(None, help="Configuration option name (optional)")
+    option: str | None = typer.Argument(None, help="Configuration option name (optional)"),
 ):
     """Print section or setting from config file."""
     try:
         result = config.get_setting(section, option)
     except (configparser.NoOptionError, configparser.NoSectionError) as e:
         log.error(e)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
     if isinstance(result, list):
         for i in result:
-            log.info("{}: {}".format(i, config.get_setting(section, i)))
+            log.info(f"{i}: {config.get_setting(section, i)}")
     else:
         log.info(result)
 
@@ -54,8 +52,8 @@ def get_setting(
 def set_setting(
     section: str = typer.Argument(..., help="Configuration section name"),
     option: str = typer.Argument(..., help="Configuration option name"),
-    value: str = typer.Argument(..., help="Configuration option value")
+    value: str = typer.Argument(..., help="Configuration option value"),
 ):
     """Set a setting in the config file."""
-    log.debug("Set config\n[{}]\n{}:{}".format(section, option, value))
+    log.debug(f"Set config\n[{section}]\n{option}:{value}")
     config.set_setting(section, option, value)

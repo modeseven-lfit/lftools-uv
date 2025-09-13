@@ -15,32 +15,32 @@ that handles initialization, state management, and credential handling.
 
 import configparser
 import logging
-from typing import Optional
+from importlib.metadata import version
 
 import typer
-from importlib.metadata import version
 
 from lftools_uv import config as conf
 from lftools_uv.cli.state import AppState
-from lftools_uv.typer_apps.utils import get_utils_app
-from lftools_uv.typer_apps.version import get_version_app
 from lftools_uv.typer_apps.config import config_app
 from lftools_uv.typer_apps.dco import dco_app
 from lftools_uv.typer_apps.deploy import deploy_app
-from lftools_uv.typer_apps.github_cli import github_app
 from lftools_uv.typer_apps.gerrit import gerrit_app
+from lftools_uv.typer_apps.github_cli import github_app
+from lftools_uv.typer_apps.infofile import get_infofile_app
 from lftools_uv.typer_apps.jenkins import jenkins_app
+from lftools_uv.typer_apps.lfidapi import get_lfidapi_app
+from lftools_uv.typer_apps.license import get_license_app
 from lftools_uv.typer_apps.nexus2 import nexus2_app
 from lftools_uv.typer_apps.nexus3 import nexus3_app
 from lftools_uv.typer_apps.openstack import get_openstack_app
-from lftools_uv.typer_apps.schema import get_schema_app
-from lftools_uv.typer_apps.lfidapi import get_lfidapi_app
-from lftools_uv.typer_apps.license import get_license_app
-from lftools_uv.typer_apps.sign import get_sign_app
-from lftools_uv.typer_apps.infofile import get_infofile_app
 from lftools_uv.typer_apps.rtd import get_rtd_app
+from lftools_uv.typer_apps.schema import get_schema_app
+from lftools_uv.typer_apps.sign import get_sign_app
+from lftools_uv.typer_apps.utils import get_utils_app
+from lftools_uv.typer_apps.version import get_version_app
 
 log = logging.getLogger(__name__)
+
 
 def version_callback(value: bool):
     """Show version and exit."""
@@ -51,6 +51,7 @@ def version_callback(value: bool):
         except Exception:
             typer.echo("lftools-uv version unknown")
         raise typer.Exit()
+
 
 # Create the main Typer app
 app = typer.Typer(
@@ -64,38 +65,17 @@ app = typer.Typer(
 @app.callback()
 def main(
     ctx: typer.Context,
-    version_flag: Optional[bool] = typer.Option(
-        None,
-        "--version",
-        callback=version_callback,
-        is_eager=True,
-        help="Show version and exit"
+    version_flag: bool | None = typer.Option(
+        None, "--version", callback=version_callback, is_eager=True, help="Show version and exit"
     ),
-    debug: bool = typer.Option(
-        False,
-        "--debug",
-        envvar="DEBUG",
-        help="Enable debug logging"
+    debug: bool = typer.Option(False, "--debug", envvar="DEBUG", help="Enable debug logging"),
+    username: str | None = typer.Option(
+        None, "--username", envvar="LFTOOLS_USERNAME", help="Username for authentication"
     ),
-    username: Optional[str] = typer.Option(
-        None,
-        "--username",
-        envvar="LFTOOLS_USERNAME",
-        help="Username for authentication"
+    password: str | None = typer.Option(
+        None, "--password", envvar="LFTOOLS_PASSWORD", help="Password for authentication", hide_input=True
     ),
-    password: Optional[str] = typer.Option(
-        None,
-        "--password",
-        envvar="LFTOOLS_PASSWORD",
-        help="Password for authentication",
-        hide_input=True
-    ),
-    interactive: bool = typer.Option(
-        False,
-        "--interactive",
-        "-i",
-        help="Prompt for missing credentials"
-    ),
+    interactive: bool = typer.Option(False, "--interactive", "-i", help="Prompt for missing credentials"),
 ):
     """Linux Foundation Release Engineering Tools.
 

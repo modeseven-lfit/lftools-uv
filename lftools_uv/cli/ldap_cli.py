@@ -14,15 +14,12 @@ Prereqs:
 - uv pip install python-ldap
 """
 
-from __future__ import print_function
-
+import logging
 import subprocess
 import sys
 
 import click
 import ldap
-import logging
-from lftools_uv.cli.errors import error_handler
 
 log = logging.getLogger(__name__)
 
@@ -146,7 +143,7 @@ def csv(ctx, ldap_server, ldap_group_base, ldap_user_base, groups):
         group_list = []
         cut_length = len(ldap_user_base) + 1
         for group in groups:
-            group_d = dict(name=group[0][0])
+            group_d = {"name": group[0][0]}
             members = []
             for group_attrs in group:
                 for member in group_attrs[1]["member"]:
@@ -167,7 +164,7 @@ def csv(ctx, ldap_server, ldap_group_base, ldap_user_base, groups):
         ldap_obj = ldap.initialize(ldap_server)
         ldap_connect(ldap_obj)
         for arg in groups:
-            groups = ldap_query(ldap_obj, ldap_group_base, "cn=%s" % arg, ["member"])
+            groups = ldap_query(ldap_obj, ldap_group_base, f"cn={arg}", ["member"])
             group_dict = package_groups(groups)
             cut_length = len(ldap_group_base) + 1
             for group_bar in group_dict:

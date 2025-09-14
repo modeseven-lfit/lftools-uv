@@ -184,8 +184,18 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
+      - name: "Install system packages for python-ldap"
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libldap2-dev libsasl2-dev libssl-dev \
+            libsasl2-modules gcc build-essential
+          sudo rm -rf /var/lib/apt/lists/*
+
+
       - name: "Set up Python"
-        run: uv python install
+        run: uv python install 3.12
 
       - name: "Sync dependencies"
         run: uv sync --all-extras
@@ -408,6 +418,15 @@ jobs:
         with:
           enable-cache: true
 
+      - name: "Install system packages for python-ldap"
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libldap2-dev libsasl2-dev libssl-dev \
+            libsasl2-modules gcc build-essential
+          sudo rm -rf /var/lib/apt/lists/*
+
       - name: "Security check: No Category 2/3 tests in default run"
         run: |
           # Ensure that only Category 1 (harmless) tests run by default
@@ -427,7 +446,9 @@ jobs:
 
       - name: "Dependency audit"
         run: |
-          uv python install
+          # Pin Python version to ensure deterministic native builds
+          # (python-ldap)
+          uv python install 3.12
           uv sync --all-extras
           # Run basic security checks on the environment for functional tests
           uv run python3 -c "

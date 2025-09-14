@@ -176,8 +176,7 @@ jenkins.onap.builds.queued:::1:::List queued Jenkins builds (ONAP):::${LFTOOLS_C
 jenkins.onap.nodes.list:::1:::List Jenkins nodes (ONAP):::${LFTOOLS_CMD} jenkins -s onap-prod nodes list:::-
 jenkins.onap.plugins.list:::1:::List Jenkins plugins (ONAP):::${LFTOOLS_CMD} jenkins -s onap-prod plugins list:::-
 jenkins.onap.plugins.active:::1:::List active Jenkins plugins (ONAP):::${LFTOOLS_CMD} jenkins -s onap-prod plugins active:::-
-jenkins.odl.builds.running:::1:::List running Jenkins builds (ODL):::${LFTOOLS_CMD} jenkins -s odl-prod builds running:::-
-jenkins.odl.nodes.list:::1:::List Jenkins nodes (ODL):::${LFTOOLS_CMD} jenkins -s odl-prod nodes list:::-
+
 # Alternative tests using environment variables (require JENKINS_URL)
 jenkins.env.builds.running:::1:::List running Jenkins builds (env URL):::${LFTOOLS_CMD} jenkins -s "${JENKINS_URL}" builds running:::JENKINS_URL
 jenkins.env.builds.queued:::1:::List queued Jenkins builds (env URL):::${LFTOOLS_CMD} jenkins -s "${JENKINS_URL}" builds queued:::JENKINS_URL

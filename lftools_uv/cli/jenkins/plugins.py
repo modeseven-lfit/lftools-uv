@@ -11,9 +11,10 @@
 
 __author__ = "Trevor Bramwell"
 
+import logging
+
 import click
 import requests
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -168,9 +169,9 @@ def sec(ctx):
         shared.append(key)
         ourversion = activedict[key]
         theirversion = secdict[key]
-        t1 = tuple([ourversion])
-        t2 = tuple([theirversion])
-        if (t1) <= (t2):
+        t1 = (ourversion,)
+        t2 = (theirversion,)
+        if t1 <= t2:
             # Print Vulnerable Version\t Installed Version\t Link
             for w in warn:
                 name = w["name"]
@@ -178,7 +179,7 @@ def sec(ctx):
                 for version in w["versions"]:
                     lastversion = version.get("lastVersion")
                 if name == key and secdict[key] == lastversion:
-                    log.info("%s:%s\t%s:%s\t%s", key, secdict[key], key, activedict[key], url)
+                    log.info(f"{key}:{secdict[key]}\t{key}:{activedict[key]}\t{url}")
 
 
 plugins_init.add_command(list_plugins, name="list")

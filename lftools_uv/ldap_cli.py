@@ -9,8 +9,6 @@
 ##############################################################################
 """Helper for INFO file generation."""
 
-from __future__ import print_function
-
 from subprocess import STDOUT, check_output
 
 

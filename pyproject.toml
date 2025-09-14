@@ -10,7 +10,7 @@ name = "lftools-uv"
 dynamic = ["version"]
 description = "Linux Foundation Release Engineering Tools"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = {text = "EPL-1.0 OR Apache-2.0"}
 
 authors = [
@@ -29,22 +29,17 @@ classifiers = [
     "License :: OSI Approved :: Eclipse Public License 1.0 (EPL-1.0)",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13"
 ]
 
 dependencies = [
-    "appdirs",
-    "aspy.yaml",
     "attrs",
     "beautifulsoup4",
     "boto3",
-    "bs4",
     "certifi",
     "cfgv",
-    "chardet",
     "click",
     "defusedxml",
     "Deprecated",
@@ -53,40 +48,32 @@ dependencies = [
     "email-validator",
     "filelock",
     "GitPython",
-    "httplib2",
     "identify",
     "idna",
     "jinja2",
     "jsonschema",
     "lxml",
-    "multi-key-dict",
-    "munch",
     "nodeenv",
-    "oauth2client",
-    "openstacksdk>=2.1.0",
+    "openstacksdk>=4.0.0,<5.0.0",
     "pbr",
-    "pyasn1",
-    "pyasn1-modules",
     "pygerrit2",
     "PyGithub",
     "PyJWT",
-    "pyrsistent",
     "python-jenkins",
     "PyYAML",
     "requests>=2.32.0",
-    "rsa",
     "ruamel.yaml",
     "ruamel.yaml.clib",
-    "six",
     "soupsieve",
     "tabulate",
-    "toml",
     "tqdm",
     "typer",
     "urllib3>=2.2.3,<3.0.0",
     "websocket-client",
     "wrapt",
-    "xdg",
+    "platformdirs",
+    "google-auth",
+    "google-auth-oauthlib",
 ]
 
 [project.optional-dependencies]
@@ -95,21 +82,19 @@ dev = [
     "pre-commit",
     "tox",
     "ruff",
-    "black",
-    "isort",
     "bandit",
     "safety",
     "types-requests",
     "types-PyYAML",
     "types-tabulate",
-    "types-six",
-    "types-pyxdg",
-    "types-httplib2",
     "types-jsonschema",
     "types-tqdm",
     "boto3-stubs",
     "types-Deprecated"
 ]
+
+
+
 
 docs = [
     "sphinxcontrib-programoutput",
@@ -118,7 +103,7 @@ docs = [
 ]
 
 ldap = [
-    "python-ldap~=3.1.0"
+    "python-ldap>=3.4,<4.0"
 ]
 
 openstack = [
@@ -193,20 +178,12 @@ exclude = [
 [tool.hatch.build.targets.wheel.shared-data]
 "shell" = "share/lftools-uv/shell"
 
-[tool.black]
-line-length = 120
-target-version = ['py38']
-exclude = '''
-/(
-    \.venv
-)/
-'''
+# Removed [tool.black] section (ruff now provides formatting via ruff format)
 
-[tool.isort]
-profile = "black"
+# Removed [tool.isort] section (ruff handles import sorting)
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -219,6 +196,9 @@ warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
 strict_equality = true
+
+["mypy-platformdirs.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 markers = ["datafiles"]
@@ -256,7 +236,7 @@ exclude_lines = [
 
 [tool.ruff]
 line-length = 120
-target-version = "py38"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = [

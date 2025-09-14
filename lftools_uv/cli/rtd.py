@@ -108,19 +108,20 @@ def project_create(ctx, project_name, repository_url, repository_type, homepage,
 
 @click.command(
     name="project-update",
-    context_settings=dict(
-        ignore_unknown_options=True,
-        allow_extra_args=True,
-    ),
+    context_settings={
+        "ignore_unknown_options": True,
+        "allow_extra_args": True,
+    },
 )
 @click.argument("project-name")
 @click.pass_context
 def project_update(ctx, project_name):
     """Create a new project."""
     r = readthedocs.ReadTheDocs()
-    d = dict()
+    d = {}
     for item in ctx.args:
-        d.update([item.split("=")])
+        key, value = item.split("=", 1)
+        d[key] = value
     data = r.project_update(project_name, d)
     log.info(pformat(data))
 
@@ -202,7 +203,7 @@ def subproject_delete(ctx, project_slug, subproject_slug):
     r = readthedocs.ReadTheDocs()
     data = r.subproject_delete(project_slug, subproject_slug)
     if data:
-        log.info("Successfully removed the {} {} relationship".format(project_slug, subproject_slug))
+        log.info(f"Successfully removed the {project_slug} {subproject_slug} relationship")
     else:
         log.error("Request failed. Is there a subproject relationship?")
 

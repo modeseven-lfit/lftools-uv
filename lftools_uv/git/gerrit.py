@@ -45,7 +45,7 @@ class Gerrit:
             params["creds"] = creds
 
         working_dir = tempfile.mkdtemp()
-        log.debug("Temporary working directory for git repo: {}".format(working_dir))
+        log.debug(f"Temporary working directory for git repo: {working_dir}")
         os.chdir(working_dir)
 
         short_endpoint = self.params["creds"]["endpoint"].split("://")[-1]
@@ -73,12 +73,12 @@ class Gerrit:
         # gerrit url for cloning.
         hook_url = hook_url.replace("/a/", "/", 1)
         local_hooks_path = os.path.join(working_dir, ".git/hooks")
-        commit_msg_hook_path = "{}/commit-msg".format(local_hooks_path)
+        commit_msg_hook_path = f"{local_hooks_path}/commit-msg"
 
         try:
             os.mkdir(local_hooks_path)
         except FileExistsError:
-            log.debug("Directory {} already exists".format(local_hooks_path))
+            log.debug(f"Directory {local_hooks_path} already exists")
         with requests.get(hook_url) as hook:
             hook.raise_for_status()
             with open(commit_msg_hook_path, "w") as file:
@@ -89,7 +89,7 @@ class Gerrit:
         """Add a file to the current git repo."""
         if filepath.find("/") >= 0:
             try:
-                log.debug("Making directories for {}".format(filepath[0]))
+                log.debug(f"Making directories for {filepath[0]}")
                 os.makedirs(os.path.split(filepath)[0])
             except FileExistsError:
                 log.debug("Directories already exist, skipping")
@@ -104,7 +104,7 @@ class Gerrit:
             os.symlink(target, filepath)
         except FileExistsError:
             if not os.path.islink(filepath):
-                log.error("{} exists and is not a symlink".format(filepath))
+                log.error(f"{filepath} exists and is not a symlink")
                 return
         self.repo.git.add(filepath)
 
@@ -132,13 +132,13 @@ class Gerrit:
         sob = config.get_setting(self.fqdn, "sob")
         # Add known \n\n gap to end of commit message by stripping, then adding
         # exactly two newlines.
-        commit_msg = "{}\n\n".format(commit_msg.strip())
+        commit_msg = f"{commit_msg.strip()}\n\n"
         if issue_id:
-            commit_msg += "Issue-ID: {}\n".format(issue_id)
-        commit_msg += "Signed-off-by: {}".format(sob)
-        self.repo.git.commit("-m{}".format(commit_msg))
+            commit_msg += f"Issue-ID: {issue_id}\n"
+        commit_msg += f"Signed-off-by: {sob}"
+        self.repo.git.commit(f"-m{commit_msg}")
         if push:
-            self.repo.git.push(self.origin, "HEAD:refs/for/{}".format(self.default_branch))
+            self.repo.git.push(self.origin, f"HEAD:refs/for/{self.default_branch}")
 
     def add_info_job(self, fqdn, gerrit_project, issue_id, agent):
         """Add info-verify jenkins job for the new project.
@@ -150,7 +150,7 @@ class Gerrit:
         jjbrepo ci-mangement
         """
         gerrit_project_dashed = gerrit_project.replace("/", "-")
-        filename = "{}.yaml".format(gerrit_project_dashed)
+        filename = f"{gerrit_project_dashed}.yaml"
 
         if not agent:
             if fqdn == "gerrit.o-ran-sc.org":
@@ -170,11 +170,11 @@ class Gerrit:
             buildnode=buildnode,
             default_branch=self.default_branch,
         )
-        log.debug("File contents:\n{}".format(content))
+        log.debug(f"File contents:\n{content}")
 
-        filepath = "jjb/{0}/{0}.yaml".format(gerrit_project_dashed)
+        filepath = f"jjb/{gerrit_project_dashed}/{gerrit_project_dashed}.yaml"
         self.add_file(filepath, content)
-        commit_msg = "Chore: Automation adds {}".format(filename)
+        commit_msg = f"Chore: Automation adds {filename}"
         self.commit(commit_msg, issue_id, push=True)
 
     def add_git_review(self, fqdn, gerrit_project, issue_id):
@@ -193,10 +193,10 @@ class Gerrit:
         )
         template = jinja_env.get_template("gitreview")
         content = template.render(fqdn=fqdn, project_name=gerrit_project, default_branch=self.default_branch)
-        log.debug(".gitreview contents:\n{}".format(content))
+        log.debug(f".gitreview contents:\n{content}")
 
         self.add_file(filename, content)
-        commit_msg = "Chore: Automation adds {}".format(filename)
+        commit_msg = f"Chore: Automation adds {filename}"
         self.commit(commit_msg, issue_id, push=True)
 
     def add_maven_config(self, fqdn, gerrit_project, issue_id, nexus3_url="", nexus3_ports=""):
@@ -248,7 +248,7 @@ class Gerrit:
         )
         template = jinja_env.get_template(params_path)
         config_params_content = template.render(project_dashed=project_dashed)
-        log.debug("config-params.yaml contents:\n{}".format(config_params_content))
+        log.debug(f"config-params.yaml contents:\n{config_params_content}")
 
         template = jinja_env.get_template(creds_path)
         server_creds_content = template.render(
@@ -258,9 +258,9 @@ class Gerrit:
             nexus3_ports=nexus3_ports,
             additional_credentials=additional_credentials,
         )
-        log.debug("config-params.yaml contents:\n{}".format(server_creds_content))
+        log.debug(f"config-params.yaml contents:\n{server_creds_content}")
 
-        config_path = "jenkins-config/managed-config-files/mavenSettings/{}-settings".format(project_dashed)
+        config_path = f"jenkins-config/managed-config-files/mavenSettings/{project_dashed}-settings"
         try:
             os.makedirs(config_path)
         except FileExistsError:
@@ -276,5 +276,5 @@ class Gerrit:
         self.add_file(os.path.join(config_path, params_path), config_params_content)
         self.add_file(os.path.join(config_path, creds_path), server_creds_content)
 
-        commit_msg = "Chore: Automation adds {} config files".format(gerrit_project)
+        commit_msg = f"Chore: Automation adds {gerrit_project} config files"
         self.commit(commit_msg, issue_id, push=True)

@@ -37,7 +37,7 @@ class Nexus2(client.RestApi):
             }
             params["creds"] = creds
 
-        super(Nexus2, self).__init__(**params)
+        super().__init__(**params)
 
     ############
     # Privileges
@@ -91,7 +91,7 @@ class Nexus2(client.RestApi):
 
         :param privilege_id: the ID of the privilege (from privilege list)
         """
-        result = self.delete("service/local/privileges/{}".format(privilege_id))
+        result = self.delete(f"service/local/privileges/{privilege_id}")
 
         if result.status_code == 204:
             return "Privilege successfully deleted."
@@ -186,7 +186,7 @@ class Nexus2(client.RestApi):
 
         :param repo_id: the ID of the repo from repo list.
         """
-        result = self.delete("service/local/repositories/{}".format(repo_id))
+        result = self.delete(f"service/local/repositories/{repo_id}")
 
         if result.status_code == 204:
             return "Repo successfully deleted."
@@ -264,7 +264,7 @@ class Nexus2(client.RestApi):
 
         :param role_id: The ID of the role to delete (from role list)
         """
-        result = self.delete("service/local/roles/{}".format(role_id))
+        result = self.delete(f"service/local/roles/{role_id}")
 
         if result.status_code == 204:
             return "Role successfully deleted."
@@ -286,13 +286,15 @@ class Nexus2(client.RestApi):
             for role in user.get("roles", []):
                 role_list.append([role["roleId"]])
 
-            user_list.append([
-                user.get("userId", "N/A"),
-                user.get("firstName", "N/A"),
-                user.get("lastName", "N/A"),
-                user.get("status", "N/A"),
-                role_list
-            ])
+            user_list.append(
+                [
+                    user.get("userId", "N/A"),
+                    user.get("firstName", "N/A"),
+                    user.get("lastName", "N/A"),
+                    user.get("status", "N/A"),
+                    role_list,
+                ]
+            )
 
         return user_list
 
@@ -337,7 +339,7 @@ class Nexus2(client.RestApi):
 
         :param username: The username to delete (from user list)
         """
-        result = self.delete("service/local/users/{}".format(username))
+        result = self.delete(f"service/local/users/{username}")
 
         if result.status_code == 204:
             return "User successfully deleted."

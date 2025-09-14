@@ -72,8 +72,9 @@ from __future__ import annotations
 
 import logging
 import traceback
+from collections.abc import Callable, Iterable, Mapping, MutableMapping
 from functools import wraps
-from typing import Any, Callable, Dict, Iterable, Mapping, MutableMapping, Optional, Tuple, Type, TypeVar
+from typing import Any, TypeVar
 
 # Optional imports guarded to avoid hard dependencies
 try:
@@ -107,7 +108,7 @@ F = TypeVar("F", bound=Callable[..., Any])
 
 
 # Default exit code mapping for common exception classes
-DEFAULT_EXIT_CODES: Dict[str, int] = {
+DEFAULT_EXIT_CODES: dict[str, int] = {
     "HTTPError": 2,
     "LDAPError": 3,
     "YAMLError": 4,
@@ -165,11 +166,11 @@ def _log_exception(exc: BaseException, show_traceback: bool) -> None:
 
 def handle_errors(
     *,
-    exit_codes: Optional[Mapping[str, int]] = None,
+    exit_codes: Mapping[str, int] | None = None,
     default_exit_code: int = 1,
     reraise: bool = False,
-    include: Optional[Iterable[Type[BaseException]]] = None,
-    exclude: Optional[Iterable[Type[BaseException]]] = None,
+    include: Iterable[type[BaseException]] | None = None,
+    exclude: Iterable[type[BaseException]] | None = None,
 ) -> Callable[[F], F]:
     """
     Decorator to standardize error handling for CLI commands.
@@ -190,16 +191,12 @@ def handle_errors(
         Wrapped function with standardized exception handling.
     """
     # Merge custom mapping atop defaults
-    merged_codes: Dict[str, int] = {**DEFAULT_EXIT_CODES}
+    merged_codes: dict[str, int] = {**DEFAULT_EXIT_CODES}
     if exit_codes:
         merged_codes.update(exit_codes)
 
-    include_types: Optional[Tuple[Type[BaseException], ...]] = (
-        tuple(include) if include else None
-    )
-    exclude_types: Optional[Tuple[Type[BaseException], ...]] = (
-        tuple(exclude) if exclude else None
-    )
+    include_types: tuple[type[BaseException], ...] | None = tuple(include) if include else None
+    exclude_types: tuple[type[BaseException], ...] | None = tuple(exclude) if exclude else None
 
     def decorator(func: F) -> F:
         @wraps(func)
@@ -228,7 +225,7 @@ def handle_errors(
                     if ctx:
                         ctx.exit(code)
                 # Fallback
-                raise SystemExit(code)  # pragma: no cover (rare fallback path)
+                raise SystemExit(code) from None  # pragma: no cover (rare fallback path; suppress context)
 
         return wrapper  # type: ignore[return-value,misc]
 

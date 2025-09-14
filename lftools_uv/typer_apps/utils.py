@@ -14,7 +14,6 @@ Click-based CLI. It serves as a pilot for the Typer migration.
 """
 
 import logging
-from typing import Optional
 
 import typer
 
@@ -39,10 +38,7 @@ def utils_callback():
 @utils_app.command("passgen")
 def password_generator(
     ctx: typer.Context,
-    length: Optional[int] = typer.Argument(
-        None,
-        help="Length of the password to generate (default: 12)"
-    ),
+    length: int | None = typer.Argument(None, help="Length of the password to generate (default: 12)"),
 ):
     """Generate a complex password.
 
@@ -71,7 +67,7 @@ def password_generator(
     except Exception as e:
         log.error("Failed to generate password: %s", e)
         typer.echo(f"Error: Failed to generate password: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 def get_utils_app() -> typer.Typer:

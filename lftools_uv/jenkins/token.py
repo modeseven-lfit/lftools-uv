@@ -8,6 +8,7 @@
 # http://www.eclipse.org/legal/epl-v10.html
 ##############################################################################
 """Jenkins token functions."""
+
 from __future__ import annotations
 
 __author__ = "Thanh Ha"
@@ -27,26 +28,22 @@ def get_token(name: str, url: str, username: str, password: str, change: bool = 
     api token.
     """
     if change:
-        log.debug("Resetting Jenkins API token on {}".format(url))
+        log.debug(f"Resetting Jenkins API token on {url}")
     else:
-        log.debug("Fetching Jenkins API token from {}".format(url))
+        log.debug(f"Fetching Jenkins API token from {url}")
 
     server: jenkins.Jenkins = jenkins.Jenkins(url, username=username, password=password)  # type: ignore
 
-    get_token: str = (
-        """
+    get_token: str = f"""
 import hudson.model.*
 import jenkins.model.*
 import jenkins.security.*
 import jenkins.security.apitoken.*
-User u = User.get("{}")
+User u = User.get("{username}")
 ApiTokenProperty t = u.getProperty(ApiTokenProperty.class)
-def token = t.tokenStore.generateNewToken("{}")
+def token = t.tokenStore.generateNewToken("{name}")
 println token.plainValue
-""".format(
-            username, name
-        )
-    )
+"""
 
     token: str = str(server.run_script(get_token))
     return token

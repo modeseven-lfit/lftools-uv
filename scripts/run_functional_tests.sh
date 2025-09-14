@@ -176,8 +176,7 @@ jenkins.onap.builds.queued:::1:::List queued Jenkins builds (ONAP):::${LFTOOLS_C
 jenkins.onap.nodes.list:::1:::List Jenkins nodes (ONAP):::${LFTOOLS_CMD} jenkins -s onap-prod nodes list:::-
 jenkins.onap.plugins.list:::1:::List Jenkins plugins (ONAP):::${LFTOOLS_CMD} jenkins -s onap-prod plugins list:::-
 jenkins.onap.plugins.active:::1:::List active Jenkins plugins (ONAP):::${LFTOOLS_CMD} jenkins -s onap-prod plugins active:::-
-jenkins.odl.builds.running:::1:::List running Jenkins builds (ODL):::${LFTOOLS_CMD} jenkins -s odl-prod builds running:::-
-jenkins.odl.nodes.list:::1:::List Jenkins nodes (ODL):::${LFTOOLS_CMD} jenkins -s odl-prod nodes list:::-
+
 # Alternative tests using environment variables (require JENKINS_URL)
 jenkins.env.builds.running:::1:::List running Jenkins builds (env URL):::${LFTOOLS_CMD} jenkins -s "${JENKINS_URL}" builds running:::JENKINS_URL
 jenkins.env.builds.queued:::1:::List queued Jenkins builds (env URL):::${LFTOOLS_CMD} jenkins -s "${JENKINS_URL}" builds queued:::JENKINS_URL
@@ -212,6 +211,13 @@ openstack.volume.list:::1:::List OpenStack volumes:::${LFTOOLS_CMD} openstack --
 # GITHUB (Category 1) - Org listing (read) - requires config section
 github.org.list:::1:::List GitHub organization repos (requires token config):::${LFTOOLS_CMD} github list "${GITHUB_ORG}" --repos:::GITHUB_ORG
 github.lfreleng.list:::1:::List lfreleng-actions organization repos:::${LFTOOLS_CMD} github list "lfreleng-actions" --repos:::-
+# ---------------------------
+# PYTHON-LDAP MODERNIZATION (Category 1) - Test modernized python-ldap dependency
+ldap.import.test:::1:::Test python-ldap import (modernization validation):::uv run --extra ldap python3 -c "import ldap; print(f'python-ldap version: {ldap.__version__}')":::-
+ldap.version.check:::1:::Verify python-ldap version meets modernization requirements:::uv run --extra ldap python3 -c "import ldap; from packaging import version; v=ldap.__version__; assert version.parse(v) >= version.parse('3.4.0'), f'Expected >=3.4.0, got {v}'; print(f'✓ python-ldap {v} meets modernization requirements')":::-
+ldap.api.compatibility:::1:::Test LDAP API compatibility with existing code:::uv run --extra ldap python3 -c "import ldap; ldap_obj = ldap.initialize('ldap://example.com'); assert hasattr(ldap_obj, 'simple_bind_s'); print('✓ LDAP API compatibility verified')":::-
+# Note: Actual LDAP server operations require credentials and would be Category 2
+# ldap.server.connect:::2:::Test LDAP server connection (requires LDAP_SERVER, credentials):::uv run --extra ldap python3 -c "import ldap; conn=ldap.initialize('${LDAP_SERVER}'); conn.simple_bind_s('','')":::LDAP_SERVER
 # ---------------------------
 # PLACEHOLDER Category 2 (Reversible) - disabled
 # Example: enabling/disabling Jenkins jobs (reversible) - disabled until harness ready

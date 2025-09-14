@@ -9,8 +9,6 @@
 ##############################################################################
 """Verify YAML Schema."""
 
-from __future__ import print_function
-
 import click
 
 from lftools_uv.schema import check_schema_file

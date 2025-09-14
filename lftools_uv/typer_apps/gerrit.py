@@ -10,11 +10,8 @@
 ##############################################################################
 """Typer Gerrit CLI commands."""
 
-from __future__ import print_function
-
 import logging
 from pprint import pformat
-from typing import Optional
 
 import typer
 
@@ -32,8 +29,10 @@ def addfile(
     gerrit_fqdn: str = typer.Argument(..., help="Gerrit FQDN"),
     gerrit_project: str = typer.Argument(..., help="Gerrit project name"),
     filename: str = typer.Argument(..., help="Filename to add"),
-    issue_id: Optional[str] = typer.Option(None, "--issue-id", help="For projects that enforce an issue id for changesets"),
-    file_location: Optional[str] = typer.Option(None, "--file-location", help="File path within the repository"),
+    issue_id: str | None = typer.Option(
+        None, "--issue-id", help="For projects that enforce an issue id for changesets"
+    ),
+    file_location: str | None = typer.Option(None, "--file-location", help="File path within the repository"),
 ):
     """Add a file for review to a Project.
 
@@ -50,7 +49,7 @@ def addfile(
         log.info(pformat(data))
     except Exception as e:
         log.error(f"Failed to add file: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @gerrit_app.command("addinfojob")
@@ -58,8 +57,10 @@ def addinfojob(
     gerrit_fqdn: str = typer.Argument(..., help="Gerrit FQDN"),
     gerrit_project: str = typer.Argument(..., help="Gerrit project name"),
     jjbrepo: str = typer.Argument(..., help="JJB repository name"),
-    issue_id: Optional[str] = typer.Option(None, "--issue-id", help="For projects that enforce an issue id for changesets"),
-    agent: Optional[str] = typer.Option(None, "--agent", help="Specify the Jenkins agent label to run the job on"),
+    issue_id: str | None = typer.Option(
+        None, "--issue-id", help="For projects that enforce an issue id for changesets"
+    ),
+    agent: str | None = typer.Option(None, "--agent", help="Specify the Jenkins agent label to run the job on"),
 ):
     """Add an INFO job for a new Project.
 
@@ -79,14 +80,16 @@ def addinfojob(
         git.add_info_job(gerrit_fqdn, gerrit_project, issue_id, agent)
     except Exception as e:
         log.error(f"Failed to add info job: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @gerrit_app.command("addgitreview")
 def addgitreview(
     gerrit_fqdn: str = typer.Argument(..., help="Gerrit FQDN"),
     gerrit_project: str = typer.Argument(..., help="Gerrit project name"),
-    issue_id: Optional[str] = typer.Option(None, "--issue-id", help="For projects that enforce an issue id for changesets"),
+    issue_id: str | None = typer.Option(
+        None, "--issue-id", help="For projects that enforce an issue id for changesets"
+    ),
 ):
     """Add git review to a project.
 
@@ -99,7 +102,7 @@ def addgitreview(
         git.add_git_review(gerrit_fqdn, gerrit_project, issue_id)
     except Exception as e:
         log.error(f"Failed to add git review: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @gerrit_app.command("addgithubrights")
@@ -118,7 +121,7 @@ def addgithubrights(
         log.info(pformat(data))
     except Exception as e:
         log.error(f"Failed to add github rights: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @gerrit_app.command("abandonchanges")
@@ -137,7 +140,7 @@ def abandonchanges(
         log.info(pformat(data))
     except Exception as e:
         log.error(f"Failed to abandon changes: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @gerrit_app.command("createproject")
@@ -165,7 +168,7 @@ def createproject(
         log.info(pformat(data))
     except Exception as e:
         log.error(f"Failed to create project: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @gerrit_app.command("create-saml-group")
@@ -180,7 +183,7 @@ def create_saml_group(
         log.info(pformat(data))
     except Exception as e:
         log.error(f"Failed to create SAML group: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @gerrit_app.command("list-project-permissions")
@@ -196,7 +199,7 @@ def list_project_permissions(
             log.info(pformat(ldap_group))
     except Exception as e:
         log.error(f"Failed to list project permissions: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @gerrit_app.command("list-project-inherits-from")
@@ -211,7 +214,7 @@ def list_project_inherits_from(
         log.info(data)
     except Exception as e:
         log.error(f"Failed to list project inheritance: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 @gerrit_app.command("addmavenconfig")
@@ -219,9 +222,11 @@ def addmavenconfig(
     gerrit_fqdn: str = typer.Argument(..., help="Gerrit FQDN"),
     gerrit_project: str = typer.Argument(..., help="Gerrit project name"),
     jjbrepo: str = typer.Argument(..., help="JJB repository name"),
-    issue_id: Optional[str] = typer.Option(None, "--issue-id", help="For projects that enforce an issue id for changesets"),
-    nexus3: Optional[str] = typer.Option(None, "--nexus3", help="Specify a Nexus 3 server, e.g. nexus3.example.org"),
-    nexus3_ports: Optional[str] = typer.Option(
+    issue_id: str | None = typer.Option(
+        None, "--issue-id", help="For projects that enforce an issue id for changesets"
+    ),
+    nexus3: str | None = typer.Option(None, "--nexus3", help="Specify a Nexus 3 server, e.g. nexus3.example.org"),
+    nexus3_ports: str | None = typer.Option(
         None,
         "--nexus3-ports",
         help="Comma-separated list of ports supported by the Nexus 3 server specified",
@@ -244,4 +249,4 @@ def addmavenconfig(
         git.add_maven_config(gerrit_fqdn, gerrit_project, issue_id, nexus3, nexus3_ports)
     except Exception as e:
         log.error(f"Failed to add maven config: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None

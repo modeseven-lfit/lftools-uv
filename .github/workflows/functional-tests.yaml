@@ -127,12 +127,36 @@ jobs:
           # Create results directory
           mkdir -p functional-test-results
 
-          # Run tests with JSON output
+          # Use environment variables already set by workflow
+          # TEST_CATEGORY and TEST_FILTER are already set in env section
+          export OUTPUT_FORMAT="json"
+          export VERBOSE="1"
+
+          # Debug essential information
+          echo "Running functional tests with filter: ${TEST_FILTER:-none}"
+          echo "Test category: ${TEST_CATEGORY}"
+
+          # Make script executable (in case it's not)
+          chmod +x scripts/run_functional_tests.sh
+
+          # Run tests with proper output separation
+          # Stderr goes to console, stdout (JSON) goes to file
           if ./scripts/run_functional_tests.sh \
-              > functional-test-results/results.json 2>&1; then
+              > functional-test-results/results.json; then
             echo "exit_code=0" >> "$GITHUB_OUTPUT"
+            echo "Test execution completed successfully"
           else
+            exit_code=$?
             echo "exit_code=1" >> "$GITHUB_OUTPUT"
+            echo "Test execution failed with exit code: $exit_code"
+
+            # Show some debug info on failure
+            if [[ -f functional-test-results/results.json ]]; then
+              file_size=$(wc -c < functional-test-results/results.json)
+              echo "Results file exists (${file_size} bytes)"
+            else
+              echo "No results file generated"
+            fi
           fi
 
           # Extract summary for step output
@@ -142,19 +166,20 @@ jobs:
               echo ""
             } >> "$GITHUB_STEP_SUMMARY"
 
-            # Extract test counts (simplified parsing)
-            total=$(grep -o '"Total:.*[0-9]' \
+            # Parse JSON properly using jq-style extraction or grep
+            # Extract test counts from actual JSON structure
+            total=$(grep -o '"total":[0-9]*' \
               functional-test-results/results.json | \
-              grep -o '[0-9]*' | tail -1 || echo "0")
-            passed=$(grep -o '"Passed:.*[0-9]' \
+              grep -o '[0-9]*' || echo "0")
+            passed=$(grep -o '"passed":[0-9]*' \
               functional-test-results/results.json | \
-              grep -o '[0-9]*' | tail -1 || echo "0")
-            failed=$(grep -o '"Failed:.*[0-9]' \
+              grep -o '[0-9]*' || echo "0")
+            failed=$(grep -o '"failed":[0-9]*' \
               functional-test-results/results.json | \
-              grep -o '[0-9]*' | tail -1 || echo "0")
-            skipped=$(grep -o '"Skipped:.*[0-9]' \
+              grep -o '[0-9]*' || echo "0")
+            skipped=$(grep -o '"skipped":[0-9]*' \
               functional-test-results/results.json | \
-              grep -o '[0-9]*' | tail -1 || echo "0")
+              grep -o '[0-9]*' || echo "0")
 
             {
               echo "- **Total Tests**: $total"
@@ -172,6 +197,8 @@ jobs:
             else
               echo "⚠️ No tests were executed." >> "$GITHUB_STEP_SUMMARY"
             fi
+          else
+            echo "⚠️ No test results file found." >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: "Upload test results"

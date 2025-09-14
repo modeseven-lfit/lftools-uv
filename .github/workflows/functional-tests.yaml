@@ -98,7 +98,7 @@ jobs:
     steps:
       - name: "Harden Runner"
         # yamllint disable-line rule:line-length
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
         with:
           egress-policy: audit
 
@@ -108,7 +108,7 @@ jobs:
 
       - name: "Install uv"
         # yamllint disable-line rule:line-length
-        uses: astral-sh/setup-uv@2c443be7a21e3b88a5b2ac39928c7e2e09e8b3a4 # v4.4.0
+        uses: astral-sh/setup-uv@v6.7.0
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
@@ -177,7 +177,7 @@ jobs:
       - name: "Upload test results"
         if: always()
         # yamllint disable-line rule:line-length
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: functional-test-results-${{ matrix.test_filter }}
           path: |
@@ -238,7 +238,7 @@ jobs:
     steps:
       - name: "Harden Runner"
         # yamllint disable-line rule:line-length
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
         with:
           egress-policy: audit
 
@@ -248,7 +248,7 @@ jobs:
 
       - name: "Install uv"
         # yamllint disable-line rule:line-length
-        uses: astral-sh/setup-uv@2c443be7a21e3b88a5b2ac39928c7e2e09e8b3a4 # v4.4.0
+        uses: astral-sh/setup-uv@v6.7.0
         with:
           enable-cache: true
 

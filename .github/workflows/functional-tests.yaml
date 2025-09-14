@@ -5,7 +5,7 @@
 name: "Functional Tests"
 # REQUIRED SECRETS (must be defined in repository secrets):
 #   RTD_TOKEN          -> Populates [rtd] token
-#   GITHUB_TOKEN       -> Populates [github] token
+#   READ_GITHUB_TOKEN  -> Populates [github] token
 #                         (read-only scope sufficient for listing)
 #   NEXUS2_PASSWORD    -> Populates nexus.onap.org password
 #                         (user assumed 'admin' unless overridden)
@@ -121,7 +121,7 @@ jobs:
         shell: bash
         env:
           RTD_TOKEN: "${{ secrets.RTD_TOKEN }}"
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_TOKEN: "${{ secrets.READ_GITHUB_TOKEN }}"
           NEXUS2_PASSWORD: "${{ secrets.NEXUS2_PASSWORD }}"
           NEXUS3_PASSWORD: "${{ secrets.NEXUS3_PASSWORD }}"
         run: |
@@ -348,7 +348,7 @@ jobs:
         shell: bash
         env:
           RTD_TOKEN: "${{ secrets.RTD_TOKEN }}"
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_TOKEN: "${{ secrets.READ_GITHUB_TOKEN }}"
           NEXUS2_PASSWORD: "${{ secrets.NEXUS2_PASSWORD }}"
           NEXUS3_PASSWORD: "${{ secrets.NEXUS3_PASSWORD }}"
         run: |

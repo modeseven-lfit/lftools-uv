@@ -11,8 +11,12 @@ name: "Functional Tests"
 #                         (user assumed 'admin' unless overridden)
 #   NEXUS3_PASSWORD    -> Populates nexus3.onap.org password
 #                         (user assumed 'modesevenindustrialsolutions2')
+#   CLOUDS_YAML        -> Multi-line OpenStack test clouds.yaml content
+#   PUBLIC_CLOUDS_YAML -> Optional public-clouds.yaml
+#                         (vendor profiles, e.g. vexxhost)
 #
-# Secrets injected into ephemeral lftools.ini for functional tests.
+# Secrets injected into ephemeral lftools.ini and clouds.yaml
+# for functional tests.
 # DO NOT commit real credentials. Generated per run inside the workflow.
 
 "on":
@@ -104,26 +108,28 @@ jobs:
       NEXUS2_FQDN: "nexus.onap.org"
       NEXUS3_FQDN: "nexus3.onap.org"
       GITHUB_ORG: "onap"
-      OS_CLOUD: "devstack"
+      # OS_CLOUD is now aligned with provided CLOUDS_YAML secret
+      OS_CLOUD: "ecompci"
 
+    # yamllint disable rule:line-length
     steps:
       - name: "Harden Runner"
-        # yamllint disable-line rule:line-length
         uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        # yamllint disable-line rule:line-length
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-      - name: "Generate lftools.ini from secrets"
+      - name: "Generate lftools.ini, clouds.yaml, and public-clouds.yaml"
         shell: bash
         env:
           RTD_TOKEN: "${{ secrets.RTD_TOKEN }}"
           GITHUB_TOKEN: "${{ secrets.READ_GITHUB_TOKEN }}"
           NEXUS2_PASSWORD: "${{ secrets.NEXUS2_PASSWORD }}"
           NEXUS3_PASSWORD: "${{ secrets.NEXUS3_PASSWORD }}"
+          CLOUDS_YAML: "${{ secrets.CLOUDS_YAML }}"
+          JENKINS_JOBS_INI: "${{ secrets.JENKINS_JOBS_INI }}"
         run: |
           set -euo pipefail
           CONFIG_DIR="${HOME}/.config/lftools"
@@ -143,7 +149,71 @@ jobs:
             } >> "${INI_FILE}"
           fi
 
-            # [github] section
+          # Write clouds.yaml if provided
+          if [[ -n "${CLOUDS_YAML:-}" ]]; then
+            OPENSTACK_DIR="${HOME}/.config/openstack"
+            mkdir -p "${OPENSTACK_DIR}"
+            printf "%s\n" "${CLOUDS_YAML}" > "${OPENSTACK_DIR}/clouds.yaml"
+            echo "Wrote clouds.yaml"
+            pattern='^  [a-zA-Z0-9_-]\+:'
+            count=$(grep -c "$pattern" "${OPENSTACK_DIR}/clouds.yaml" || true)
+            echo "Cloud definitions: ${count}"
+
+            # Debug: Show cloud configuration (sanitized)
+            echo "Available clouds:"
+            grep "^  [a-zA-Z0-9_-]*:" "${OPENSTACK_DIR}/clouds.yaml" || true
+
+            # Check if ecompci cloud exists
+            if grep -q "^  ecompci:" "${OPENSTACK_DIR}/clouds.yaml"; then
+              echo "✓ Found ecompci cloud configuration"
+              # Show sanitized config structure (hide sensitive values)
+              echo "ecompci cloud structure:"
+              sed -n '/^  ecompci:/,/^  [a-zA-Z]/p' \
+                "${OPENSTACK_DIR}/clouds.yaml" | \
+                sed 's/password: .*/password: [REDACTED]/' | \
+                sed 's/application_credential_secret: .*/application_credential_secret: [REDACTED]/' | \
+                head -20
+            else
+              echo "❌ ecompci cloud configuration not found"
+              echo "This will cause OpenStack tests to fail"
+            fi
+
+            # Export file path for subsequent steps (GitHub step-level)
+            {
+              echo "OS_CLIENT_CONFIG_FILE=${OPENSTACK_DIR}/clouds.yaml"
+              echo "Configured OS_CLOUD=ecompci"
+            } >> "$GITHUB_ENV"
+          else
+            echo "❌ No CLOUDS_YAML secret; OpenStack tests will fail."
+            echo "Please ensure CLOUDS_YAML secret contains valid" \
+                 " OpenStack configuration with:"
+            echo "  - auth_url, username, password, project_name"
+            echo "  - user_domain_name, project_domain_name (for v3 auth)"
+            echo "  - region_name, identity_api_version"
+          fi
+
+          # Note: PUBLIC_CLOUDS_YAML removed - using explicit config in
+          # CLOUDS_YAML instead
+
+          # Write jenkins_jobs.ini if provided
+          if [[ -n "${JENKINS_JOBS_INI:-}" ]]; then
+            JENKINS_DIR="${HOME}/.config/jenkins_jobs"
+            mkdir -p "${JENKINS_DIR}"
+            printf "%s\n" "${JENKINS_JOBS_INI}" > \
+              "${JENKINS_DIR}/jenkins_jobs.ini"
+            echo "✓ Created jenkins_jobs.ini configuration"
+
+            # Show available Jenkins sections (sanitized)
+            echo "Available Jenkins configurations:"
+            grep "^\[.*\]" "${JENKINS_DIR}/jenkins_jobs.ini" | \
+              grep -v "\[job_builder\]" || true
+          else
+            echo "❌ No JENKINS_JOBS_INI secret; Jenkins tests may fail."
+            echo "Please ensure JENKINS_JOBS_INI secret contains valid" \
+                 " Jenkins configuration."
+          fi
+
+          # [github] section
           if [[ -n "${GITHUB_TOKEN:-}" ]]; then
             {
               echo "[github]"
@@ -178,7 +248,6 @@ jobs:
           grep '^[[]' "${INI_FILE}" || true
 
       - name: "Install uv"
-        # yamllint disable-line rule:line-length
         uses: astral-sh/setup-uv@b75a909f75acd358c2196fb9a5f1299a9a8868a4 # v6.7.0
         with:
           enable-cache: true
@@ -216,6 +285,34 @@ jobs:
           # Debug essential information
           echo "Running functional tests with filter: ${TEST_FILTER:-none}"
           echo "Test category: ${TEST_CATEGORY}"
+
+          # Debug OpenStack configuration if running OpenStack tests
+          if [[ "${TEST_FILTER:-}" == "openstack" ]]; then
+            echo ""
+            echo "=== OpenStack Configuration Debug ==="
+            echo "OS_CLOUD: ${OS_CLOUD:-NOT_SET}"
+            echo "OS_CLIENT_CONFIG_FILE: ${OS_CLIENT_CONFIG_FILE:-NOT_SET}"
+
+            if [[ -f "${OS_CLIENT_CONFIG_FILE:-}" ]]; then
+              echo "✓ clouds.yaml exists at: ${OS_CLIENT_CONFIG_FILE}"
+              echo "File size: $(wc -c < "${OS_CLIENT_CONFIG_FILE}") bytes"
+
+              # Test if we can parse the YAML and find our cloud
+              if command -v python3 >/dev/null 2>&1; then
+                echo "Testing cloud configuration parsing..."
+                if python3 -c "import yaml; yaml.safe_load(open('${OS_CLIENT_CONFIG_FILE}'))" 2>/dev/null; then
+                  echo "✓ clouds.yaml is valid YAML"
+                else
+                  echo "❌ clouds.yaml has YAML syntax errors"
+                fi
+              fi
+            else
+              echo "❌ clouds.yaml not found at:" \
+                   " ${OS_CLIENT_CONFIG_FILE:-NOT_SET}"
+            fi
+            echo "====================================="
+            echo ""
+          fi
 
           # Make script executable (in case it's not)
           chmod +x scripts/run_functional_tests.sh
@@ -284,7 +381,6 @@ jobs:
 
       - name: "Upload test results"
         if: always()
-        # yamllint disable-line rule:line-length
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: functional-test-results-${{ matrix.test_filter }}
@@ -345,22 +441,21 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: "Harden Runner"
-        # yamllint disable-line rule:line-length
         uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        # yamllint disable-line rule:line-length
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-      - name: "Generate lftools.ini from secrets"
+      - name: "Generate lftools.ini, clouds.yaml, and public-clouds.yaml"
         shell: bash
         env:
           RTD_TOKEN: "${{ secrets.RTD_TOKEN }}"
           GITHUB_TOKEN: "${{ secrets.READ_GITHUB_TOKEN }}"
           NEXUS2_PASSWORD: "${{ secrets.NEXUS2_PASSWORD }}"
           NEXUS3_PASSWORD: "${{ secrets.NEXUS3_PASSWORD }}"
+          CLOUDS_YAML: "${{ secrets.CLOUDS_YAML }}"
         run: |
           set -euo pipefail
           CONFIG_DIR="${HOME}/.config/lftools"
@@ -409,11 +504,73 @@ jobs:
             } >> "${INI_FILE}"
           fi
 
+          if [[ -n "${CLOUDS_YAML:-}" ]]; then
+            OPENSTACK_DIR="${HOME}/.config/openstack"
+            mkdir -p "${OPENSTACK_DIR}"
+            printf "%s\n" "${CLOUDS_YAML}" > "${OPENSTACK_DIR}/clouds.yaml"
+            echo "Wrote clouds.yaml (security-baseline)."
+            {
+              echo "OS_CLIENT_CONFIG_FILE=${OPENSTACK_DIR}/clouds.yaml"
+              echo "Configured OS_CLOUD=ecompci"
+            } >> "$GITHUB_ENV"
+          else
+            echo "No CLOUDS_YAML secret provided (security-baseline job)."
+          fi
+
+          # Write public-clouds.yaml if GitHub variable provided
+          if [[ -n "${PUBLIC_CLOUDS_YAML:-}" ]]; then
+            OPENSTACK_DIR="${HOME}/.config/openstack"
+            mkdir -p "${OPENSTACK_DIR}"
+            printf "%s\n" "${PUBLIC_CLOUDS_YAML}" \
+              > "${OPENSTACK_DIR}/public-clouds.yaml"
+            echo "Wrote public-clouds.yaml"
+            echo "(vendor profiles; security-baseline)"
+          else
+            echo "No PUBLIC_CLOUDS_YAML variable defined"
+            echo "(security-baseline)"
+          fi
+
+          if [[ -n "${RTD_TOKEN:-}" ]]; then
+            {
+              echo "[rtd]"
+              echo "token = ${RTD_TOKEN}"
+              echo "endpoint = https://readthedocs.org/api/v3/"
+              echo
+            } >> "${INI_FILE}"
+          fi
+
+          if [[ -n "${GITHUB_TOKEN:-}" ]]; then
+            {
+              echo "[github]"
+              echo "token = ${GITHUB_TOKEN}"
+              echo
+            } >> "${INI_FILE}"
+          fi
+
+          if [[ -n "${NEXUS2_PASSWORD:-}" ]]; then
+            {
+              echo "[nexus.onap.org]"
+              echo "username = admin"
+              echo "password = ${NEXUS2_PASSWORD}"
+              echo "endpoint = https://nexus.onap.org/"
+              echo
+            } >> "${INI_FILE}"
+          fi
+
+          if [[ -n "${NEXUS3_PASSWORD:-}" ]]; then
+            {
+              echo "[nexus3.onap.org]"
+              echo "username = modesevenindustrialsolutions2"
+              echo "password = ${NEXUS3_PASSWORD}"
+              echo "endpoint = https://nexus3.onap.org/"
+              echo
+            } >> "${INI_FILE}"
+          fi
+
           echo "Generated sections:"
           grep '^[[]' "${INI_FILE}" || true
 
       - name: "Install uv"
-        # yamllint disable-line rule:line-length
         uses: astral-sh/setup-uv@b75a909f75acd358c2196fb9a5f1299a9a8868a4 # v6.7.0
         with:
           enable-cache: true

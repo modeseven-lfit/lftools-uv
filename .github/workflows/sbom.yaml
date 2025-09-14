@@ -88,19 +88,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          uv run cyclonedx-bom \
-            --format json \
-            --output sbom-cyclonedx.json \
-            --schema-version 1.5
+          uv run cyclonedx-py environment \
+            --of JSON \
+            -o sbom-cyclonedx.json \
+            --sv 1.5
 
       - name: "Generate SBOM (CycloneDX XML)"
         shell: bash
         run: |
           set -euo pipefail
-          uv run cyclonedx-bom \
-            --format xml \
-            --output sbom-cyclonedx.xml \
-            --schema-version 1.5
+          uv run cyclonedx-py environment \
+            --of XML \
+            -o sbom-cyclonedx.xml \
+            --sv 1.5
 
       - name: "Summarize"
         shell: bash

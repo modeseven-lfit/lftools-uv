@@ -39,10 +39,19 @@
 #   TEST_CATEGORY=1,2 DRY_RUN=1 ./scripts/run_functional_tests.sh
 #
 # ENVIRONMENT / CREDENTIAL NOTES:
-#   Jenkins: JENKINS_URL, LFTOOLS_USERNAME, LFTOOLS_PASSWORD (or token via config)
-#   Nexus2: NEXUS2_FQDN (hostname only, no scheme)
-#   Nexus3: NEXUS3_FQDN
-#   GitHub: GITHUB_ORG, GITHUB_TOKEN (or config in lftools-uv settings)
+#   Jenkins: JENKINS_URL (defaults to jenkins.onap.org), LFTOOLS_USERNAME, LFTOOLS_PASSWORD (or token via config)
+#   Nexus2: NEXUS2_FQDN (defaults to nexus.onap.org, hostname only, no scheme)
+#   Nexus3: NEXUS3_FQDN (defaults to nexus3.onap.org)
+#   OpenStack: OS_CLOUD (defaults to ecompci)
+#   GitHub: GITHUB_ORG (defaults to onap), GITHUB_TOKEN (or config in lftools-uv settings)
+#
+# DEFAULT VALUES:
+#   If environment variables are not set, the script uses ONAP/ECOMPCI project defaults:
+#   - JENKINS_URL=https://jenkins.onap.org
+#   - NEXUS2_FQDN=nexus.onap.org
+#   - NEXUS3_FQDN=nexus3.onap.org
+#   - OS_CLOUD=ecompci
+#   - GITHUB_ORG=onap
 #
 # STRATEGY:
 #   - We model each test as a record:
@@ -107,12 +116,66 @@ info() { log "${COLOR_BLUE}INFO${COLOR_RESET}" "$*"; }
 success() { log "${COLOR_GREEN}OK${COLOR_RESET}" "$*"; }
 
 ###############################################################################
-# Load test credentials and configuration
+# Load lftools configuration and set defaults
 ###############################################################################
-# Source test credentials if available
+# Set up lftools configuration directory
+LFTOOLS_CONFIG_DIR="${HOME}/.config/lftools"
+
+# Configure OpenStack clouds.yaml location
+OPENSTACK_CONFIG="${LFTOOLS_CONFIG_DIR}/clouds.yaml"
+if [[ -f "${OPENSTACK_CONFIG}" ]]; then
+    export OS_CLIENT_CONFIG_FILE="${OPENSTACK_CONFIG}"
+    vlog "Using OpenStack config: ${OPENSTACK_CONFIG}"
+else
+    vlog "No OpenStack config found at ${OPENSTACK_CONFIG}"
+fi
+
+# Configure Jenkins configuration location
+JENKINS_CONFIG="${LFTOOLS_CONFIG_DIR}/jenkins_job.ini"
+if [[ -f "${JENKINS_CONFIG}" ]]; then
+    export JENKINS_JOBS_INI="${JENKINS_CONFIG}"
+    vlog "Using Jenkins config: ${JENKINS_CONFIG}"
+else
+    vlog "No Jenkins config found at ${JENKINS_CONFIG}"
+fi
+
+###############################################################################
+# Set ONAP/ECOMPCI project defaults for testing (if not already set)
+###############################################################################
+# Set default Jenkins URL if not provided
+if [[ -z "${JENKINS_URL:-}" ]]; then
+    export JENKINS_URL="https://jenkins.onap.org"
+    vlog "Using default Jenkins URL: ${JENKINS_URL}"
+fi
+
+# Set default Nexus2 FQDN if not provided
+if [[ -z "${NEXUS2_FQDN:-}" ]]; then
+    export NEXUS2_FQDN="nexus.onap.org"
+    vlog "Using default Nexus2 FQDN: ${NEXUS2_FQDN}"
+fi
+
+# Set default Nexus3 FQDN if not provided
+if [[ -z "${NEXUS3_FQDN:-}" ]]; then
+    export NEXUS3_FQDN="nexus3.onap.org"
+    vlog "Using default Nexus3 FQDN: ${NEXUS3_FQDN}"
+fi
+
+# Set default OpenStack cloud if not provided
+if [[ -z "${OS_CLOUD:-}" ]]; then
+    export OS_CLOUD="ecompci"
+    vlog "Using default OpenStack cloud: ${OS_CLOUD}"
+fi
+
+# Set default GitHub organization if not provided
+if [[ -z "${GITHUB_ORG:-}" ]]; then
+    export GITHUB_ORG="onap"
+    vlog "Using default GitHub organization: ${GITHUB_ORG}"
+fi
+
+# Source additional test credentials if available (for backwards compatibility)
 TEST_CREDENTIALS_FILE="${HOME}/.config/lftools-uv/test-credentials.txt"
 if [[ -f "${TEST_CREDENTIALS_FILE}" ]]; then
-    vlog "Loading test credentials from ${TEST_CREDENTIALS_FILE}"
+    vlog "Loading additional test credentials from ${TEST_CREDENTIALS_FILE}"
     # Source the file, ignoring comments and empty lines
     while IFS= read -r line || [[ -n "$line" ]]; do
         # Skip comments and empty lines
@@ -124,15 +187,6 @@ if [[ -f "${TEST_CREDENTIALS_FILE}" ]]; then
             vlog "Loaded credential: ${BASH_REMATCH[1]}"
         fi
     done < "${TEST_CREDENTIALS_FILE}"
-else
-    vlog "No test credentials file found at ${TEST_CREDENTIALS_FILE}"
-fi
-
-# Set up test-specific OpenStack configuration if available
-TEST_OPENSTACK_CONFIG="${HOME}/.config/lftools-uv/clouds.yaml"
-if [[ -f "${TEST_OPENSTACK_CONFIG}" ]]; then
-    export OS_CLIENT_CONFIG_FILE="${TEST_OPENSTACK_CONFIG}"
-    vlog "Using test-specific OpenStack config: ${TEST_OPENSTACK_CONFIG}"
 fi
 
 ###############################################################################

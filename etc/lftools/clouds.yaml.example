@@ -1,0 +1,94 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2025 The Linux Foundation
+#
+# Example OpenStack clouds configuration for lftools
+#
+# This file should be copied to ~/.config/lftools/clouds.yaml and
+# customized with your actual OpenStack cloud credentials.
+#
+# Each cloud entry represents an OpenStack environment that can be
+# referenced by name in lftools OpenStack commands.
+
+clouds:
+  # Production OpenStack cloud
+  production:
+    auth:
+      auth_url: https://keystone.production.example.com:5000/v3
+      username: your-username
+      password: your-password
+      project_name: your-project
+      project_domain_name: Default
+      user_domain_name: Default
+    region_name: RegionOne
+    interface: public
+    identity_api_version: 3
+
+  # Staging OpenStack cloud
+  staging:
+    auth:
+      auth_url: https://keystone.staging.example.com:5000/v3
+      username: your-username
+      password: your-password
+      project_name: your-project
+      project_domain_name: Default
+      user_domain_name: Default
+    region_name: RegionOne
+    interface: public
+    identity_api_version: 3
+
+  # Development OpenStack cloud
+  development:
+    auth:
+      auth_url: https://keystone.dev.example.com:5000/v3
+      username: your-username
+      password: your-password
+      project_name: your-project
+      project_domain_name: Default
+      user_domain_name: Default
+    region_name: RegionOne
+    interface: public
+    identity_api_version: 3
+
+  # Local DevStack instance (for development)
+  devstack:
+    auth:
+      auth_url: http://localhost/identity/v3
+      username: demo
+      password: devstack
+      project_name: demo
+      project_domain_name: Default
+      user_domain_name: Default
+    region_name: RegionOne
+    interface: public
+    identity_api_version: 3
+
+  # OpenStack with application credentials (recommended for automation)
+  prod-app-creds:
+    auth:
+      auth_url: https://keystone.production.example.com:5000/v3
+      application_credential_id: your-app-credential-id
+      application_credential_secret: your-app-credential-secret
+    region_name: RegionOne
+    interface: public
+    identity_api_version: 3
+
+# Global OpenStack client configuration
+client:
+  # Force use of specific OpenStack client version if needed
+  # force_ipv4: true
+  # verify: false  # Set to false only for self-signed certificates (not recommended)
+
+# Cache settings (optional)
+cache:
+  # Enable caching for improved performance
+  # expiration_time: 3600  # Cache for 1 hour
+  # max_age: 3600
+
+# Notes:
+# - Replace all 'your-*' placeholders with actual credentials
+# - Application credentials are recommended over username/password for automation
+# - To create application credentials: OpenStack Dashboard > Identity > Application Credentials
+# - Region names vary by cloud provider (common: RegionOne, us-east-1, etc.)
+# - Set verify: false only for development with self-signed certificates
+# - Multiple regions can be configured by duplicating clouds with different region_name
+# - Interface options: public, internal, admin (public is most common)

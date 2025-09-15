@@ -25,6 +25,15 @@ log: logging.Logger = logging.getLogger(__name__)
 
 def jjb_ini() -> str | None:
     """Return jenkins_jobs.ini file location if it exists, None otherwise."""
+    # Check for environment variable first (allows override)
+    env_conf = os.environ.get("JENKINS_JOBS_INI")
+    if env_conf and os.path.isfile(env_conf):
+        return env_conf
+
+    # Standard lftools config location
+    lftools_conf = os.path.join(os.path.expanduser("~"), ".config", "lftools", "jenkins_job.ini")
+
+    # Legacy jenkins_jobs locations for backwards compatibility
     global_conf = "/etc/jenkins_jobs/jenkins_jobs.ini"
     user_conf = os.path.join(os.path.expanduser("~"), ".config", "jenkins_jobs", "jenkins_jobs.ini")
     local_conf = os.path.join(os.getcwd(), "jenkins_jobs.ini")
@@ -32,6 +41,8 @@ def jjb_ini() -> str | None:
     conf = None
     if os.path.isfile(local_conf):
         conf = local_conf
+    elif os.path.isfile(lftools_conf):
+        conf = lftools_conf
     elif os.path.isfile(user_conf):
         conf = user_conf
     elif os.path.isfile(global_conf):

@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2025 The Linux Foundation
+#
+# Example Jenkins Job Builder Configuration for lftools
+#
+# This file should be copied to ~/.config/lftools/jenkins_job.ini and
+# customized with your actual Jenkins server credentials.
+#
+# Each section represents a Jenkins server configuration that can be
+# referenced by name in lftools commands.
+
+[job_builder]
+ignore_cache=True
+keep_descriptions=False
+include_path=.
+recursive=False
+exclude_path=
+allow_duplicates=False
+update=jobs
+
+# Default Jenkins server (used when no server is specified)
+[jenkins]
+user=your-username
+password=your-api-token-or-password
+url=https://jenkins.example.com/
+
+# ONAP Production Jenkins
+[onap-prod]
+user=your-onap-username
+password=your-onap-api-token
+url=https://jenkins.onap.org/
+
+# ONAP Sandbox Jenkins (for testing)
+[onap-sandbox]
+user=your-onap-username
+password=your-onap-api-token
+url=https://jenkins.onap.org/sandbox/
+
+# OpenDaylight Jenkins (if needed)
+[odl]
+user=your-odl-username
+password=your-odl-api-token
+url=https://jenkins.opendaylight.org/releng/
+
+# Local Jenkins instance (for development)
+[local]
+user=admin
+password=admin-token
+url=http://localhost:8080/
+
+# Additional example servers
+[staging]
+user=your-staging-username
+password=your-staging-api-token
+url=https://jenkins-staging.example.com/
+
+[ci-management]
+user=your-ci-username
+password=your-ci-api-token
+url=https://ci-management.example.com/
+
+# Notes:
+# - Replace 'your-*-username' with your actual Jenkins username
+# - Replace 'your-*-api-token' with your actual Jenkins API token
+# - API tokens are recommended over passwords for security
+# - To generate API tokens: Jenkins > User Settings > Configure > API Token
+# - URLs should include the full Jenkins base URL (with trailing slash if needed)
+# - Section names (e.g., 'onap-prod') are used with the -s/--server option

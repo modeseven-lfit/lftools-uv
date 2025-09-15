@@ -57,6 +57,70 @@ This project uses [uv](https://docs.astral.sh/uv/) for fast Python package manag
 pip install lftools-uv
 ```
 
+## Configuration
+
+lftools uses configuration files in the standard `~/.config/lftools/`
+directory for Jenkins, OpenStack, and other service credentials.
+
+### Quick Setup
+
+Use the setup helper to create example configuration files:
+
+```bash
+# Clone the repository first (if not already done)
+git clone https://github.com/lfit/lftools-uv.git
+cd lftools-uv
+
+# Run the configuration setup helper
+./scripts/setup-config.sh
+```
+
+This creates:
+
+- `~/.config/lftools/jenkins_job.ini` - Jenkins server configurations
+- `~/.config/lftools/clouds.yaml` - OpenStack cloud configurations
+
+### Manual Configuration
+
+Create the configuration directory:
+
+```bash
+mkdir -p ~/.config/lftools
+```
+
+Copy and customize the example files:
+
+```bash
+# Jenkins configuration
+cp etc/lftools/jenkins_job.ini.example ~/.config/lftools/jenkins_job.ini
+# Edit with your Jenkins credentials
+
+# OpenStack configuration
+cp etc/lftools/clouds.yaml.example ~/.config/lftools/clouds.yaml
+# Edit with your OpenStack credentials
+```
+
+### Testing Configuration
+
+Run functional tests to verify your setup:
+
+```bash
+# Test Jenkins connectivity
+lftools jenkins -s onap-prod plugins list
+
+# Test OpenStack connectivity
+lftools openstack --os-cloud production image list
+
+# Run all functional tests
+./scripts/run_functional_tests.sh
+```
+
+**Note:** The functional tests include ONAP/ECOMPCI project defaults, so most
+tests will run without extra configuration. Out of 30 tests, typically 28+
+pass with the built-in defaults.
+
+For detailed configuration instructions, see: [docs/configuration.md](docs/configuration.md)
+
 ### Using uvx (Recommended for CI/CD)
 
 [uvx](https://docs.astral.sh/uv/guides/tools/) is ideal for CI/CD environments

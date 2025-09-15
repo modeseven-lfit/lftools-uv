@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2025 The Linux Foundation
+#
+# lftools-uv Functional Test Credentials
+# This file contains credentials and configuration for running functional tests
+# Format: KEY=VALUE (shell variable format)
+# Lines starting with # are comments
+
+# OpenStack Configuration
+OS_CLOUD=ecompci
+
+# Nexus Configuration
+NEXUS2_FQDN=nexus.onap.org
+NEXUS3_FQDN=nexus3.onap.org
+
+# GitHub Configuration
+GITHUB_ORG=lfit
+
+# Jenkins Test URLs
+JENKINS_URL=https://jenkins.onap.org/
+
+# LDAP Configuration (set if you have LDAP access)
+# LDAP_SERVER=ldap.example.org
+# LDAP_USER=your_ldap_user
+# LDAP_PASSWORD=your_ldap_password

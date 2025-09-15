@@ -28,22 +28,28 @@ OUTPUT_FORMAT=json ./scripts/run_functional_tests.sh > test_results.json
 
 ## Configuration Requirements
 
-The harness leverages your existing `lftools-uv` configuration. Based on what
-commands you want to test, you'll need:
+The harness leverages your lftools configuration from the standard locations.
+Based on what commands you want to test, you'll need:
 
 ### Jenkins Tests (Working)
 
-- **Configuration**: `~/.config/jenkins_jobs/jenkins_jobs.ini`
-- **Tests Available**: ONAP, OpenDaylight production Jenkins instances
+- **Configuration**: `~/.config/lftools/jenkins_job.ini`
+- **Tests Available**: ONAP production Jenkins instances
 - **What's Tested**: Running builds, queue status, node lists, plugin
   inventories
 
-Your existing configuration includes these Jenkins environments:
+Your configuration should include these Jenkins environments:
 
-- `onap-prod` / `onap-sandbox`
-- `odl-prod` / `odl-sandbox`
-- `fdio-prod` / `fdio-sandbox`
-- And others...
+- `onap-prod` - ONAP production Jenkins
+- `onap-sandbox` - ONAP sandbox Jenkins
+- `jenkins` - Default Jenkins server
+- And others as needed...
+
+### OpenStack Tests (Available)
+
+- **Configuration**: `~/.config/lftools/clouds.yaml`
+- **Tests Available**: Image management, server operations
+- **What's Tested**: Cloud connectivity, image listings
 
 ### LFID API Tests (Available)
 
@@ -83,20 +89,41 @@ Your existing configuration includes these Jenkins environments:
 
 Safe operations that read data or display help. No state changes.
 
-**Passing (20/25 tests):**
+**Passing (28/30 tests with ONAP/ECOMPCI defaults):**
 
 - ✅ Core functionality (version, help screens)
-- ✅ Jenkins integration (ONAP & ODL environments)
+- ✅ Jenkins integration (ONAP production environment)
   - Build status queries
   - Node inventory
   - Plugin information
+- ✅ Nexus2/Nexus3 integration (using nexus.onap.org, nexus3.onap.org)
+  - Repository listings
+  - Service connectivity
+- ✅ OpenStack integration (using ecompci cloud)
+  - Server, image, and volume listings
+  - Cloud connectivity validation
+- ✅ GitHub integration (using onap organization)
+  - Repository listings
+  - API connectivity
 - ✅ All CLI help screens (license, sign, utils, dco, infofile, deploy,
   gerrit, rtd, lfidapi)
 
-**Needs Configuration:**
+**Automatic Defaults:**
 
-- ⏸️ Nexus2/Nexus3 repository listings
-- ⏸️ GitHub organization repository listings
+The test harness now includes ONAP/ECOMPCI project defaults that remove most
+configuration requirements:
+
+- `JENKINS_URL=https://jenkins.onap.org` (if not set)
+- `NEXUS2_FQDN=nexus.onap.org` (if not set)
+- `NEXUS3_FQDN=nexus3.onap.org` (if not set)
+- `OS_CLOUD=ecompci` (if not set)
+- `GITHUB_ORG=onap` (if not set)
+
+**May Need Custom Configuration:**
+
+- 🔧 Jenkins credentials (for authenticated operations)
+- 🔧 OpenStack credentials (for ecompci cloud access)
+- 🔧 GitHub tokens (for API rate limits)
 
 ### Category 2: Reversible (Disabled - Future Work)
 

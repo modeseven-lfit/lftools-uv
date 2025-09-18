@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2025 The Linux Foundation
+
+clouds:
+  ecompci:
+    auth:
+      auth_url: https://auth.vexxhost.net/v3/
+      username: 98fba6bb-548a-461c-ad3f-96a7e075e90e
+      password: [GET_FROM_PASS_DATABASE]
+      project_name: ef6e8825-fc3a-4ebf-886a-ba51ada06a9c
+      user_domain_name: Default
+      project_domain_name: Default
+    region_name: ca-ymq-1
+    interface: public
+    identity_api_version: 3

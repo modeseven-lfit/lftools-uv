@@ -173,7 +173,28 @@ if [[ -z "${GITHUB_ORG:-}" ]]; then
 fi
 
 # Source additional test credentials if available (for backwards compatibility)
-TEST_CREDENTIALS_FILE="${HOME}/.config/lftools-uv/test-credentials.txt"
+TEST_CREDENTIALS_FILE="${HOME}/.config/lftools/test-setup.txt"
+
+# Auto-setup: copy sample test-setup.txt if it doesn't exist
+if [[ ! -f "${TEST_CREDENTIALS_FILE}" ]]; then
+    # Get the directory where this script is located
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    SAMPLE_FILE="${SCRIPT_DIR}/test-setup.txt"
+
+    if [[ -f "${SAMPLE_FILE}" ]]; then
+        # Create the config directory if it doesn't exist
+        CONFIG_DIR="$(dirname "${TEST_CREDENTIALS_FILE}")"
+        mkdir -p "${CONFIG_DIR}"
+
+        # Copy the sample file
+        cp "${SAMPLE_FILE}" "${TEST_CREDENTIALS_FILE}"
+        vlog "Copied sample test-setup.txt to ${TEST_CREDENTIALS_FILE}"
+        vlog "Please review and update the configuration file with your credentials"
+    else
+        vlog "Sample test-setup.txt not found at ${SAMPLE_FILE}"
+    fi
+fi
+
 if [[ -f "${TEST_CREDENTIALS_FILE}" ]]; then
     vlog "Loading additional test credentials from ${TEST_CREDENTIALS_FILE}"
     # Source the file, ignoring comments and empty lines

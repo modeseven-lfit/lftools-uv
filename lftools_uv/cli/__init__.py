@@ -142,6 +142,12 @@ def main():
             log.error("Failed to import Typer CLI: %s", e)
             log.info("Falling back to legacy Click CLI")
             cli(obj={})
+        except Exception as e:
+            # For runtime errors, don't fall back to avoid duplicate error messages
+            # Both Typer and Click CLIs will fail with the same underlying issues
+            log.debug("Typer CLI encountered a runtime error: %s", e)
+            # Re-raise the exception to avoid falling back and duplicating errors
+            raise
 
 
 if __name__ == "__main__":

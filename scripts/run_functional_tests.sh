@@ -20,6 +20,7 @@
 # HOW TO USE (local workstation):
 #   chmod +x scripts/run_functional_tests.sh
 #   ./scripts/run_functional_tests.sh
+#   ./scripts/run_functional_tests.sh debug    # Show command output to terminal
 #
 # OPTIONAL FILTERS:
 #   TEST_CATEGORY=1                # default; comma-separated ok (e.g. 1,2)
@@ -27,6 +28,7 @@
 #   STOP_ON_FAILURE=1              # stop after first failure
 #   DRY_RUN=1                      # show what would run
 #   VERBOSE=1                      # more logging
+#   DEBUG=1                        # show command output to terminal (also logs to file)
 #   OUTPUT_FORMAT=plain|json       # result summary format
 #
 # EXIT CODES:
@@ -37,6 +39,9 @@
 # EXAMPLES:
 #   TEST_FILTER=nexus ./scripts/run_functional_tests.sh
 #   TEST_CATEGORY=1,2 DRY_RUN=1 ./scripts/run_functional_tests.sh
+#   ./scripts/run_functional_tests.sh debug         # Show command output to terminal
+#   DEBUG=1 ./scripts/run_functional_tests.sh       # Enable debug mode via env var
+#   TEST_FILTER=openstack DEBUG=1 ./scripts/run_functional_tests.sh  # Debug specific tests
 #
 # ENVIRONMENT / CREDENTIAL NOTES:
 #   Jenkins: JENKINS_URL (defaults to jenkins.onap.org), LFTOOLS_USERNAME, LFTOOLS_PASSWORD (or token via config)
@@ -68,6 +73,11 @@
 
 set -o pipefail
 
+# Check for 'debug' argument to enable DEBUG mode
+if [[ "$1" == "debug" ]]; then
+    DEBUG=1
+fi
+
 # SCRIPT_NAME="$(basename "$0")"  # Unused, keeping for potential future use
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -79,6 +89,7 @@ TEST_FILTER="${TEST_FILTER:-}"
 STOP_ON_FAILURE="${STOP_ON_FAILURE:-0}"
 DRY_RUN="${DRY_RUN:-0}"
 VERBOSE="${VERBOSE:-0}"
+DEBUG="${DEBUG:-0}"
 OUTPUT_FORMAT="${OUTPUT_FORMAT:-plain}"
 LOG_DIR="${LOG_DIR:-${REPO_ROOT}/.functional_logs}"
 mkdir -p "${LOG_DIR}"
@@ -411,8 +422,28 @@ run_test() {
   start_ms=$(( $(date +%s) * 1000 ))
 
   local log_file="${LOG_DIR}/${id//[^A-Za-z0-9._-]/_}.log"
+  local exit_code
+
   # shellcheck disable=SC2086
-  if eval "$cmd" &> "$log_file"; then
+  if [[ "$DEBUG" == "1" ]]; then
+    # Debug mode: show output to terminal AND log to file
+    info "=== Command Output for ${id} ==="
+    if eval "$cmd" 2>&1 | tee "$log_file"; then
+      exit_code=0
+    else
+      exit_code=1
+    fi
+    info "=== End Output for ${id} ==="
+  else
+    # Normal mode: only log to file
+    if eval "$cmd" &> "$log_file"; then
+      exit_code=0
+    else
+      exit_code=1
+    fi
+  fi
+
+  if [[ $exit_code -eq 0 ]]; then
     end_ms=$(( $(date +%s) * 1000 ))
     dur_ms=$(( end_ms - start_ms ))
     success "PASS ${id} (${dur_ms} ms)"
@@ -435,6 +466,7 @@ run_test() {
 info "Selected categories: ${SELECTED_CATEGORIES}"
 [[ -n "$TEST_FILTER" ]] && info "Filter substring: ${TEST_FILTER}"
 [[ "$DRY_RUN" == "1" ]] && info "DRY RUN mode active (no commands executed)"
+[[ "$DEBUG" == "1" ]] && info "DEBUG mode active (displaying command output)"
 [[ "$STOP_ON_FAILURE" == "1" ]] && info "Will stop on first failure"
 
 for line in "${ALL_TEST_LINES[@]}"; do

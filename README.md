@@ -102,7 +102,7 @@ cp etc/lftools/clouds.yaml.example ~/.config/lftools/clouds.yaml
 
 ### Testing Configuration
 
-Run functional tests to verify your setup:
+Test your configuration with basic commands:
 
 ```bash
 # Test Jenkins connectivity
@@ -111,24 +111,144 @@ lftools jenkins -s onap-prod plugins list
 # Test OpenStack connectivity
 lftools openstack --os-cloud production image list
 
-# Run all functional tests
+# Run comprehensive functional tests (see Functional Testing section below)
 ./scripts/run_functional_tests.sh
 ```
 
-**Note:** The functional tests include ONAP/ECOMPCI project defaults, so most
-tests will run without extra configuration. Out of 30 tests, typically 28+
-pass with the built-in defaults.
-
 For detailed configuration instructions, see: [docs/configuration.md](docs/configuration.md)
 
-### Using uvx (Recommended for CI/CD)
+## Functional Testing
+
+The repository includes a comprehensive functional test harness that validates
+lftools-uv commands against real infrastructure (Jenkins, OpenStack, Nexus,
+GitHub, etc.).
+
+### Basic Usage
+
+```bash
+# Run all Category 1 (safe/read-access) tests
+./scripts/run_functional_tests.sh
+
+# Run with debug output (shows command output to terminal)
+./scripts/run_functional_tests.sh debug
+
+# Filter tests by substring
+TEST_FILTER=jenkins ./scripts/run_functional_tests.sh
+
+# Run specific category with debug output
+TEST_CATEGORY=1 DEBUG=1 ./scripts/run_functional_tests.sh
+```
+
+### Configuration Requirements
+
+The functional tests work with standard lftools configuration files:
+
+#### Jenkins Tests
+
+- **File**: `~/.config/lftools/jenkins_job.ini`
+- **Environment**: `JENKINS_URL`, `LFTOOLS_USERNAME`, `LFTOOLS_PASSWORD`
+- **Default**: Uses `jenkins.onap.org` (read-access operations)
+
+#### OpenStack Tests
+
+- **File**: `~/.config/lftools/clouds.yaml`
+- **Environment**: `OS_CLOUD` (default: `ecompci`)
+- **Required**: Valid OpenStack credentials for cloud operations
+
+#### Nexus Tests
+
+- **Environment**: `NEXUS2_FQDN` (default: `nexus.onap.org`),
+  `NEXUS3_FQDN` (default: `nexus3.onap.org`)
+- **Operations**: Read-access repository queries
+
+#### GitHub Tests
+
+- **Environment**: `GITHUB_ORG` (default: `onap`), `GITHUB_TOKEN`
+- **File**: Can use lftools config for token storage
+
+### Test Categories
+
+- **Category 1**: Safe, read-access operations (default)
+- **Category 2**: Reversible operations (disabled by default)
+- **Category 3**: Destructive operations (disabled by default)
+
+### Advanced Options
+
+```bash
+# Environment variables
+TEST_CATEGORY=1,2          # Run two categories
+TEST_FILTER=openstack      # Filter by substring
+STOP_ON_FAILURE=1          # Stop after first failure
+DRY_RUN=1                  # Show what would run
+DEBUG=1                    # Show command output
+VERBOSE=1                  # More logging
+OUTPUT_FORMAT=json         # JSON output format
+
+# Examples
+TEST_FILTER=nexus DEBUG=1 ./scripts/run_functional_tests.sh
+STOP_ON_FAILURE=1 ./scripts/run_functional_tests.sh debug
+```
+
+### Debug Mode
+
+Debug mode displays actual command output to the terminal while tests run:
+
+```bash
+# Enable debug mode
+./scripts/run_functional_tests.sh debug
+DEBUG=1 ./scripts/run_functional_tests.sh
+
+# Debug specific tests
+TEST_FILTER=openstack ./scripts/run_functional_tests.sh debug
+```text
+
+**Debug Output Example:**
+
+```text
+2025-09-20T09:12:32Z [INFO] DEBUG mode active (displaying command output)
+2025-09-20T09:12:32Z [INFO] Running (1) core.version - Show lftools-uv version
+2025-09-20T09:12:32Z [INFO] === Command Output for core.version ===
+lftools-uv 0.1.5.dev2
+2025-09-20T09:12:32Z [INFO] === End Output for core.version ===
+2025-09-20T09:12:32Z [OK] PASS core.version (0 ms)
+```
+
+### Log Files
+
+Test output is always logged to files regardless of debug mode:
+
+- **Location**: `.functional_logs/` directory
+- **Format**: `{test_id}.log` files
+- **Content**: Complete command output for analysis
+
+### Quick Setup for Testing
+
+```bash
+# 1. Set up configuration files
+./scripts/setup-config.sh
+
+# 2. Run some basic tests
+TEST_FILTER=core ./scripts/run_functional_tests.sh debug
+
+# 3. Test specific functionality
+TEST_FILTER=jenkins ./scripts/run_functional_tests.sh debug
+TEST_FILTER=openstack ./scripts/run_functional_tests.sh debug
+
+# 4. Run all safe tests
+./scripts/run_functional_tests.sh
+```
+
+Most tests pass with default ONAP/ECOMPCI configurations, making it easy to
+verify your lftools-uv installation and basic connectivity.
+
+### Using uvx for CI/CD (Recommended)
 
 [uvx](https://docs.astral.sh/uv/guides/tools/) is ideal for CI/CD environments
 and one-off executions where you want to run lftools-uv without affecting the
 existing Python environment. It creates an isolated virtual environment for
 each execution, preventing dependency conflicts with other tools in your pipeline.
 
-#### Basic Usage
+#### uvx Basic Usage
 
 Run lftools-uv commands directly without installation:
 

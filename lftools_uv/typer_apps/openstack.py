@@ -175,9 +175,10 @@ def stack_delete(
 @stack_app.command("cost")
 def stack_cost(
     stack_name: str = typer.Argument(..., help="Stack name"),
+    timeout: int = typer.Option(60, "--timeout", help="Timeout in seconds for cost retrieval operations (default: 60)"),
 ):
     """Get Total Stack Cost."""
-    os_stack.cost(state.os_cloud, stack_name)
+    os_stack.cost(state.os_cloud, stack_name, timeout=timeout)
 
 
 @stack_app.command("delete-stale")

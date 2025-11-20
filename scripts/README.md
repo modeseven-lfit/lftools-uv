@@ -148,7 +148,7 @@ High-risk operations that are difficult to reverse.
 ## Environment Variables
 
 | Variable | Default | Purpose |
-|----------|---------|---------|
+| -------- | ------- | ------- |
 | `TEST_CATEGORY` | `1` | Comma-separated categories to run (1,2,3) |
 | `TEST_FILTER` | (none) | Substring to match test IDs/descriptions |
 | `STOP_ON_FAILURE` | `0` | Stop after first failure (1=yes, 0=no) |
@@ -160,7 +160,7 @@ High-risk operations that are difficult to reverse.
 ### Infrastructure-Specific Variables
 
 | Variable | Purpose | Example |
-|----------|---------|---------|
+| -------- | ------- | ------- |
 | `JENKINS_URL` | Jenkins server URL for env tests | `https://jenkins.org/` |
 | `NEXUS2_FQDN` | Nexus2 server hostname | `nexus.example.org` |
 | `NEXUS3_FQDN` | Nexus3 server hostname | `nexus3.example.org` |

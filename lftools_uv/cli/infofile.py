@@ -44,6 +44,7 @@ def infofile(ctx):
     "--tsc_approval", type=str, required=False, default="missing", help="optionally provide a tsc approval link"
 )
 @click.pass_context
+@error_handler
 def create_info_file(ctx, gerrit_url, gerrit_project, directory, empty, tsc_approval):
     """Create an initial INFO file.
 
@@ -75,13 +76,14 @@ def create_info_file(ctx, gerrit_url, gerrit_project, directory, empty, tsc_appr
         if "inherits_from" in result:
             inherits = result["inherits_from"]["id"]
             if inherits != "All-Projects":
-                print("    Inherits from:", inherits)
-                print("Better Check this unconventional inherit")
+                log.info("    Inherits from: %s", inherits)
+                log.warning("Better Check this unconventional inherit")
 
         try:
             owner = result["local"]["refs/*"]["permissions"]["owner"]["rules"]
         except Exception:
-            print("ERROR: Check project config, no owner set!")
+            log.error("ERROR: Check project config, no owner set!")
+            owner = {}
 
         for x in owner:
             match = re.search(r"[^=]+(?=,)", x)
@@ -144,47 +146,52 @@ tsc:
       id: ''
 """
     tsc_string = inspect.cleandoc(tsc_string)
-    print(long_string)
-    print("repositories:")
-    print("    - {}".format(gerrit_project))
-    print("committers:")
-    print("    - <<: *{1}_{0}_ptl".format(project_underscored, umbrella))
+    log.info(long_string)
+    log.info("repositories:")
+    log.info("    - %s", gerrit_project)
+    log.info("committers:")
+    log.info("    - <<: *%s_%s_ptl", umbrella, project_underscored)
     if not empty:
         this = helper_yaml4info(ldap_group)
-        print(this, end="")
+        # This already contains formatted YAML; log without additional formatting
+        for line in this.splitlines():
+            log.info(line)
     else:
-        print(empty_committer, end="")
-    print(tsc_string)
+        for line in empty_committer.splitlines():
+            log.info(line)
+    for line in tsc_string.splitlines():
+        log.info(line)
 
 
 @click.command(name="get-committers")
 @click.argument("file", envvar="FILE_NAME", required=True)
-@click.option("--full", type=bool, required=False, help="Output name email and id for all committers in an infofile")
+@click.option("--full", is_flag=True, help="Output name email and id for all committers in an infofile")
 @click.option("--id", type=str, required=False, help="Full output for a specific LFID")
 @click.pass_context
+@error_handler
 def get_committers(ctx, file, full, id):
     """Extract Committer info from INFO.yaml or LDAP dump."""
     with open(file) as yaml_file:
         project = yaml.safe_load(yaml_file)
 
-    def print_committer_info(committer, full):
-        """Print committers."""
+    def log_committer_info(committer, full):
+        """Log committers."""
         if full:
-            print("    - name: {}".format(committer["name"]))
-            print("      email: {}".format(committer["email"]))
-        print("      id: {}".format(committer["id"]))
+            log.info("    - name: %s", committer.get("name", ""))
+            log.info("      email: %s", committer.get("email", ""))
+        log.info("      id: %s", committer.get("id", ""))
 
     def list_committers(full, id, project):
         """List committers from the INFO.yaml file."""
         lookup = project.get("committers", [])
         for item in lookup:
             if id:
-                if item["id"] == id:
-                    print_committer_info(item, full)
+                if item.get("id") == id:
+                    log_committer_info(item, full)
                     break
                 else:
                     continue
-            print_committer_info(item, full)
+            log_committer_info(item, full)
 
     list_committers(full, id, project)
 
@@ -195,6 +202,7 @@ def get_committers(ctx, file, full, id):
 @click.argument("id")
 @click.option("--repo", type=str, required=False, help="repo name")
 @click.pass_context
+@error_handler
 def sync_committers(ctx, id, info_file, ldap_file, repo):
     """Sync committer information from LDAP into INFO.yaml."""
     ryaml = ruamel.yaml.YAML()
@@ -205,7 +213,7 @@ def sync_committers(ctx, id, info_file, ldap_file, repo):
         try:
             yaml.safe_load(stream)
         except yaml.YAMLError as exc:
-            print(exc)
+            log.error(exc)
 
     with open(info_file) as f:
         info_data = ryaml.load(f)
@@ -219,32 +227,16 @@ def sync_committers(ctx, id, info_file, ldap_file, repo):
         readldap(id, ldap_file, committer_info, committer_info_ldap, repo, repo_info)
 
     def readldap(id, ldap_file, committer_info, committer_info_ldap, repo, repo_info):
-        for idx, val in enumerate(committer_info):
+        for idx, _ in enumerate(committer_info):
             committer = info_data["committers"][idx]["id"]
             if committer == id:
-<<<<<<< HEAD
-                print("{} is already in {}".format(id, info_file))
-                exit()
-=======
                 log.info(f"{id} is already in {info_file}")
                 sys.exit(0)
->>>>>>> 35dec37 (Feat: Update base Python to 3.11)
 
-        for idx, val in enumerate(committer_info_ldap):
+        name = email = formatid = company = timezone = None
+        for idx, _ in enumerate(committer_info_ldap):
             committer = ldap_data["committers"][idx]["id"]
             if committer == id:
-<<<<<<< HEAD
-                name = ldap_data["committers"][idx]["name"]
-                email = ldap_data["committers"][idx]["email"]
-                formatid = ldap_data["committers"][idx]["id"]
-                company = ldap_data["committers"][idx]["company"]
-                timezone = ldap_data["committers"][idx]["timezone"]
-        try:
-            name
-        except NameError:
-            print("{} does not exist in {}".format(id, ldap_file))
-            exit()
-=======
                 name = ldap_data["committers"][idx].get("name")
                 email = ldap_data["committers"][idx].get("email")
                 formatid = ldap_data["committers"][idx].get("id")
@@ -253,7 +245,6 @@ def sync_committers(ctx, id, info_file, ldap_file, repo):
         if name is None:
             log.error(f"{id} does not exist in {ldap_file}")
             sys.exit(1)
->>>>>>> 35dec37 (Feat: Update base Python to 3.11)
 
         user = ruamel.yaml.comments.CommentedMap(
             (("name", name), ("company", company), ("email", email), ("id", formatid), ("timezone", timezone))
@@ -264,10 +255,7 @@ def sync_committers(ctx, id, info_file, ldap_file, repo):
 
         with open(info_file, "w") as f:
             ryaml.dump(info_data, f)
-<<<<<<< HEAD
-=======
         log.info(f"Updated {info_file} with committer {id}")
->>>>>>> 35dec37 (Feat: Update base Python to 3.11)
 
     readfile(info_data, ldap_data, id)
 
@@ -279,6 +267,7 @@ def sync_committers(ctx, id, info_file, ldap_file, repo):
 @click.option("--tsc", type=str, required=False, help="path to TSC INFO file")
 @click.option("--github_repo", type=str, required=False, help="Provide github repo to Check against a Github Change")
 @click.pass_context
+@error_handler
 def check_votes(ctx, info_file, endpoint, change_number, tsc, github_repo):
     """Check votes on an INFO.yaml change.
 
@@ -323,7 +312,7 @@ def check_votes(ctx, info_file, endpoint, change_number, tsc, github_repo):
                 if "+1" in line[1] or "+2" in line[1]:
                     info_change.append(change["username"])
 
-        for count, item in enumerate(committer_info):
+        for count, _ in enumerate(committer_info):
             committer = committer_info[count][id]
             info_committers.append(committer)
 
@@ -331,35 +320,29 @@ def check_votes(ctx, info_file, endpoint, change_number, tsc, github_repo):
         have_not_voted_length = len(have_not_voted)
         have_voted = [item for item in info_committers if item in info_change]
         have_voted_length = len(have_voted)
-        log.info("Number of Committers:")
-        log.info(len(info_committers))
+        log.info("Number of Committers: %d", len(info_committers))
         committer_length = len(info_committers)
-        log.info("Committers that have voted:")
-        log.info(have_voted)
-        log.info(have_voted_length)
-        log.info("Committers that have not voted:")
-        log.info(have_not_voted)
-        log.info(have_not_voted_length)
+        log.info("Committers that have voted: %s (%d)", have_voted, have_voted_length)
+        log.info("Committers that have not voted: %s (%d)", have_not_voted, have_not_voted_length)
 
         if have_voted_length == 0:
-            log.info("No one has voted:")
+            log.warning("No one has voted.")
             sys.exit(1)
 
-        if have_voted_length != 0:
-            majority = have_voted_length / committer_length
-            if majority >= 0.5:
-                log.info("Majority committer vote reached")
-                if tsc:
-                    log.info("Need majority of tsc")
-                    info_file = tsc
-                    majority_of_committers += 1
-                    if majority_of_committers == 2:
-                        log.info("TSC majority reached auto merging commit")
-                    else:
-                        main(ctx, info_file, endpoint, change_number, tsc, github_repo, majority_of_committers)
-            else:
-                log.info("majority not yet reached")
-                sys.exit(1)
+        majority = have_voted_length / committer_length if committer_length else 0
+        if majority >= 0.5:
+            log.info("Majority committer vote reached")
+            if tsc:
+                log.info("Need majority of TSC")
+                info_file = tsc
+                majority_of_committers += 1
+                if majority_of_committers == 2:
+                    log.info("TSC majority reached - auto merging commit")
+                else:
+                    main(ctx, info_file, endpoint, change_number, tsc, github_repo, majority_of_committers)
+        else:
+            log.info("Majority not yet reached")
+            sys.exit(1)
 
     majority_of_committers = 0
     main(ctx, info_file, endpoint, change_number, tsc, github_repo, majority_of_committers)

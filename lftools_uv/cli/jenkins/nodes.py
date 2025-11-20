@@ -11,15 +11,11 @@
 
 __author__ = "Trevor Bramwell"
 
-<<<<<<< HEAD
-import click
-=======
 import logging
 
 import click
 
 log = logging.getLogger(__name__)
->>>>>>> 35dec37 (Feat: Update base Python to 3.11)
 
 
 def offline_str(status):
@@ -44,7 +40,7 @@ def list_nodes(ctx):
     node_list = ctx.obj["nodes"]
 
     for node in node_list:
-        print("%s [%s]" % (node["name"], offline_str(node["offline"])))
+        log.info("%s [%s]", node["name"], offline_str(node["offline"]))
 
 
 nodes.add_command(list_nodes, name="list")

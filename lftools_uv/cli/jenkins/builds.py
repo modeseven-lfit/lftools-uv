@@ -11,15 +11,11 @@
 
 __author__ = "Trevor Bramwell"
 
-<<<<<<< HEAD
-import click
-=======
 import logging
 
 import click
 
 log = logging.getLogger(__name__)
->>>>>>> 35dec37 (Feat: Update base Python to 3.11)
 
 
 @click.group()
@@ -37,7 +33,7 @@ def running(ctx):
     running_builds = jenkins.server.get_running_builds()
 
     for build in running_builds:
-        print("- %s on %s" % (build["name"], build["node"]))
+        log.info("- %s on %s", build["name"], build["node"])
 
 
 @click.command()
@@ -48,13 +44,14 @@ def queued(ctx):
     queue = jenkins.server.get_queue_info()
 
     queue_length = len(queue)
-    print("Build Queue (%s)" % queue_length)
+    log.info("Build Queue (%s)", queue_length)
     for build in queue:
-        print(" - %s" % (build["task"]["name"])),
-        if build["stuck"]:
-            print("[Stuck]")
-        if build["blocked"]:
-            print("[Blocked]")
+        status_flags = []
+        if build.get("stuck"):
+            status_flags.append("[Stuck]")
+        if build.get("blocked"):
+            status_flags.append("[Blocked]")
+        log.info(" - %s%s", build["task"]["name"], (" " + " ".join(status_flags)) if status_flags else "")
 
 
 builds.add_command(running)

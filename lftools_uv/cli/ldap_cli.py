@@ -11,7 +11,7 @@
 
 Prereqs:
 - yum install python-devel openldap-devel
-- pip install python-ldap
+- uv pip install python-ldap
 """
 
 import logging
@@ -20,11 +20,8 @@ import sys
 
 import click
 import ldap
-<<<<<<< HEAD
-=======
 
 log = logging.getLogger(__name__)
->>>>>>> 35dec37 (Feat: Update base Python to 3.11)
 
 
 @click.group()
@@ -107,14 +104,14 @@ def csv(ctx, ldap_server, ldap_group_base, ldap_user_base, groups):
             ldap_object.simple_bind_s()
         except ldap.LDAPError as e:
             if type(e.message) is dict and "desc" in e.message:
-                print(e.message["desc"])
+                log.error(e.message["desc"])
             else:
-                print(e)
+                log.error(e)
             sys.exit(0)
 
     def eprint(*args, **kwargs):
-        """Print to stderr."""
-        print(*args, file=sys.stderr, **kwargs)
+        """Log error output (previously printed to stderr)."""
+        log.error(" ".join(str(a) for a in args))
 
     def ldap_disconnect(ldap_object):
         """Stop the connection to LDAP."""
@@ -176,9 +173,9 @@ def csv(ctx, ldap_server, ldap_group_base, ldap_user_base, groups):
                     user = user.decode("utf-8")
                     user_info = ldap_query(ldap_obj, ldap_user_base, user, ["uid", "cn", "mail"])
                     try:
-                        print("%s,%s" % (group_name, user_to_csv(user_info)))
+                        log.info("%s,%s", group_name, user_to_csv(user_info))
                     except Exception:
-                        eprint("Error parsing user: %s" % user)
+                        log.error("Error parsing user: %s", user)
                         continue
         ldap_disconnect(ldap_obj)
 

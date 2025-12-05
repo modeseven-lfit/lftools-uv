@@ -26,20 +26,8 @@ def test_fetch_jenkins_builds_production():
     jenkins_response = {
         "computer": [
             {
-                "executors": [
-                    {
-                        "currentExecutable": {
-                            "url": "https://jenkins.example.org/job/test-job/123/"
-                        }
-                    }
-                ],
-                "oneOffExecutors": [
-                    {
-                        "currentExecutable": {
-                            "url": "https://jenkins.example.org/job/another-job/456/"
-                        }
-                    }
-                ],
+                "executors": [{"currentExecutable": {"url": "https://jenkins.example.org/job/test-job/123/"}}],
+                "oneOffExecutors": [{"currentExecutable": {"url": "https://jenkins.example.org/job/another-job/456/"}}],
             }
         ]
     }
@@ -67,13 +55,7 @@ def test_fetch_jenkins_builds_silo():
     jenkins_response = {
         "computer": [
             {
-                "executors": [
-                    {
-                        "currentExecutable": {
-                            "url": "https://jenkins.example.com/sandbox/job/build-job/789/"
-                        }
-                    }
-                ],
+                "executors": [{"currentExecutable": {"url": "https://jenkins.example.com/sandbox/job/build-job/789/"}}],
                 "oneOffExecutors": [],
             }
         ]
@@ -103,11 +85,7 @@ def test_fetch_jenkins_builds_null_url():
             {
                 "executors": [
                     {"currentExecutable": {"url": "null"}},
-                    {
-                        "currentExecutable": {
-                            "url": "https://jenkins.example.org/job/valid-job/100/"
-                        }
-                    },
+                    {"currentExecutable": {"url": "https://jenkins.example.org/job/valid-job/100/"}},
                 ],
                 "oneOffExecutors": [],
             }
@@ -196,13 +174,7 @@ def test_fetch_jenkins_builds_multiple_urls():
         json={
             "computer": [
                 {
-                    "executors": [
-                        {
-                            "currentExecutable": {
-                                "url": "https://jenkins.example.org/job/job1/111/"
-                            }
-                        }
-                    ],
+                    "executors": [{"currentExecutable": {"url": "https://jenkins.example.org/job/job1/111/"}}],
                     "oneOffExecutors": [],
                 }
             ]
@@ -216,13 +188,7 @@ def test_fetch_jenkins_builds_multiple_urls():
         json={
             "computer": [
                 {
-                    "executors": [
-                        {
-                            "currentExecutable": {
-                                "url": "https://jenkins.example.io/job/job2/222/"
-                            }
-                        }
-                    ],
+                    "executors": [{"currentExecutable": {"url": "https://jenkins.example.io/job/job2/222/"}}],
                     "oneOffExecutors": [],
                 }
             ]

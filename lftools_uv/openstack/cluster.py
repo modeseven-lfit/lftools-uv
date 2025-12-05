@@ -14,7 +14,6 @@ __author__ = "Anil Belur"
 
 import json
 import sys
-from typing import Any
 
 import openstack
 import requests

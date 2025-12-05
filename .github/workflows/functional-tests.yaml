@@ -3,6 +3,17 @@
 # SPDX-FileCopyrightText: 2025 The Linux Foundation
 
 name: "Functional Tests"
+
+# yamllint disable rule:line-length
+
+# TEST CATEGORIES:
+#   Category 1: Harmless/Read-only (implemented) - safe queries and help commands
+#   Category 2: Reversible operations (future) - create/modify with reliable undo
+#   Category 3: Destructive operations (future) - hard to reverse, production impact
+
+# CURRENTLY: Only Category 1 tests are implemented and enabled.
+#            Categories 2 and 3 are placeholders in the test script.
+#
 # REQUIRED SECRETS (must be defined in repository secrets):
 #   RTD_TOKEN          -> Populates [rtd] token
 #   READ_GITHUB_TOKEN  -> Populates [github] token
@@ -23,7 +34,7 @@ name: "Functional Tests"
   workflow_dispatch:
     inputs:
       test_category:
-        description: 'Test categories to run (comma-separated: 1,2,3)'
+        description: 'Test categories to run (Only category 1 implemented)'
         required: false
         default: '1'
         type: string
@@ -55,9 +66,30 @@ permissions:
   contents: read
 
 jobs:
+  # Check if this is a Dependabot PR (they don't have access to secrets)
+  check-actor:
+    name: "Check PR Actor"
+    runs-on: ubuntu-latest
+    outputs:
+      is-dependabot: ${{ steps.check.outputs.is-dependabot }}
+    timeout-minutes: 10
+    steps:
+      - name: "Check if PR is from Dependabot"
+        id: check
+        run: |
+          if [[ "${{ github.actor }}" == "dependabot[bot]" ]]; then
+            echo "is-dependabot=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::This is a Dependabot PR - functional tests will be skipped (no secret access)"
+          else
+            echo "is-dependabot=false" >> "$GITHUB_OUTPUT"
+          fi
+
   functional-test-matrix:
     name: "Functional Tests"
     runs-on: ubuntu-latest
+    needs: check-actor
+    # Skip on Dependabot PRs - they don't have access to required secrets
+    if: needs.check-actor.outputs.is-dependabot != 'true'
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -111,7 +143,6 @@ jobs:
       # OS_CLOUD is now aligned with provided CLOUDS_YAML secret
       OS_CLOUD: "ecompci"
 
-    # yamllint disable rule:line-length
     steps:
       - name: "Harden Runner"
         uses: step-security/harden-runner@df199fb7be9f65074067a9eb93f12bb4c5547cf2 # v2.13.3
@@ -400,7 +431,7 @@ jobs:
   functional-test-summary:
     name: "Functional Test Summary"
     runs-on: ubuntu-latest
-    needs: functional-test-matrix
+    needs: [check-actor, functional-test-matrix]
     if: always()
     timeout-minutes: 5
     steps:
@@ -410,6 +441,22 @@ jobs:
             echo "## Overall Functional Test Results"
             echo ""
           } >> "$GITHUB_STEP_SUMMARY"
+
+          # Check if tests were skipped due to Dependabot
+          if [[ "${{ needs.check-actor.outputs.is-dependabot }}" == "true" ]]; then
+            {
+              echo "ℹ️ Functional tests were skipped for this Dependabot PR."
+              echo ""
+              echo "**Reason:** Dependabot PRs don't have access to repository secrets"
+              echo "required for functional tests (API tokens, credentials, etc.)."
+              echo ""
+              echo "**Action:** A maintainer should review the dependency changes and"
+              echo "merge if appropriate. Full functional tests will run on the main"
+              echo "branch after merge."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::notice::Functional tests skipped for Dependabot PR (expected behavior)"
+            exit 0
+          fi
 
           # Check if any jobs failed
           matrix_result="${{ needs.functional-test-matrix.result }}"
@@ -438,6 +485,9 @@ jobs:
   security-baseline:
     name: "Security Baseline Check"
     runs-on: ubuntu-latest
+    needs: check-actor
+    # Skip on Dependabot PRs - they don't have access to required secrets
+    if: needs.check-actor.outputs.is-dependabot != 'true'
     timeout-minutes: 10
     steps:
       - name: "Harden Runner"

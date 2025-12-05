@@ -32,7 +32,7 @@ jobs:
   sonatype-lifecycle:
     name: 'Sonatype Lifecycle'
     # yamllint disable-line rule:line-length
-    uses: lfit/releng-reusable-workflows/.github/workflows/reuse-sonatype-lifecycle.yaml@21dee35da5cf13331dad63a2c81ae5bb6d023f95 # v0.2.25
+    uses: lfit/releng-reusable-workflows/.github/workflows/reuse-sonatype-lifecycle.yaml@f8814d81051c7a2e4d7584657b4d283b62a56b20 # v0.2.26
     with:
       APPLICATION_ID: "bb7c7df5d19445cba258b6012b38bff3_lftools-uv"
     secrets:

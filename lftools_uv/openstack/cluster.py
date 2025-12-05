@@ -1,4 +1,4 @@
-# -*- code: utf-8 -*-
+# -*- coding: utf-8 -*-
 # SPDX-License-Identifier: EPL-1.0
 ##############################################################################
 # Copyright (c) 2025 The Linux Foundation and others.
@@ -14,7 +14,6 @@ __author__ = "Anil Belur"
 
 import json
 import sys
-from typing import Any
 
 import openstack
 import requests

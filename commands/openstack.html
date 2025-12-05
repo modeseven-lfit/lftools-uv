@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="rtd" href="rtd.html"><link rel="prev" title="nexus3" href="nexus3.html">
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.09.25 -->
-        <title>openstack - lftools-uv 0.0.1.dev1 documentation</title>
+        <title>openstack - lftools-uv 0.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=580074bf" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -161,7 +161,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">lftools-uv 0.0.1.dev1 documentation</div></a>
+      <a href="../index.html"><div class="brand">lftools-uv 0.0.1 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -182,7 +182,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
   
-  <span class="sidebar-brand-text">lftools-uv 0.0.1.dev1 documentation</span>
+  <span class="sidebar-brand-text">lftools-uv 0.0.1 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -260,7 +260,7 @@
         <article role="main" id="furo-main-content">
           <section id="openstack">
 <h1>openstack<a class="headerlink" href="#openstack" title="Link to this heading">¶</a></h1>
-<p>Requires a <cite>uv pip install “lftools-uv[openstack]”</cite> to activate this command.
+<p>Requires a <cite>pip install lftools-uv[openstack]</cite> to activate this command.
 Requires <cite>qemu-img</cite> binary to upload images</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                                                                                
  Usage: lftools-uv openstack [OPTIONS] COMMAND [ARGS]...                        
@@ -341,6 +341,52 @@ more than one cloud simultaneously.</p>
 │                               [default: 0]                                   │
 │ --hide-public                 Ignore public images.                          │
 │ --help                        Show this message and exit.                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+</pre></div>
+</div>
+</section>
+</section>
+<section id="cluster">
+<h3>cluster<a class="headerlink" href="#cluster" title="Link to this heading">¶</a></h3>
+<p>Command for managing Container Orchestration Engine (COE) clusters.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv openstack [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv openstack --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;cluster&#39;.                                                   │
+╰──────────────────────────────────────────────────────────────────────────────╯
+</pre></div>
+</div>
+<section id="id1">
+<h4>cleanup<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h4>
+<p>Remove orphaned COE clusters from the cloud. This command scans for
+Kubernetes clusters not in use by active Jenkins builds and removes them.
+The cleanup operation preserves managed clusters (names containing
+-managed-prod-k8s- or -managed-test-k8s-) as these are long-lived
+infrastructure.</p>
+<p>The command queries Jenkins URLs for active builds to prevent deletion of
+clusters in use. Provide one or more Jenkins URLs separated by
+spaces.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv openstack [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv openstack --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;cluster&#39;.                                                   │
+╰──────────────────────────────────────────────────────────────────────────────╯
+</pre></div>
+</div>
+<p>Example usage:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Cleanup orphaned clusters, checking two Jenkins instances</span>
+lftools-uv<span class="w"> </span>openstack<span class="w"> </span>--os-cloud<span class="w"> </span>mycloud<span class="w"> </span>cluster<span class="w"> </span>cleanup<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--jenkins<span class="w"> </span><span class="s2">&quot;https://jenkins.example.org https://jenkins.example.io&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h4>list<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h4>
+<p>List all COE clusters on the specified cloud with their current status.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: lftools-uv openstack [OPTIONS] COMMAND [ARGS]...
+Try &#39;lftools-uv openstack --help&#39; for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command &#39;cluster&#39;.                                                   │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
@@ -530,6 +576,11 @@ build out the stack:</p>
 <li><a class="reference internal" href="#list">list</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#cluster">cluster</a><ul>
+<li><a class="reference internal" href="#id1">cleanup</a></li>
+<li><a class="reference internal" href="#id2">list</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#object">object</a><ul>
 <li><a class="reference internal" href="#list-containers">list-containers</a></li>
 </ul>
@@ -553,7 +604,7 @@ build out the stack:</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=02f4819d"></script>
+</div><script src="../_static/documentation_options.js?v=f539c95a"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

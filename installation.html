@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Commands" href="commands/index.html"><link rel="prev" title="Release Notes" href="release-notes.html">
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.09.25 -->
-        <title>Installation - lftools-uv 0.0.1.dev1 documentation</title>
+        <title>Installation - lftools-uv 0.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=580074bf" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -161,7 +161,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">lftools-uv 0.0.1.dev1 documentation</div></a>
+      <a href="index.html"><div class="brand">lftools-uv 0.0.1 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -182,7 +182,7 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
-  <span class="sidebar-brand-text">lftools-uv 0.0.1.dev1 documentation</span>
+  <span class="sidebar-brand-text">lftools-uv 0.0.1 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -262,196 +262,23 @@
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>LFtools-uv requires Python 3.8+ and virtual environment isolation.
-<a class="reference external" href="https://virtualenv.pypa.io/en/stable/">https://virtualenv.pypa.io/en/stable/</a>
-Not using proper isolation can have serious negative side effects!</p>
+<p>LFtools requires python3 (3.8+) virtual environment.
+<a class="reference external" href="https://virtualenv.pypa.io/en/stable/">https://virtualenv.pypa.io/en/stable/</a>.
+Not using a virtualenv can have serious negative side effects!</p>
 </div>
-<section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
-<p>LFtools-uv is available on PyPI and supports different installation methods depending on your use case:</p>
-<ul class="simple">
-<li><p><strong>uvx</strong>: For CI/CD and one-off executions (recommended for automation)</p></li>
-<li><p><strong>uv pip</strong>: For development and persistent installations (recommended for development)</p></li>
-<li><p><strong>pip</strong>: For traditional Python package management</p></li>
-</ul>
-</section>
-<section id="using-uvx-recommended-for-ci-cd">
-<h2>Using uvx (Recommended for CI/CD)<a class="headerlink" href="#using-uvx-recommended-for-ci-cd" title="Link to this heading">¶</a></h2>
-<p><a class="reference external" href="https://docs.astral.sh/uv/guides/tools/">uvx</a> is the best choice for CI/CD environments and automated workflows where you need isolated execution without affecting the system Python environment.</p>
-<section id="prerequisites">
-<h3>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">¶</a></h3>
-<p>First, install uv (which includes uvx):</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-LsSf<span class="w"> </span>https://astral.sh/uv/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
-</pre></div>
-</div>
-</section>
-<section id="basic-usage">
-<h3>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading">¶</a></h3>
-<p>Run lftools-uv commands without installation:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Execute any lftools-uv command</span>
-uvx<span class="w"> </span>lftools-uv<span class="w"> </span>version
-uvx<span class="w"> </span>lftools-uv<span class="w"> </span>--help
-
-<span class="c1"># Deploy artifacts</span>
-uvx<span class="w"> </span>lftools-uv<span class="w"> </span>deploy<span class="w"> </span>nexus-zip<span class="w"> </span>--nexus-url<span class="w"> </span>https://nexus.example.com<span class="w"> </span>artifacts/
-</pre></div>
-</div>
-</section>
-<section id="optional-dependencies">
-<h3>Optional Dependencies<a class="headerlink" href="#optional-dependencies" title="Link to this heading">¶</a></h3>
-<p>When using features that require optional dependencies, specify the extras in quotes:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># LDAP functionality</span>
-uvx<span class="w"> </span><span class="s2">&quot;lftools-uv[ldap]&quot;</span><span class="w"> </span>ldap<span class="w"> </span>csv<span class="w"> </span>project-committers
-
-<span class="c1"># OpenStack functionality</span>
-uvx<span class="w"> </span><span class="s2">&quot;lftools-uv[openstack]&quot;</span><span class="w"> </span>openstack<span class="w"> </span>server<span class="w"> </span>list
-
-<span class="c1"># Combined extras</span>
-uvx<span class="w"> </span><span class="s2">&quot;lftools-uv[ldap,openstack]&quot;</span><span class="w"> </span>--help
-
-<span class="c1"># All functionality</span>
-uvx<span class="w"> </span><span class="s2">&quot;lftools-uv[all]&quot;</span><span class="w"> </span>--help
-</pre></div>
-</div>
-</section>
-<section id="alternative-syntax">
-<h3>Alternative Syntax<a class="headerlink" href="#alternative-syntax" title="Link to this heading">¶</a></h3>
-<p>You can also use the <code class="docutils literal notranslate"><span class="pre">--from</span></code> flag for clarity:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uvx<span class="w"> </span>--from<span class="w"> </span><span class="s2">&quot;lftools-uv[ldap]&quot;</span><span class="w"> </span>lftools-uv<span class="w"> </span>ldap<span class="w"> </span>--help
-</pre></div>
-</div>
-</section>
-<section id="ci-cd-benefits">
-<h3>CI/CD Benefits<a class="headerlink" href="#ci-cd-benefits" title="Link to this heading">¶</a></h3>
-<ul class="simple">
-<li><p><strong>Isolation</strong>: No interference with existing Python packages</p></li>
-<li><p><strong>Caching</strong>: Automatic environment caching for faster future runs</p></li>
-<li><p><strong>Consistency</strong>: Same tool version across pipeline stages</p></li>
-<li><p><strong>No Setup</strong>: No virtual environment management required</p></li>
-<li><p><strong>Clean</strong>: Environments automatically cleaned up after execution</p></li>
-</ul>
-</section>
-</section>
-<section id="using-uv-pip-recommended-for-development">
-<h2>Using uv pip (Recommended for Development)<a class="headerlink" href="#using-uv-pip-recommended-for-development" title="Link to this heading">¶</a></h2>
-<p>For development work or when you need persistent installations, use <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span></code>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install uv first</span>
-curl<span class="w"> </span>-LsSf<span class="w"> </span>https://astral.sh/uv/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
-
-<span class="c1"># Create and activate a virtual environment</span>
-uv<span class="w"> </span>venv
-<span class="nb">source</span><span class="w"> </span>.venv/bin/activate<span class="w">  </span><span class="c1"># On Windows: .venv\Scripts\activate</span>
-
-<span class="c1"># Install lftools-uv</span>
-uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>lftools-uv
-
-<span class="c1"># Or with all extras for development</span>
-uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lftools-uv[all]&quot;</span>
-</pre></div>
-</div>
-<section id="specific-extras">
-<h3>Specific Extras<a class="headerlink" href="#specific-extras" title="Link to this heading">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># LDAP support</span>
-uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lftools-uv[ldap]&quot;</span>
-
-<span class="c1"># OpenStack support</span>
-uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lftools-uv[openstack]&quot;</span>
-
-<span class="c1"># Development tools</span>
-uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lftools-uv[dev]&quot;</span>
-
-<span class="c1"># Testing tools</span>
-uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lftools-uv[test]&quot;</span>
-
-<span class="c1"># Documentation tools</span>
-uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lftools-uv[docs]&quot;</span>
-</pre></div>
-</div>
-</section>
-</section>
-<section id="using-pip-traditional-method">
-<h2>Using pip (Traditional Method)<a class="headerlink" href="#using-pip-traditional-method" title="Link to this heading">¶</a></h2>
-<p>For environments where uv is not available:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create virtual environment</span>
-python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>lftools-env
-<span class="nb">source</span><span class="w"> </span>lftools-env/bin/activate<span class="w">  </span><span class="c1"># On Windows: lftools-env\Scripts\activate</span>
-
-<span class="c1"># Install lftools-uv</span>
-pip<span class="w"> </span>install<span class="w"> </span>lftools-uv
-
-<span class="c1"># Or with extras</span>
-pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;lftools-uv[all]&quot;</span>
-</pre></div>
-</div>
-</section>
-<section id="system-dependencies">
-<h2>System Dependencies<a class="headerlink" href="#system-dependencies" title="Link to this heading">¶</a></h2>
-<section id="ubuntu-debian">
-<h3>Ubuntu/Debian<a class="headerlink" href="#ubuntu-debian" title="Link to this heading">¶</a></h3>
-<p>For LDAP functionality on Ubuntu/Debian systems:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
-sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>build-essential<span class="w"> </span>python3-dev<span class="w"> </span>libldap2-dev<span class="w"> </span>libsasl2-dev<span class="w"> </span>libssl-dev
-</pre></div>
-</div>
-</section>
-<section id="rhel-centos-fedora">
-<h3>RHEL/CentOS/Fedora<a class="headerlink" href="#rhel-centos-fedora" title="Link to this heading">¶</a></h3>
-<p>For LDAP functionality on RHEL-based systems:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>yum<span class="w"> </span>install<span class="w"> </span>gcc<span class="w"> </span>python3-devel<span class="w"> </span>openldap-devel<span class="w"> </span>cyrus-sasl-devel<span class="w"> </span>openssl-devel
-<span class="c1"># Or on newer systems:</span>
-sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>gcc<span class="w"> </span>python3-devel<span class="w"> </span>openldap-devel<span class="w"> </span>cyrus-sasl-devel<span class="w"> </span>openssl-devel
-</pre></div>
-</div>
-</section>
+<section id="for-install">
+<h2>For Install<a class="headerlink" href="#for-install" title="Link to this heading">¶</a></h2>
+<p>LFTools is available on pypi. LFtools has migrated to python3, ensure python3
+is available your system. To install LFTools, create a virtualenv,
+with <cite>pip3 install lftools</cite> in your shell.</p>
 </section>
 <section id="for-development">
 <h2>For Development<a class="headerlink" href="#for-development" title="Link to this heading">¶</a></h2>
-<p>When developing lftools-uv itself, clone the repository and install in editable mode:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/lfit/lftools-uv.git
-<span class="nb">cd</span><span class="w"> </span>lftools-uv
-
-<span class="c1"># Using uv (recommended)</span>
-uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span>dev<span class="w"> </span>--extra<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--extra<span class="w"> </span>docs<span class="w"> </span>--extra<span class="w"> </span>ldap<span class="w"> </span>--extra<span class="w"> </span>openstack
-
-<span class="c1"># Or using traditional pip</span>
-python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
-<span class="nb">source</span><span class="w"> </span>.venv/bin/activate
-pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[all]&quot;</span>
-</pre></div>
-</div>
-</section>
-<section id="verification">
-<h2>Verification<a class="headerlink" href="#verification" title="Link to this heading">¶</a></h2>
-<p>Verify your installation works:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check version</span>
-lftools-uv<span class="w"> </span>version
-<span class="c1"># Alternative method</span>
-uvx<span class="w"> </span>lftools-uv<span class="w"> </span>version
-
-<span class="c1"># List available commands</span>
-lftools-uv<span class="w"> </span>--help
-
-<span class="c1"># Test optional dependencies</span>
-lftools-uv<span class="w"> </span>ldap<span class="w"> </span>--help<span class="w">  </span><span class="c1"># Shows commands when [ldap] extra installed</span>
-lftools-uv<span class="w"> </span>openstack<span class="w"> </span>--help<span class="w">  </span><span class="c1"># Shows commands when [openstack] extra installed</span>
-</pre></div>
-</div>
-</section>
-<section id="troubleshooting">
-<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">¶</a></h2>
-<section id="common-issues">
-<h3>Common Issues<a class="headerlink" href="#common-issues" title="Link to this heading">¶</a></h3>
-<dl class="simple">
-<dt><strong>Command not found after installation:</strong></dt><dd><p>Activate your virtual environment or use the full path to the executable.</p>
-</dd>
-<dt><strong>LDAP/OpenStack commands show “To activate this interface” message:</strong></dt><dd><p>Install the appropriate extras: <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">&quot;lftools-uv[ldap]&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">uvx</span> <span class="pre">&quot;lftools-uv[ldap]&quot;</span> <span class="pre">...</span></code></p>
-</dd>
-<dt><strong>Permission errors:</strong></dt><dd><p>Always use virtual environments. Never install with <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">pip</span></code>.</p>
-</dd>
-<dt><strong>Import errors for optional dependencies:</strong></dt><dd><p>Make sure you installed the correct extras and they’re available in your environment.</p>
-</dd>
-</dl>
-</section>
+<p>Often during development you want to run tests and/or
+try code out locally as you change it.  To do this you
+need the installation of LFTools to be your local git repo.
+After doing <cite>pip3 install -r requirements.txt</cite> issue the
+command <cite>pip3 install -e .</cite></p>
 </section>
 </section>
 
@@ -511,31 +338,8 @@ lftools-uv<span class="w"> </span>openstack<span class="w"> </span>--help<span c
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Installation</a><ul>
-<li><a class="reference internal" href="#overview">Overview</a></li>
-<li><a class="reference internal" href="#using-uvx-recommended-for-ci-cd">Using uvx (Recommended for CI/CD)</a><ul>
-<li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
-<li><a class="reference internal" href="#basic-usage">Basic Usage</a></li>
-<li><a class="reference internal" href="#optional-dependencies">Optional Dependencies</a></li>
-<li><a class="reference internal" href="#alternative-syntax">Alternative Syntax</a></li>
-<li><a class="reference internal" href="#ci-cd-benefits">CI/CD Benefits</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#using-uv-pip-recommended-for-development">Using uv pip (Recommended for Development)</a><ul>
-<li><a class="reference internal" href="#specific-extras">Specific Extras</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#using-pip-traditional-method">Using pip (Traditional Method)</a></li>
-<li><a class="reference internal" href="#system-dependencies">System Dependencies</a><ul>
-<li><a class="reference internal" href="#ubuntu-debian">Ubuntu/Debian</a></li>
-<li><a class="reference internal" href="#rhel-centos-fedora">RHEL/CentOS/Fedora</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#for-install">For Install</a></li>
 <li><a class="reference internal" href="#for-development">For Development</a></li>
-<li><a class="reference internal" href="#verification">Verification</a></li>
-<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a><ul>
-<li><a class="reference internal" href="#common-issues">Common Issues</a></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -547,7 +351,7 @@ lftools-uv<span class="w"> </span>openstack<span class="w"> </span>--help<span c
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=02f4819d"></script>
+</div><script src="_static/documentation_options.js?v=f539c95a"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

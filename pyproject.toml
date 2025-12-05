@@ -10,7 +10,7 @@ name = "lftools-uv"
 dynamic = ["version"]
 description = "Linux Foundation Release Engineering Tools"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11, <3.15"
 license = {text = "EPL-1.0 OR Apache-2.0"}
 
 authors = [
@@ -31,7 +31,8 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13"
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14"
 ]
 
 dependencies = [
@@ -63,7 +64,7 @@ dependencies = [
     "PyYAML",
     "requests>=2.32.0",
     "ruamel.yaml",
-    "ruamel.yaml.clib",
+    "ruamel.yaml.clib>=0.2.15",
     "soupsieve",
     "tabulate",
     "tqdm",

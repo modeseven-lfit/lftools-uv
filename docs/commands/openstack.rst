@@ -36,6 +36,43 @@ list
 
 .. program-output:: lftools-uv openstack --os-cloud docs image list --help
 
+cluster
+-------
+
+Command for managing Container Orchestration Engine (COE) clusters.
+
+.. program-output:: lftools-uv openstack --os-cloud docs cluster --help
+
+cleanup
+^^^^^^^
+
+Remove orphaned COE clusters from the cloud. This command scans for
+Kubernetes clusters not in use by active Jenkins builds and removes them.
+The cleanup operation preserves managed clusters (names containing
+-managed-prod-k8s- or -managed-test-k8s-) as these are long-lived
+infrastructure.
+
+The command queries Jenkins URLs for active builds to prevent deletion of
+clusters in use. Provide one or more Jenkins URLs separated by
+spaces.
+
+.. program-output:: lftools-uv openstack --os-cloud docs cluster cleanup --help
+
+Example usage:
+
+.. code-block:: bash
+
+   # Cleanup orphaned clusters, checking two Jenkins instances
+   lftools-uv openstack --os-cloud mycloud cluster cleanup \
+     --jenkins "https://jenkins.example.org https://jenkins.example.io"
+
+list
+^^^^
+
+List all COE clusters on the specified cloud with their current status.
+
+.. program-output:: lftools-uv openstack --os-cloud docs cluster list --help
+
 object
 ------
 

@@ -96,7 +96,7 @@ class Nexus:
             }
         }
 
-        json_data = json.dumps(target).encode(encoding="latin-1")
+        json_data = json.dumps(target).encode(encoding="utf-8")
 
         r = requests.post(url, auth=self.auth, headers=self.headers, data=json_data)
 
@@ -148,7 +148,7 @@ class Nexus:
             }
         }
 
-        json_data = json.dumps(privileges).encode(encoding="latin-1")
+        json_data = json.dumps(privileges).encode(encoding="utf-8")
         r = requests.post(url, auth=self.auth, headers=self.headers, data=json_data)
         privileges = r.json()
 
@@ -190,7 +190,7 @@ class Nexus:
             }
         }
 
-        json_data = json.dumps(role).encode(encoding="latin-1")
+        json_data = json.dumps(role).encode(encoding="utf-8")
         log.debug(f"Sending role {json_data} to Nexus")
 
         r = requests.post(url, auth=self.auth, headers=self.headers, data=json_data)
@@ -247,7 +247,7 @@ class Nexus:
         for role in extra_roles:
             user["data"]["roles"].append(self.get_role(role))
 
-        json_data = json.dumps(user).encode(encoding="latin-1")
+        json_data = json.dumps(user).encode(encoding="utf-8")
 
         user = requests.post(url, auth=self.auth, headers=self.headers, data=json_data)
 
@@ -278,7 +278,7 @@ class Nexus:
 
         repo = {"data": data}
 
-        json_data = json.dumps(repo).encode(encoding="latin-1")
+        json_data = json.dumps(repo).encode(encoding="utf-8")
 
         requests.put(url, auth=self.auth, headers=self.headers, data=json_data)
 

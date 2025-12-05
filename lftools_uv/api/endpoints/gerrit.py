@@ -169,7 +169,7 @@ class Gerrit(client.RestApi):
 
         POST /changes/{change-id}/revisions/{revision-id}/review
         """
-        log.info(fqdn, gerrit_project, changeid)
+        log.info(f"Voting on change: fqdn={fqdn}, project={gerrit_project}, changeid={changeid}")
         access_str = f"changes/{changeid}/revisions/2/review"
         headers = {"Content-Type": "application/json; charset=UTF-8"}
         self.r.headers.update(headers)

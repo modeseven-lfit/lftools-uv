@@ -49,6 +49,10 @@ class RestApi:
         self, url: str, method: str, data: Any | None = None, timeout: int = 30
     ) -> requests.Response | tuple[requests.Response, dict[str, Any] | str | None]:
         """Execute the request."""
+        # Encode string data as UTF-8 to handle Unicode characters
+        if isinstance(data, str):
+            data = data.encode("utf-8")
+
         resp: requests.Response = self.r.request(method, self.endpoint + url, data=data, timeout=timeout)
 
         # Some massaging to make our gerrit python code work

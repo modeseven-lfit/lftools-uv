@@ -17,12 +17,30 @@ from pathlib import Path
 
 def main():
     """Execute the gerrit_create shell script with all arguments passed through."""
-    # Find the shell script relative to this module
-    current_dir = Path(__file__).parent.parent.parent
-    shell_script = current_dir / "shell" / "gerrit_create"
+    # Try multiple locations for the shell script
+    script_name = "gerrit_create"
 
-    if not shell_script.exists():
-        print(f"Error: Shell script not found at {shell_script}", file=sys.stderr)
+    # Location 1: Development - relative to this module (source tree)
+    dev_location = Path(__file__).parent.parent.parent / "shell" / script_name
+
+    # Location 2: Installed - in sys.prefix/share/lftools-uv/shell/
+    installed_location = Path(sys.prefix) / "share" / "lftools-uv" / "shell" / script_name
+
+    # Location 3: Virtual environment or user install - check both prefix and base_prefix
+    venv_location = Path(sys.base_prefix) / "share" / "lftools-uv" / "shell" / script_name
+
+    # Try locations in order
+    shell_script = None
+    for location in [dev_location, installed_location, venv_location]:
+        if location.exists():
+            shell_script = location
+            break
+
+    if shell_script is None:
+        print("Error: Shell script not found at any of the following locations:", file=sys.stderr)
+        print(f"  - {dev_location}", file=sys.stderr)
+        print(f"  - {installed_location}", file=sys.stderr)
+        print(f"  - {venv_location}", file=sys.stderr)
         sys.exit(1)
 
     # Execute the shell script with all command line arguments

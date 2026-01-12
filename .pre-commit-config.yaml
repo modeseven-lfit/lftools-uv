@@ -3,7 +3,8 @@
 # SPDX-FileCopyrightText: 2025 The Linux Foundation
 
 ci:
-  skip: [pytest]
+  # pre-commit.ci sandbox prevents network calls; disable gha-workflow-linter
+  skip: [pytest, gha-workflow-linter]
   autofix_commit_msg: |
     Chore: pre-commit autofixes
 
@@ -55,11 +56,10 @@ repos:
     rev: 5ba58aca0bd5bc7c0e1c0fc45af2e88d6a2bde83  # frozen: v0.14.10
     hooks:
       - id: ruff
-        # Removed restrictive filter so Ruff covers all Python files
-        # (replaced prior black/isort scope, wrapped for yamllint)
+        files: ^(scripts|tests|custom_components)/.+\.py$
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
-        # Removed restrictive filter so formatting applies repo-wide
+        files: ^(scripts|tests|custom_components)/.+\.py$
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: a66e98df7b4aeeb3724184b332785976d062b92e  # frozen: v1.19.1
@@ -108,6 +108,12 @@ repos:
     rev: 63c8f8312b7559622c0d82815639671ae42132ac # frozen: v2.4.1
     hooks:
       - id: codespell
+
+  - repo: https://github.com/lfreleng-actions/gha-workflow-linter
+    rev: 100fffb1dffb802767871aae69687b165e4bf782  # frozen: v0.1.13
+    hooks:
+      - id: gha-workflow-linter
+        args: [lint, .github/workflows/, --verbose]
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: b035497fb64e3f9faa91e833331688cc185891e6  # frozen: 0.36.0

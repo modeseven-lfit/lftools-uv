@@ -118,11 +118,14 @@ def cleanup(os_cloud, days=0, hide_public=False, ci_managed=True, clouds=None):
             try:
                 result = cloud.delete_image(image.name)
             except OpenStackCloudException as e:
-                if str(e).startswith("Multiple matches found for"):
-                    log.warning(f"{str(e)}. Skipping image...")
+                error_msg = str(e)
+                if error_msg.startswith("Multiple matches found for") or error_msg.startswith(
+                    "More than one Image exists with the name"
+                ):
+                    log.warning(f"{error_msg}. Skipping image...")
                     continue
                 else:
-                    log.error(f"Unexpected exception: {str(e)}")
+                    log.error(f"Unexpected exception: {error_msg}")
                     raise
 
             if not result:

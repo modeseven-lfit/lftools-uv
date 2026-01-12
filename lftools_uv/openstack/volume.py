@@ -56,11 +56,14 @@ def cleanup(os_cloud, days=0):
             try:
                 result = cloud.delete_volume(volume.name)
             except OpenStackCloudException as e:
-                if str(e).startswith("Multiple matches found for"):
-                    print(f"WARNING: {str(e)}. Skipping volume...")
+                error_msg = str(e)
+                if error_msg.startswith("Multiple matches found for") or error_msg.startswith(
+                    "More than one Volume exists with the name"
+                ):
+                    print(f"WARNING: {error_msg}. Skipping volume...")
                     continue
                 else:
-                    print(f"ERROR: Unexpected exception: {str(e)}")
+                    print(f"ERROR: Unexpected exception: {error_msg}")
                     raise
 
             if not result:

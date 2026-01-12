@@ -192,7 +192,8 @@ export OS_CLOUD=production
 
 ## ONAP/ECOMPCI Project Defaults
 
-The functional test harness includes built-in defaults for ONAP/ECOMPCI project infrastructure:
+The functional test harness includes built-in defaults for ONAP/ECOMPCI project
+infrastructure.
 
 ### Default Values
 

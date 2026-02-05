@@ -193,7 +193,7 @@ name = "cffi"
 version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pycparser", marker = "implementation_name != 'PyPy' and platform_python_implementation != 'PyPy'" },
+    { name = "pycparser", marker = "implementation_name != 'PyPy'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/eb/56/b1ba7935a17738ae8453301356628e8147c79dbb825bcbc73dc7401f9846/cffi-2.0.0.tar.gz", hash = "sha256:44d1b5909021139fe36001ae048dbdde8214afa20200eda0f64c068cac5d5529", size = 523588, upload-time = "2025-09-08T23:24:04.541Z" }
 wheels = [
@@ -1527,7 +1527,7 @@ wheels = [
 
 [[package]]
 name = "openstacksdk"
-version = "4.8.0"
+version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
@@ -1545,9 +1545,9 @@ dependencies = [
     { name = "requestsexceptions" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/46/24/1167097740136e302c74043c1c6feecf8d757b052d7b457960e0dc60fa03/openstacksdk-4.8.0.tar.gz", hash = "sha256:4dc038e1c17d893005f3a0a8951456afd9d148f3f65d448f94adcceb278d7f31", size = 1309981, upload-time = "2025-11-13T13:59:59.614Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/08/1c/26086b38956626cd391ba801d1d06b616568837b91d4a7f9f1d9b3920bd1/openstacksdk-4.9.0.tar.gz", hash = "sha256:b28459c7cb6405f9d6fc573689ea5c5e357424828f6c76f7b2b0d763c80fb6ea", size = 1316550, upload-time = "2026-01-19T10:45:11.629Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bc/45/87fa873f35abdf191d66d4821fe965f781e2d3e37e58883c6e23e95fa794/openstacksdk-4.8.0-py3-none-any.whl", hash = "sha256:7f7c438d418a4ee0c8737b1ac0859b3c1e8e21401677782415d21bce3324b9dd", size = 1849694, upload-time = "2025-11-13T13:59:57.634Z" },
+    { url = "https://files.pythonhosted.org/packages/21/4a/56ed51e9a683ecce73e8119f041517a267130753efec0135665d47ce5a56/openstacksdk-4.9.0-py3-none-any.whl", hash = "sha256:dddc786237af443af53921ed6ce7ed8cb96a34447d3c2f39942a296a8e4711f7", size = 1857101, upload-time = "2026-01-19T10:45:10.061Z" },
 ]
 
 [[package]]

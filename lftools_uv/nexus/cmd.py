@@ -492,7 +492,7 @@ def release_staging_repos(repos, verify, nexus_url=""):
             # Use debug level to avoid logging potentially sensitive request data
             log.debug("Sending staging repository release request")
             request_url = f"{_nexus.baseurl}/staging/bulk/promote"
-            log.info(f"Request URL: {request_url}")
+            log.debug(f"Request URL: {request_url}")
             log.info(f"Requesting Nexus to release {repo}")
 
             response = requests.post(request_url, json=data, auth=_nexus.auth)

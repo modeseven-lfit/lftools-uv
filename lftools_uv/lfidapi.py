@@ -15,7 +15,7 @@ import urllib
 
 import requests
 import yaml
-from email_validator import validate_email
+from email_validator import EmailNotValidError, validate_email
 
 from lftools_uv.github_helper import helper_list, helper_user_github
 from lftools_uv.oauth2_helper import oauth_helper
@@ -98,19 +98,22 @@ def helper_invite(email, group):
     data = {"mail": email}
     # Use print() for user-facing output to avoid logging PII (email)
     print("Validating email address")  # noqa: T201
-    if validate_email(email):
-        print(f"Inviting user to join {group}")  # noqa: T201
-        response = requests.post(url, json=data, headers=headers)
-        try:
-            check_response_code(response)
-        except requests.HTTPError as e:
-            log.error(e)
-            exit(1)
-        # Avoid logging PII - only log operation success
-        log.debug("Invite operation completed successfully")
-    else:
+    try:
+        validate_email(email)
+    except EmailNotValidError:
         # Avoid logging PII (email) in error messages
         log.error(f"Email address is not valid, not inviting to {group}")
+        return
+
+    print(f"Inviting user to join {group}")  # noqa: T201
+    response = requests.post(url, json=data, headers=headers)
+    try:
+        check_response_code(response)
+    except requests.HTTPError as e:
+        log.error(e)
+        exit(1)
+    # Avoid logging PII - only log operation success
+    log.debug("Invite operation completed successfully")
 
 
 def helper_create_group(group):

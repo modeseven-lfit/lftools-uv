@@ -426,8 +426,13 @@ def test_cleanup_multiple_jenkins_urls(mock_from_config, mock_fetch_builds, caps
 
     # Verify both URLs were processed
     captured = capsys.readouterr()
-    assert "jenkins1.example.org" in captured.out
-    assert "jenkins2.example.com/sandbox" in captured.out
+    # Check for the full INFO message to avoid CodeQL's incomplete URL substring sanitization warning
+    # These are test assertions verifying output format, not security-related URL validation
+    expected_info_line = (
+        "INFO: Checking Jenkins URLs for active builds: "
+        "https://jenkins1.example.org https://jenkins2.example.com/sandbox"
+    )
+    assert expected_info_line in captured.out
     assert "Found 2 active builds in Jenkins" in captured.out
 
 

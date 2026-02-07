@@ -163,15 +163,18 @@ def helper_user_github(ctx, organization, user, team, delete, admin):
         log.error(ghe)
     try:
         user_object = g.get_user(user)
-        log.info(user_object)
+        # Avoid logging user object which may contain PII
+        log.debug("User object retrieved successfully")
     except GithubException as ghe:
         log.error(ghe)
-        log.info(f"user {user} not found")
+        # Use print() for user-facing output to avoid logging PII
+        print("User not found")  # noqa: T201
         sys.exit(1)
     # check if user is a member
     try:
         is_member = org.has_in_members(user_object)
-        log.info(f"Is {user} a member of org {is_member}")
+        # Use print() for user-facing output to avoid logging PII
+        print(f"User membership status: {is_member}")  # noqa: T201
     except GithubException as ghe:
         log.error(ghe)
     # get teams
@@ -195,9 +198,11 @@ def helper_user_github(ctx, organization, user, team, delete, admin):
                 team.remove_membership(user_object)
             except GithubException as ghe:
                 log.error(ghe)
-            log.info(f"Removing user {user_object} from {team}")
+            # Use print() for user-facing output to avoid logging PII
+            print("Removing user from team")  # noqa: T201
         else:
-            log.info(f"{user} is not a member of org cannot delete")
+            # Use print() for user-facing output to avoid logging PII
+            print("User is not a member of org, cannot delete")  # noqa: T201
             # TODO add revoke invite
             log.info("Code does not handle revoking invitations.")
 
@@ -212,7 +217,8 @@ def helper_user_github(ctx, organization, user, team, delete, admin):
                 org.invite_user(user=user_object, role="admin", teams=teams)
             except GithubException as ghe:
                 log.error(ghe)
-            log.info(f"Sending Admin invite to {user_object} for {team}")
+            # Use print() for user-facing output to avoid logging PII
+            print("Sending Admin invite to user for team")  # noqa: T201
 
         if not admin and is_member:
             try:
@@ -225,4 +231,5 @@ def helper_user_github(ctx, organization, user, team, delete, admin):
                 org.invite_user(user=user_object, teams=teams)
             except GithubException as ghe:
                 log.error(ghe)
-            log.info(f"Sending invite to {user_object} for {team}")
+            # Use print() for user-facing output to avoid logging PII
+            print("Sending invite to user for team")  # noqa: T201

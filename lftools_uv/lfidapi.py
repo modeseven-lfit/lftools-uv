@@ -9,7 +9,6 @@
 ##############################################################################
 """Use the LFIDAPI to add, remove and list members as well as create groups."""
 
-import json
 import logging
 import sys
 import urllib
@@ -62,7 +61,8 @@ def helper_search_members(group):
             exit(1)
         result = response.json()
         members = result["members"]
-        log.debug(json.dumps(members, indent=4, sort_keys=True))
+        # Avoid logging PII (member data) - use debug level only for non-sensitive metadata
+        log.debug("Retrieved %d members from group", len(members))
         return members
 
 
@@ -73,18 +73,20 @@ def helper_user(user, group, delete):
     headers = {"Authorization": "Bearer " + access_token}
     data = {"username": user}
     if delete:
-        log.info(f"Deleting {user} from {group}")
+        # Use print() for user-facing output to avoid logging PII
+        print(f"Deleting user from {group}")  # noqa: T201
         response = requests.delete(url, json=data, headers=headers)
     else:
-        log.info(f"Adding {user} to {group}")
+        # Use print() for user-facing output to avoid logging PII
+        print(f"Adding user to {group}")  # noqa: T201
         response = requests.put(url, json=data, headers=headers)
     try:
         check_response_code(response)
     except requests.HTTPError as e:
         log.error(e)
         exit(1)
-    result = response.json()
-    log.debug(json.dumps(result, indent=4, sort_keys=True))
+    # Avoid logging PII - only log operation success
+    log.debug("User operation completed successfully")
 
 
 def helper_invite(email, group):
@@ -94,19 +96,21 @@ def helper_invite(email, group):
     url = PARSE(url, prejoin)
     headers = {"Authorization": "Bearer " + access_token}
     data = {"mail": email}
-    log.info(f"Validating email {email}")
+    # Use print() for user-facing output to avoid logging PII (email)
+    print("Validating email address")  # noqa: T201
     if validate_email(email):
-        log.info(f"Inviting {email} to join {group}")
+        print(f"Inviting user to join {group}")  # noqa: T201
         response = requests.post(url, json=data, headers=headers)
         try:
             check_response_code(response)
         except requests.HTTPError as e:
             log.error(e)
             exit(1)
-        result = response.json()
-        log.debug(json.dumps(result, indent=4, sort_keys=True))
+        # Avoid logging PII - only log operation success
+        log.debug("Invite operation completed successfully")
     else:
-        log.error(f"Email '{email}' is not valid, not inviting to {group}")
+        # Avoid logging PII (email) in error messages
+        log.error(f"Email address is not valid, not inviting to {group}")
 
 
 def helper_create_group(group):
@@ -119,16 +123,16 @@ def helper_create_group(group):
         url = f"{url}/"
         headers = {"Authorization": "Bearer " + access_token}
         data = {"title": group, "type": "group"}
-        log.debug(data)
-        log.info(f"Creating group {group}")
+        log.debug("Creating group with type: group")
+        print(f"Creating group {group}")  # noqa: T201
         response = requests.post(url, json=data, headers=headers)
         try:
             check_response_code(response)
         except requests.HTTPError as e:
             log.error(e)
             exit(1)
-        result = response.json()
-        log.debug(json.dumps(result, indent=4, sort_keys=True))
+        # Avoid logging potentially sensitive response data
+        log.debug("Group creation completed successfully")
 
 
 def helper_match_ldap_to_info(info_file, group, githuborg, noop):
@@ -181,17 +185,19 @@ def helper_match_ldap_to_info(info_file, group, githuborg, noop):
         if "lfservices_releng" in all_users:
             all_users.remove("lfservices_releng")
 
-    log.info("All users in org group")
+    # Use print() for user-facing output to avoid logging PII (usernames)
+    print("All users in org group:")  # noqa: T201
     all_users = sorted(set(all_users))
     for x in all_users:
-        log.info(x)
+        print(f"  {x}")  # noqa: T201
 
     for user in all_users:
         removed_by_patch = [item for item in ldap_committers if item not in info_committers]
         if user in removed_by_patch:
-            log.info(f"{user} found in group {group} ")
+            # Use print() for user-facing output to avoid logging PII
+            print(f"User found in group {group}, scheduled for removal")  # noqa: T201
             if noop is False:
-                log.info(f"Removing user {user} from group {group}")
+                print(f"Removing user from group {group}")  # noqa: T201
                 if githuborg:
                     helper_user_github(
                         ctx=False, organization=githuborg, user=user, team=group, delete=True, admin=False
@@ -201,9 +207,10 @@ def helper_match_ldap_to_info(info_file, group, githuborg, noop):
 
         added_by_patch = [item for item in info_committers if item not in ldap_committers]
         if user in added_by_patch:
-            log.info(f"{user} not found in group {group}")
+            # Use print() for user-facing output to avoid logging PII
+            print(f"User not found in group {group}, scheduled for addition")  # noqa: T201
             if noop is False:
-                log.info(f"Adding user {user} to group {group}")
+                print(f"Adding user to group {group}")  # noqa: T201
                 if githuborg:
                     helper_user_github(
                         ctx=False, organization=githuborg, user=user, team=group, delete=False, admin=False

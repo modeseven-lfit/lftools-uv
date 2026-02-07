@@ -34,10 +34,11 @@ def password_generator(ctx, length):
 
     Length defaults to 12 characters if not specified.
     """
+    # Use print() instead of log.info() to avoid logging sensitive passwords
     if length:
-        log.info(helpers.generate_password(int(length)))
+        print(helpers.generate_password(int(length)))  # noqa: T201
     else:
-        log.info(helpers.generate_password())
+        print(helpers.generate_password())  # noqa: T201
 
 
 utils.add_command(password_generator)

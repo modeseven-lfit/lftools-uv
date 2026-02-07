@@ -329,7 +329,8 @@ class Nexus:
     def delete_image(self, image):
         """Delete an image from the repo, using the id field."""
         url = os.path.join(self.baseurl, "components", image["id"])
-        log.info(f"Deleting {image['name']}:{image['version']}")
+        # Use print() for user-facing output to avoid logging image metadata
+        print(f"Deleting {image['name']}:{image['version']}")  # noqa: T201
         url_attr = requests.delete(url, auth=self.auth)
         if url_attr.status_code != 204:
             log.error(f"{url} returned {str(url_attr)}")

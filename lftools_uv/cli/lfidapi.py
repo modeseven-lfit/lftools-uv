@@ -38,7 +38,8 @@ def search_members(ctx, group):
     """List members of a group."""
     members = helper_search_members(group)
     for member in members:
-        log.info(f"{member['username']} <{member['mail']}>")
+        # Use print() instead of log.info() to avoid logging PII (emails) to log files
+        print(f"{member['username']} <{member['mail']}>")  # noqa: T201
 
 
 @click.command()

@@ -75,6 +75,8 @@ dependencies = [
     "platformdirs",
     "google-auth",
     "google-auth-oauthlib",
+    # Security: pyasn1>=0.6.2 fixes DoS vulnerability in decoder
+    "pyasn1>=0.6.2",
 ]
 
 [project.optional-dependencies]

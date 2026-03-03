@@ -25,12 +25,10 @@ def mock_image():
     image = MagicMock()
     image.name = "test-image"
     image.id = "image-123"
-    image.is_public = False
     image.is_protected = False
-    image.protected = False
     image.visibility = "private"
     image.owner = "project-123"
-    image.metadata = {"ci_managed": "yes"}
+    image.properties = {"ci_managed": "yes"}
     image.created_at = (datetime.now() - timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%SZ")
     return image
 
@@ -57,8 +55,8 @@ class TestFilterImages:
     def test_filter_images_hide_public(self, mock_image):
         """Test filtering out public images."""
         public_image = MagicMock()
-        public_image.is_public = True
-        public_image.metadata = {"ci_managed": "yes"}
+        public_image.visibility = "public"
+        public_image.properties = {"ci_managed": "yes"}
         public_image.created_at = (datetime.now() - timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         images = [mock_image, public_image]
@@ -69,10 +67,9 @@ class TestFilterImages:
     def test_filter_images_ci_managed(self, mock_image):
         """Test filtering by ci_managed metadata."""
         unmanaged_image = MagicMock()
-        unmanaged_image.is_public = False
+        unmanaged_image.visibility = "private"
         unmanaged_image.is_protected = False
-        unmanaged_image.protected = False
-        unmanaged_image.metadata = {}
+        unmanaged_image.properties = {}
         unmanaged_image.created_at = (datetime.now() - timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         images = [mock_image, unmanaged_image]
@@ -83,17 +80,15 @@ class TestFilterImages:
     def test_filter_images_by_days(self, mock_image):
         """Test filtering images by age."""
         old_image = MagicMock()
-        old_image.is_public = False
+        old_image.visibility = "private"
         old_image.is_protected = False
-        old_image.protected = False
-        old_image.metadata = {"ci_managed": "yes"}
+        old_image.properties = {"ci_managed": "yes"}
         old_image.created_at = (datetime.now() - timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         new_image = MagicMock()
-        new_image.is_public = False
+        new_image.visibility = "private"
         new_image.is_protected = False
-        new_image.protected = False
-        new_image.metadata = {"ci_managed": "yes"}
+        new_image.properties = {"ci_managed": "yes"}
         new_image.created_at = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         images = [old_image, new_image]
@@ -104,9 +99,9 @@ class TestFilterImages:
     def test_filter_images_protected(self, mock_image):
         """Test that protected images are filtered out."""
         protected_image = MagicMock()
-        protected_image.is_public = False
+        protected_image.visibility = "private"
         protected_image.is_protected = True
-        protected_image.metadata = {"ci_managed": "yes"}
+        protected_image.properties = {"ci_managed": "yes"}
         protected_image.created_at = (datetime.now() - timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         images = [mock_image, protected_image]

@@ -134,6 +134,7 @@ dependencies = [
     { name = "jmespath" },
     { name = "s3transfer" },
 ]
+sdist = { url = "https://files.pythonhosted.org/packages/fe/dc/990222f8c0cd7453c03410bc8b367ccb35ae01d9642ff1f79231cd3f3d8f/boto3-1.42.56.tar.gz", hash = "sha256:8b0779431b349582f4d61b55a2858b943d5295f4b5de62e2d669fdbbcda96bd6", size = 112814, upload-time = "2026-02-24T20:28:51.825Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/59/bb/a7fd6f4f38cf0f6cd91c152442cbe5b5f270275a60a5c7147ae5560f2f25/boto3-1.42.56-py3-none-any.whl", hash = "sha256:e09f91170b19e0ecd5e514321d99323be3e91a58dfa73fd58cf73b7b8b179c84", size = 140556, upload-time = "2026-02-24T20:28:49.815Z" },
 ]
@@ -2912,7 +2913,7 @@ wheels = [
 
 [[package]]
 name = "tox"
-version = "4.46.0"
+version = "4.47.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cachetools" },
@@ -2924,9 +2925,9 @@ dependencies = [
     { name = "pyproject-api" },
     { name = "virtualenv" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/bb/ba/140537bbf7dd267b37a1519ac1451b6c062d300cb64b7b273dfa1b2af9aa/tox-4.46.0.tar.gz", hash = "sha256:b9d1aa187101dae184b7e6552f3b1ff85461e9e32f078851426e35a3c2009bc1", size = 249296, upload-time = "2026-02-24T17:53:36.171Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/48/4a/205c929d77d280eb3f557bbb24a84a84698501c3097eb07c6e282e11fa9f/tox-4.47.2.tar.gz", hash = "sha256:eaf01d7f1887a9399298e9d13ccca6cd0bbcf6d44bd6029136df284894288a6c", size = 254303, upload-time = "2026-03-03T16:49:06.629Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e2/15/e344f22ae5adce77769cb93f03635674df40de2604e98a71a3193f632766/tox-4.46.0-py3-none-any.whl", hash = "sha256:828f0a119a22028dbff7495d288e3601406478ab20c97891f66be5516d72e4c3", size = 200281, upload-time = "2026-02-24T17:53:34.228Z" },
+    { url = "https://files.pythonhosted.org/packages/59/e7/dba4ccd9885875a0643b85704aebceca793e1c20bf1bdee8f2f229db5162/tox-4.47.2-py3-none-any.whl", hash = "sha256:6845717a01c30a46ce91c69d493a96f554d235dc9e0c0732c1395794f72c6d29", size = 202124, upload-time = "2026-03-03T16:49:01.044Z" },
 ]
 
 [[package]]

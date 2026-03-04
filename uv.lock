@@ -134,22 +134,23 @@ dependencies = [
     { name = "jmespath" },
     { name = "s3transfer" },
 ]
+sdist = { url = "https://files.pythonhosted.org/packages/fe/dc/990222f8c0cd7453c03410bc8b367ccb35ae01d9642ff1f79231cd3f3d8f/boto3-1.42.56.tar.gz", hash = "sha256:8b0779431b349582f4d61b55a2858b943d5295f4b5de62e2d669fdbbcda96bd6", size = 112814, upload-time = "2026-02-24T20:28:51.825Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/59/bb/a7fd6f4f38cf0f6cd91c152442cbe5b5f270275a60a5c7147ae5560f2f25/boto3-1.42.56-py3-none-any.whl", hash = "sha256:e09f91170b19e0ecd5e514321d99323be3e91a58dfa73fd58cf73b7b8b179c84", size = 140556, upload-time = "2026-02-24T20:28:49.815Z" },
 ]
 
 [[package]]
 name = "boto3-stubs"
-version = "1.42.56"
+version = "1.42.60"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "botocore-stubs" },
     { name = "types-s3transfer" },
     { name = "typing-extensions", marker = "python_full_version < '3.12'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3d/a1/23cdd844dc940ef9c77ee1fc95cbf4c0a3f4ee53ecb3c2bbf7ba9932d2f7/boto3_stubs-1.42.56.tar.gz", hash = "sha256:95e4eab435b1b8e05e0d977c76f706efcded2b9a375cbc45b031c7458d100b25", size = 100972, upload-time = "2026-02-24T21:06:18.112Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cf/0d/2db11a9c84744ce963d625e73d1e0f4f5fdd50e028edc9ec702f3713abfb/boto3_stubs-1.42.60.tar.gz", hash = "sha256:6b6d2614f44d042275d5070bb0d59001bb665ade353aa49aadb349f78077f088", size = 101014, upload-time = "2026-03-03T21:38:38.36Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/de/e2/a47ab38dbc20bf241af2d9dad7b6c517794df3a54a586abb00678a5eacff/boto3_stubs-1.42.56-py3-none-any.whl", hash = "sha256:824d229b2d87cac1a714472d88c13631df5cb4e1ef3bc3167cac635084ca5b57", size = 69824, upload-time = "2026-02-24T21:06:09.403Z" },
+    { url = "https://files.pythonhosted.org/packages/77/6b/4f13c623b08a2160b3b6b69a70e37db01f9d6238611a875be8b2c7ed3b4f/boto3_stubs-1.42.60-py3-none-any.whl", hash = "sha256:5f1a55c8bfcaca3c02c0e70d485373c7663f5eca3aeeebd8f36a112e47e2d1dd", size = 69827, upload-time = "2026-03-03T21:38:33.429Z" },
 ]
 
 [[package]]

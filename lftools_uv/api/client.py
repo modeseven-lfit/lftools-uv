@@ -12,20 +12,32 @@
 from __future__ import annotations
 
 import json
-from typing import Any
 
 import requests
+
+
+# Type alias for parsed JSON response body.
+# REST APIs return heterogeneous JSON; Any is unavoidable at
+# this deserialization boundary.  Callers should narrow as needed.
+ApiBody = dict[str, object] | list[object] | str | None
+
+# Full API response: plain Response on certain status codes,
+# or a (Response, body) tuple when a body was parsed.
+ApiResponse = requests.Response | tuple[requests.Response, ApiBody]
 
 
 class RestApi:
     """A generic REST API interface."""
 
-    def __init__(self, **kwargs: dict[str, str]) -> None:
+    def __init__(self, **kwargs: str | dict[str, str]) -> None:
         """Initialize the REST API class."""
-        self.params: dict[str, dict[str, str]] = kwargs
+        self.params: dict[str, str | dict[str, str]] = kwargs
 
-        if kwargs["creds"]:
-            self.creds: dict[str, str] = kwargs["creds"]
+        creds_raw: str | dict[str, str] = kwargs["creds"]
+        if not isinstance(creds_raw, dict):
+            msg: str = "creds must be a dict"
+            raise TypeError(msg)
+        self.creds: dict[str, str] = creds_raw
 
         if "timeout" not in self.params:
             self.timeout: int | None = None
@@ -37,7 +49,12 @@ class RestApi:
             self.password: str = self.creds["password"]
             self.r: requests.Session = requests.Session()
             self.r.auth = (self.username, self.password)
-            self.r.headers.update({"Content-Type": "application/json; charset=UTF-8", "Accept": "application/json"})
+            self.r.headers.update(
+                {
+                    "Content-Type": "application/json; charset=UTF-8",
+                    "Accept": "application/json",
+                }
+            )
 
         if self.creds["authtype"] == "token":
             self.token: str = self.creds["token"]
@@ -46,14 +63,20 @@ class RestApi:
             self.r.headers.update({"Content-Type": "application/json"})
 
     def _request(
-        self, url: str, method: str, data: Any | None = None, timeout: int = 30
-    ) -> requests.Response | tuple[requests.Response, dict[str, Any] | str | None]:
+        self,
+        url: str,
+        method: str,
+        data: str | bytes | None = None,
+        timeout: int = 30,
+    ) -> ApiResponse:
         """Execute the request."""
         # Encode string data as UTF-8 to handle Unicode characters
         if isinstance(data, str):
             data = data.encode("utf-8")
 
-        resp: requests.Response = self.r.request(method, self.endpoint + url, data=data, timeout=timeout)
+        resp: requests.Response = self.r.request(
+            method, self.endpoint + url, data=data, timeout=timeout
+        )
 
         # Some massaging to make our gerrit python code work
         if resp.status_code == 409:
@@ -61,9 +84,10 @@ class RestApi:
 
         if resp.text:
             try:
+                body: ApiBody
                 if "application/json" in resp.headers["Content-Type"]:
                     remove_xssi_magic: str = resp.text.replace(")]}'", "")
-                    body: dict[str, Any] | str | None = json.loads(remove_xssi_magic)
+                    body = json.loads(remove_xssi_magic)  # pyright: ignore[reportAny]
                 else:
                     body = resp.text
             except ValueError:
@@ -74,22 +98,52 @@ class RestApi:
 
         return resp, body
 
-    def get(self, url: str, **kwargs) -> requests.Response | tuple[requests.Response, dict[str, Any] | str | None]:
+    def get(
+        self,
+        url: str,
+        *,
+        data: str | bytes | None = None,
+        timeout: int = 30,
+    ) -> ApiResponse:
         """HTTP GET request."""
-        return self._request(url, "GET", **kwargs)
+        return self._request(url, "GET", data=data, timeout=timeout)
 
-    def patch(self, url: str, **kwargs) -> requests.Response | tuple[requests.Response, dict[str, Any] | str | None]:
+    def patch(
+        self,
+        url: str,
+        *,
+        data: str | bytes | None = None,
+        timeout: int = 30,
+    ) -> ApiResponse:
         """HTTP PATCH request."""
-        return self._request(url, "PATCH", **kwargs)
+        return self._request(url, "PATCH", data=data, timeout=timeout)
 
-    def post(self, url: str, **kwargs) -> requests.Response | tuple[requests.Response, dict[str, Any] | str | None]:
+    def post(
+        self,
+        url: str,
+        *,
+        data: str | bytes | None = None,
+        timeout: int = 30,
+    ) -> ApiResponse:
         """HTTP POST request."""
-        return self._request(url, "POST", **kwargs)
+        return self._request(url, "POST", data=data, timeout=timeout)
 
-    def put(self, url: str, **kwargs) -> requests.Response | tuple[requests.Response, dict[str, Any] | str | None]:
+    def put(
+        self,
+        url: str,
+        *,
+        data: str | bytes | None = None,
+        timeout: int = 30,
+    ) -> ApiResponse:
         """HTTP PUT request."""
-        return self._request(url, "PUT", **kwargs)
+        return self._request(url, "PUT", data=data, timeout=timeout)
 
-    def delete(self, url: str, **kwargs) -> requests.Response | tuple[requests.Response, dict[str, Any] | str | None]:
+    def delete(
+        self,
+        url: str,
+        *,
+        data: str | bytes | None = None,
+        timeout: int = 30,
+    ) -> ApiResponse:
         """HTTP DELETE request."""
-        return self._request(url, "DELETE", **kwargs)
+        return self._request(url, "DELETE", data=data, timeout=timeout)

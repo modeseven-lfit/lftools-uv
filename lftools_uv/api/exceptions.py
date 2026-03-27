@@ -11,10 +11,13 @@
 
 from __future__ import annotations
 
+from typing import override
+
 
 class UnsupportedRequestType(Exception):
     """Except on an unknown request."""
 
+    @override
     def __str__(self) -> str:
         """Except unknown return type."""
         return "Unknown request type"

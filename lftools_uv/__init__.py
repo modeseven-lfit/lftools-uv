@@ -20,6 +20,7 @@ __summary__ = "Linux Foundation Release Engineering Tools"
 
 import logging
 import sys
+from typing import override
 
 
 class LogFormatter(logging.Formatter):
@@ -29,6 +30,7 @@ class LogFormatter(logging.Formatter):
     debug_fmt: logging.Formatter = logging.Formatter("%(levelname)s: %(name)s:%(lineno)d: %(message)s")
     info_fmt: logging.Formatter = logging.Formatter("%(message)s")
 
+    @override
     def format(self, record: logging.LogRecord) -> str:
         """Format log messages depending on log level."""
         if record.levelno == logging.INFO:

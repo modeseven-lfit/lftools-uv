@@ -13,7 +13,7 @@ Centralized error handling utilities for lftools-uv CLI commands.
 Rationale
 ---------
 Historically many commands implemented ad-hoc try/except blocks (or none at all),
-calling `sys.exit()` directly or letting tracebacks escape. This module provides
+calling ``sys.exit()`` directly or letting tracebacks escape. This module provides
 decorators and helper functions to standardize:
 
 * Logging format & severity
@@ -24,7 +24,7 @@ decorators and helper functions to standardize:
 
 Usage
 -----
-Example for a Click command:
+Example for a Click command::
 
     import click
     from lftools_uv.cli.errors import handle_errors
@@ -37,24 +37,24 @@ Example for a Click command:
 
 Decorator Parameters
 --------------------
-@handle_errors(
+``@handle_errors(
     exit_codes = {ExceptionType: int, ...},
     default_exit_code = 1,
     reraise = False,
-    include = (ExceptionTypeA, ExceptionTypeB, ...),   # Narrow handling set
-    exclude = (SomeExceptionType,),                    # Exceptions to ignore (re-raise)
-)
+    include = (ExceptionTypeA, ExceptionTypeB, ...),
+    exclude = (SomeExceptionType,),
+)``
 
-If `reraise=True`, matched exceptions are logged then re-raised (useful for tests).
+If ``reraise=True``, matched exceptions are logged then re-raised (useful for tests).
 
 Exit Codes
 ----------
-You can override or extend exit code mappings via the `exit_codes` parameter.
-Generic fallback uses `default_exit_code` (default = 1).
+You can override or extend exit code mappings via the ``exit_codes`` parameter.
+Generic fallback uses ``default_exit_code`` (default = 1).
 
 Debug Mode
 ----------
-If root state (ctx.obj['state']) has debug=True, full tracebacks are logged at
+If root state (ctx.obj) has debug=True, full tracebacks are logged at
 ERROR level for handled exceptions; otherwise only succinct messages are shown.
 
 Thread-safety / Reentrancy
@@ -74,37 +74,21 @@ import logging
 import traceback
 from collections.abc import Callable, Iterable, Mapping, MutableMapping
 from functools import wraps
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, ParamSpec, TypeVar
 
-# Optional imports guarded to avoid hard dependencies
-try:
-    import requests
-except Exception:  # pragma: no cover - defensive
-    requests = None  # type: ignore
-
-try:
-    import yaml
-except Exception:  # pragma: no cover - defensive
-    yaml = None  # type: ignore
-
-try:
-    import ldap  # type: ignore
-except Exception:  # pragma: no cover - defensive
-    ldap = None  # type: ignore
-
-try:
-    import configparser
-except Exception:  # pragma: no cover - defensive
-    configparser = None  # type: ignore
-
+# Optional import guarded to avoid hard dependency on Click
 try:
     import click
 except Exception:  # pragma: no cover - defensive
-    click = None  # type: ignore
+    click = None  # type: ignore[assignment]
 
-log = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    import click as _click_type
 
-F = TypeVar("F", bound=Callable[..., Any])
+log: logging.Logger = logging.getLogger(__name__)
+
+P = ParamSpec("P")
+R = TypeVar("R")
 
 
 # Default exit code mapping for common exception classes
@@ -131,7 +115,7 @@ def _resolve_exit_code(
     default_exit_code: int,
 ) -> int:
     """Resolve exit code for an exception."""
-    key = _exception_key(exc)
+    key: str = _exception_key(exc)
     return exit_codes.get(key, default_exit_code)
 
 
@@ -140,15 +124,17 @@ def _in_debug_mode() -> bool:
     if not click:
         return False
     try:
-        ctx = click.get_current_context(silent=True)
+        ctx: _click_type.Context | None = click.get_current_context(silent=True)
         if not ctx:
             return False
-        state = ctx.obj.get("state") if isinstance(ctx.obj, MutableMapping) else None
-        if state and getattr(state, "debug", False):
-            return True
-        # Backward compatibility: ctx.obj["DEBUG"]
-        if isinstance(ctx.obj, MutableMapping) and ctx.obj.get("DEBUG"):
-            return True
+        obj: object = ctx.obj  # pyright: ignore[reportAny]
+        if isinstance(obj, MutableMapping):
+            state: object = obj.get("state")  # pyright: ignore[reportUnknownMemberType,reportUnknownVariableType]
+            if state and getattr(state, "debug", False):  # pyright: ignore[reportUnknownArgumentType]
+                return True
+            # Backward compatibility: ctx.obj["DEBUG"]
+            if obj.get("DEBUG"):  # pyright: ignore[reportUnknownMemberType]
+                return True
     except Exception:  # pragma: no cover - safety net
         return False
     return False
@@ -158,7 +144,7 @@ def _log_exception(exc: BaseException, show_traceback: bool) -> None:
     """Log an exception uniformly."""
     if show_traceback:
         log.error("Unhandled exception (%s): %s", exc.__class__.__name__, exc)
-        tb = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+        tb: str = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
         log.error(tb)
     else:
         log.error("%s: %s", exc.__class__.__name__, exc)
@@ -171,9 +157,8 @@ def handle_errors(
     reraise: bool = False,
     include: Iterable[type[BaseException]] | None = None,
     exclude: Iterable[type[BaseException]] | None = None,
-) -> Callable[[F], F]:
-    """
-    Decorator to standardize error handling for CLI commands.
+) -> Callable[[Callable[P, R]], Callable[P, R]]:
+    """Decorate to standardize error handling for CLI commands.
 
     Args:
         exit_codes:
@@ -198,10 +183,13 @@ def handle_errors(
     include_types: tuple[type[BaseException], ...] | None = tuple(include) if include else None
     exclude_types: tuple[type[BaseException], ...] | None = tuple(exclude) if exclude else None
 
-    def decorator(func: F) -> F:
+    def decorator(func: Callable[P, R]) -> Callable[P, R]:
+        """Wrap function with error handling."""
+
         @wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            debug_mode = _in_debug_mode()
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+            """Execute wrapped function with error handling."""
+            debug_mode: bool = _in_debug_mode()
             try:
                 return func(*args, **kwargs)
             except SystemExit:
@@ -215,19 +203,19 @@ def handle_errors(
                     raise
 
                 _log_exception(exc, show_traceback=debug_mode)
-                code = _resolve_exit_code(exc, merged_codes, default_exit_code)
+                code: int = _resolve_exit_code(exc, merged_codes, default_exit_code)
 
                 if reraise:
                     raise
                 # Attempt to exit via Click if available to honor Click's flow
                 if click:
-                    ctx = click.get_current_context(silent=True)
-                    if ctx:
-                        ctx.exit(code)
+                    ctx_inner: _click_type.Context | None = click.get_current_context(silent=True)
+                    if ctx_inner:
+                        ctx_inner.exit(code)
                 # Fallback
-                raise SystemExit(code) from None  # pragma: no cover (rare fallback path; suppress context)
+                raise SystemExit(code) from None  # pragma: no cover (rare fallback path)
 
-        return wrapper  # type: ignore[return-value,misc]
+        return wrapper
 
     return decorator
 
@@ -236,7 +224,7 @@ def handle_errors(
 error_handler = handle_errors()
 
 
-__all__ = [
+__all__: list[str] = [
     "handle_errors",
     "error_handler",
     "AppState",  # re-export optional for convenience if imported after state

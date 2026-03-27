@@ -29,6 +29,43 @@ ApiResponse = requests.Response | tuple[requests.Response, ApiBody]
 class RestApi:
     """A generic REST API interface."""
 
+    # -- Type-safe response helpers ------------------------------------------
+
+    @staticmethod
+    def _json_body(response: ApiResponse) -> dict[str, object]:
+        """Extract a JSON dict body from an API response.
+
+        Raises:
+            ValueError: If the response has no dict body.
+        """
+        if isinstance(response, tuple):
+            body: ApiBody = response[1]
+            if isinstance(body, dict):
+                return body
+        msg: str = "Expected JSON dict body in API response"
+        raise ValueError(msg)
+
+    @staticmethod
+    def _list_body(response: ApiResponse) -> list[object]:
+        """Extract a JSON list body from an API response.
+
+        Raises:
+            ValueError: If the response has no list body.
+        """
+        if isinstance(response, tuple):
+            body: ApiBody = response[1]
+            if isinstance(body, list):
+                return body
+        msg: str = "Expected JSON list body in API response"
+        raise ValueError(msg)
+
+    @staticmethod
+    def _response_of(response: ApiResponse) -> requests.Response:
+        """Extract the Response object from an API response."""
+        if isinstance(response, tuple):
+            return response[0]
+        return response
+
     def __init__(self, **kwargs: str | dict[str, str]) -> None:
         """Initialize the REST API class."""
         self.params: dict[str, str | dict[str, str]] = kwargs

@@ -34,7 +34,7 @@ def get_header_text(_file: str) -> str:
     with open(_file) as data:
         lines: list[str] = data.readlines()
         for line in lines:
-            result: re.Match | None = re.search(r"\s*[#]", line)
+            result: re.Match[str] | None = re.search(r"\s*[#]", line)
             if not result:
                 break
             string: str = re.sub(r"^\s*#+", "", line).strip()

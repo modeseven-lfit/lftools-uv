@@ -265,6 +265,17 @@ ignore = [
 [tool.ruff.lint.isort]
 known-first-party = ["lftools_uv"]
 
+[tool.uv]
+constraint-dependencies = [
+    # Security: force minimum versions for transitive dependencies
+    # Fixes CVE-2026-27962, CVE-2026-28490, CVE-2026-28498, CVE-2026-28802
+    "authlib>=1.6.9",
+    # Fixes CVE-2026-26007 (subgroup attack on SECT curves)
+    "cryptography>=46.0.5",
+    # Fixes CVE-2025-14009 (Zip Slip) and CVE-2026-33230 (XSS)
+    "nltk>=3.9.4",
+]
+
 [dependency-groups]
 dev = [
     "pytest>=8.3.5",

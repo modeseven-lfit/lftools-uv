@@ -16,6 +16,7 @@ import shutil
 import sys
 from configparser import ConfigParser, NoOptionError, NoSectionError
 from pathlib import Path
+from typing import overload
 
 import platformdirs
 
@@ -45,7 +46,7 @@ def get_lftools_config_dir() -> Path:
             # Create parent directory if needed
             new_config_dir.parent.mkdir(parents=True, exist_ok=True)
             # Copy entire directory structure
-            shutil.copytree(old_config_dir, new_config_dir)
+            _ = shutil.copytree(old_config_dir, new_config_dir)
             log.info(f"Successfully migrated config to {new_config_dir}")
         except (OSError, PermissionError) as e:
             log.warning(f"Failed to migrate config directory: {e}")
@@ -73,7 +74,7 @@ LFTOOLS_CONFIG_FILE: str = get_lftools_config_file()
 def get_config() -> ConfigParser:
     """Get the config object."""
     config: ConfigParser = ConfigParser()  # noqa
-    config.read(LFTOOLS_CONFIG_FILE)
+    _ = config.read(LFTOOLS_CONFIG_FILE)
     return config
 
 
@@ -81,6 +82,14 @@ def has_section(section: str) -> bool:
     """Get a configuration from a section."""
     config = get_config()
     return config.has_section(section)
+
+
+@overload
+def get_setting(section: str, option: str) -> str: ...
+
+
+@overload
+def get_setting(section: str, option: None = None) -> list[str]: ...
 
 
 def get_setting(section: str, option: str | None = None) -> str | list[str]:

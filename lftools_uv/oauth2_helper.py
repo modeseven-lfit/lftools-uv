@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 import logging
+from typing import cast
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -37,6 +38,8 @@ def oauth_helper() -> tuple[str, str]:
         scopes=None,  # Existing refresh token already encodes scopes
     )
     # Perform the refresh to obtain a new access token
-    credentials.refresh(Request())
-    access_token = credentials.token
+    credentials.refresh(Request())  # pyright: ignore[reportUnknownMemberType]
+    access_token: str | None = cast("str | None", credentials.token)
+    if access_token is None:
+        raise RuntimeError("OAuth2 token refresh failed: no access token returned")
     return access_token, url

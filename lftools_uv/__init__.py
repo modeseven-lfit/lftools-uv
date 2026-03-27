@@ -20,7 +20,11 @@ __summary__ = "Linux Foundation Release Engineering Tools"
 
 import logging
 import sys
-from typing import override
+
+try:
+    from typing import override
+except ImportError:
+    from typing_extensions import override
 
 
 class LogFormatter(logging.Formatter):

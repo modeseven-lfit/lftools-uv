@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import jsonschema
 import yaml
@@ -25,21 +26,20 @@ def check_schema_file(yamlfile: str, schemafile: str) -> None:
     SCHEMAFILE: SCHEMA file to validate against.
     """
     with open(yamlfile) as _:
-        yaml_file: dict = yaml.safe_load(_)
+        yaml_file: dict[str, Any] = yaml.safe_load(_)  # pyright: ignore[reportExplicitAny,reportAny]
 
     with open(schemafile) as _:
-        schema_file: dict = yaml.safe_load(_)
+        schema_file: dict[str, Any] = yaml.safe_load(_)  # pyright: ignore[reportExplicitAny,reportAny]
 
     # Load the schema
     validation: jsonschema.Draft4Validator = jsonschema.Draft4Validator(
         schema_file, format_checker=jsonschema.FormatChecker()
     )
 
-    validation.iter_errors(yaml_file)
     # Look for errors
     errors: int = 0
-    for error in validation.iter_errors(yaml_file):
+    for error in validation.iter_errors(yaml_file):  # pyright: ignore[reportUnknownMemberType,reportAny]
         errors += 1
-        logging.error(error)
+        logging.error(error)  # pyright: ignore[reportAny]
     if errors > 0:
         raise RuntimeError(f"{errors:d} issues invalidate the release schema")

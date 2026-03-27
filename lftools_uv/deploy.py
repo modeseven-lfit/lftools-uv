@@ -9,6 +9,8 @@
 ##############################################################################
 """Library of functions for deploying artifacts to Nexus."""
 
+from __future__ import annotations
+
 import concurrent.futures
 import datetime
 import errno
@@ -26,37 +28,38 @@ import sys
 import tempfile
 import zipfile
 from pathlib import Path
+from typing import NoReturn
 
 import boto3
 import requests
 from botocore.exceptions import ClientError
 from defusedxml.minidom import parseString
 
-log = logging.getLogger(__name__)
+log: logging.Logger = logging.getLogger(__name__)
 logging.getLogger("botocore").setLevel(logging.CRITICAL)
 
 
-def _compress_text(dir):
+def _compress_text(dir: str) -> None:
     """Compress all text files in directory."""
-    save_dir = os.getcwd()
+    save_dir: str = os.getcwd()
     os.chdir(dir)
 
-    compress_types = [
+    compress_types: list[str] = [
         "**/*.html",
         "**/*.log",
         "**/*.txt",
         "**/*.xml",
     ]
-    paths = []
+    paths: list[str] = []
     for _type in compress_types:
-        search = os.path.join(dir, _type)
+        search: str = os.path.join(dir, _type)
         paths.extend(glob.glob(search, recursive=True))
 
     for _file in paths:
         # glob may follow symlink paths that open can't find
         if os.path.exists(_file):
-            log.debug(f"Compressing file {_file}")
-            with open(_file, "rb") as src, gzip.open(f"{_file}.gz", "wb") as dest:
+            log.debug("Compressing file %s", _file)
+            with open(_file, "rb") as src, gzip.open(f"{_file}.gz", "wb") as dest:  # noqa: PTH123
                 shutil.copyfileobj(src, dest)
                 os.remove(_file)
         else:
@@ -65,9 +68,9 @@ def _compress_text(dir):
     os.chdir(save_dir)
 
 
-def _format_url(url):
+def _format_url(url: str) -> str:
     """Ensure url starts with http and trim trailing '/'s."""
-    start_pattern = re.compile("^(http|https)://")
+    start_pattern: re.Pattern[str] = re.compile("^(http|https)://")
     if not start_pattern.match(url):
         url = f"http://{url}"
 
@@ -77,18 +80,20 @@ def _format_url(url):
     return url
 
 
-def _log_error_and_exit(*msg_list):
+def _log_error_and_exit(*msg_list: object) -> NoReturn:
     """Print error message, and exit."""
     for msg in msg_list:
         log.error(msg)
     sys.exit(1)
 
 
-def _request_post(url, data, headers):
+def _request_post(
+    url: str, data: str, headers: dict[str, str]
+) -> requests.Response:
     """Execute a request post, return the resp."""
-    resp = {}
+    resp: requests.Response | None = None
     try:
-        resp = requests.post(url, data=data, headers=headers)
+        resp = requests.post(url, data=data, headers=headers, timeout=30)
     except requests.exceptions.MissingSchema:
         log.debug("in _request_post. MissingSchema")
         _log_error_and_exit(f"Not valid URL: {url}")
@@ -98,29 +103,34 @@ def _request_post(url, data, headers):
     except requests.exceptions.InvalidURL:
         log.debug("in _request_post. InvalidURL")
         _log_error_and_exit(f"Invalid URL: {url}")
+    assert resp is not None  # noqa: S101
     return resp
 
 
-def _get_filenames_in_zipfile(_zipfile):
+def _get_filenames_in_zipfile(_zipfile: str) -> list[str]:
     """Return a list with file names."""
-    files = zipfile.ZipFile(_zipfile).infolist()
+    files: list[zipfile.ZipInfo] = zipfile.ZipFile(_zipfile).infolist()
     return [f.filename for f in files]
 
 
-def _request_post_file(url, file_to_upload, parameters=None):
+def _request_post_file(
+    url: str,
+    file_to_upload: str,
+    parameters: dict[str, tuple[None, str]] | None = None,
+) -> requests.Response:
     """Execute a request post, return the resp."""
-    resp = {}
+    resp: requests.Response | None = None
     try:
-        upload_file = open(file_to_upload, "rb")
+        upload_file = open(file_to_upload, "rb")  # noqa: PTH123, SIM115
     except FileNotFoundError as err:
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), file_to_upload) from err
 
-    files = {"file": upload_file}
+    files: dict[str, object] = {"file": upload_file}
     try:
         if parameters:
-            resp = requests.post(url, data=parameters, files=files)
+            resp = requests.post(url, data=parameters, files=files, timeout=30)  # pyright: ignore[reportArgumentType]
         else:
-            resp = requests.post(url, data=upload_file.read())
+            resp = requests.post(url, data=upload_file.read(), timeout=30)
     except requests.exceptions.MissingSchema as err:
         raise requests.HTTPError(f"Not valid URL: {url}") from err
     except requests.exceptions.ConnectionError as err:
@@ -133,6 +143,7 @@ def _request_post_file(url, file_to_upload, parameters=None):
     elif resp.status_code == 404:
         raise requests.HTTPError("Did not find repository.")
 
+    assert resp is not None  # noqa: S101
     if not str(resp.status_code).startswith("20"):
         raise requests.HTTPError(
             f"Failed to upload to Nexus with status code: {resp.status_code}.\n{resp.text}\n{file_to_upload}"
@@ -141,20 +152,24 @@ def _request_post_file(url, file_to_upload, parameters=None):
     return resp
 
 
-def _request_put_file(url, file_to_upload, parameters=None):
+def _request_put_file(
+    url: str,
+    file_to_upload: str,
+    parameters: dict[str, object] | None = None,
+) -> bool:
     """Execute a request put, return the resp."""
-    resp = {}
+    resp: requests.Response | None = None
     try:
-        upload_file = open(file_to_upload, "rb")
+        upload_file = open(file_to_upload, "rb")  # noqa: PTH123, SIM115
     except FileNotFoundError as err:
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), file_to_upload) from err
 
-    files = {"file": upload_file}
+    files: dict[str, object] = {"file": upload_file}
     try:
         if parameters:
-            resp = requests.put(url, data=parameters, files=files)
+            resp = requests.put(url, data=parameters, files=files, timeout=30)  # pyright: ignore[reportArgumentType]
         else:
-            resp = requests.put(url, data=upload_file)
+            resp = requests.put(url, data=upload_file, timeout=30)
     except requests.exceptions.MissingSchema as err:
         raise requests.HTTPError(f"Not valid URL format. Check for https:// etc..: {url}") from err
     except requests.exceptions.ConnectTimeout as err:
@@ -169,6 +184,7 @@ def _request_put_file(url, file_to_upload, parameters=None):
         log.error(err)
         raise requests.HTTPError(f"Request error during PUT to {url}") from err
 
+    assert resp is not None  # noqa: S101
     if resp.status_code == 201:
         return True
     if resp.status_code == 400:
@@ -182,35 +198,39 @@ def _request_put_file(url, file_to_upload, parameters=None):
         raise requests.HTTPError(
             f"Failed to upload to Nexus with status code: {resp.status_code}.\n{resp.text}\n{file_to_upload}"
         )
+    return True
 
 
-def _get_node_from_xml(xml_data, tag_name):
+def _get_node_from_xml(xml_data: str, tag_name: str) -> str:
     """Extract tag data from xml data."""
-    log.debug(f"xml={xml_data}")
+    log.debug("xml=%s", xml_data)
 
     try:
         dom1 = parseString(xml_data)
         childnode = dom1.getElementsByTagName(tag_name)[0]
     except Exception:
         _log_error_and_exit(f"Received bad XML, can not find tag {tag_name}", xml_data)
-    return childnode.firstChild.data
+    first_child = childnode.firstChild
+    if first_child is None:
+        _log_error_and_exit(f"Tag {tag_name} has no text content", xml_data)
+    return str(first_child.nodeValue)
 
 
-def _remove_duplicates_and_sort(lst):
-    # Remove duplicates from list, and sort it
-    no_dups_lst = list(dict.fromkeys(lst))
+def _remove_duplicates_and_sort(lst: list[str]) -> list[str]:
+    """Remove duplicates from list, and sort it."""
+    no_dups_lst: list[str] = list(dict.fromkeys(lst))
     no_dups_lst.sort()
 
-    duplicated_list = []
+    duplicated_list: list[str] = []
     for i in range(len(no_dups_lst)):
         if lst.count(no_dups_lst[i]) > 1:
             duplicated_list.append(no_dups_lst[i])
-    log.debug(f"duplicates  : {duplicated_list}")
+    log.debug("duplicates  : %s", duplicated_list)
 
     return no_dups_lst
 
 
-def copy_archives(workspace, pattern=None):
+def copy_archives(workspace: str, pattern: list[str] | None = None) -> None:
     """Copy files matching PATTERN in a WORKSPACE to the current directory.
 
     The best way to use this function is to cd into the directory you wish to
@@ -226,110 +246,111 @@ def copy_archives(workspace, pattern=None):
         :arg str pattern: Space-separated list of Unix style glob patterns.
             (default: None)
     """
-    archives_dir = os.path.join(workspace, "archives")
-    dest_dir = os.getcwd()
+    archives_dir: str = os.path.join(workspace, "archives")
+    dest_dir: str = os.getcwd()
 
-    log.debug(f"Copying files from {workspace} with pattern '{pattern}' to {dest_dir}.")
-    log.debug(f"archives_dir = {archives_dir}")
+    log.debug("Copying files from %s with pattern '%s' to %s.", workspace, pattern, dest_dir)
+    log.debug("archives_dir = %s", archives_dir)
 
     if os.path.exists(archives_dir):
         if os.path.isfile(archives_dir):
-            log.error(f"Archives {archives_dir} is a file, not a directory.")
+            log.error("Archives %s is a file, not a directory.", archives_dir)
             raise OSError(errno.ENOENT, "Not a directory", archives_dir)
         else:
-            log.debug(f"Archives dir {archives_dir} does exist.")
+            log.debug("Archives dir %s does exist.", archives_dir)
             for file_or_dir in os.listdir(archives_dir):
-                f = os.path.join(archives_dir, file_or_dir)
+                f: str = os.path.join(archives_dir, file_or_dir)
                 try:
-                    log.debug(f"Moving {f}")
-                    shutil.move(f, dest_dir)
+                    log.debug("Moving %s", f)
+                    _ = shutil.move(f, dest_dir)
                 except shutil.Error as e:
                     log.error(e)
                     raise OSError(errno.EPERM, "Could not move to", archives_dir) from e
     else:
-        log.error(f"Archives dir {archives_dir} does not exist.")
+        log.error("Archives dir %s does not exist.", archives_dir)
         raise OSError(errno.ENOENT, "Missing directory", archives_dir)
 
     if pattern is None:
         return
 
-    no_dups_pattern = _remove_duplicates_and_sort(pattern)
+    no_dups_pattern: list[str] = _remove_duplicates_and_sort(pattern)
 
-    paths = []
+    paths: list[str] = []
 
     # Debug: List all files in workspace for troubleshooting
     log.debug("Workspace contents before pattern matching:")
     for root, _dirs, files in os.walk(workspace):
         for file in files:
-            rel_path = os.path.relpath(os.path.join(root, file), workspace)
-            log.debug(f"  {rel_path}")
+            rel_path: str = os.path.relpath(os.path.join(root, file), workspace)
+            log.debug("  %s", rel_path)
 
     # Use pathlib for more reliable pattern matching across Python versions
-    workspace_path = Path(workspace)
+    workspace_path: Path = Path(workspace)
 
     for p in no_dups_pattern:
         if p == "":  # Skip empty patterns as they are invalid
             continue
 
-        log.debug(f"Searching for pattern: {p}")
+        log.debug("Searching for pattern: %s", p)
 
         # Handle recursive patterns with pathlib.rglob() for better Python 3.8 compatibility
+        found_paths: list[Path]
         if p.startswith("**/"):
             # Use rglob for recursive patterns like "**/*.txt"
-            pattern_suffix = p[3:]  # Remove "**/" prefix
+            pattern_suffix: str = p[3:]  # Remove "**/" prefix
             found_paths = list(workspace_path.rglob(pattern_suffix))
-            log.debug(f"Using rglob for pattern '{p}' -> rglob('{pattern_suffix}')")
+            log.debug("Using rglob for pattern '%s' -> rglob('%s')", p, pattern_suffix)
         elif "**" in p:
             # For other recursive patterns, fall back to manual traversal with fnmatch
             found_paths = []
             for file_path in workspace_path.rglob("*"):
                 if file_path.is_file():
-                    relative_path = file_path.relative_to(workspace_path)
+                    relative_path: Path = file_path.relative_to(workspace_path)
                     if fnmatch.fnmatch(str(relative_path), p):
                         found_paths.append(file_path)
-            log.debug(f"Using fnmatch for complex pattern '{p}'")
+            log.debug("Using fnmatch for complex pattern '%s'", p)
         else:
             # For simple patterns without **, use glob
             found_paths = list(workspace_path.glob(p))
-            log.debug(f"Using glob for simple pattern '{p}'")
+            log.debug("Using glob for simple pattern '%s'", p)
 
         # Convert to absolute string paths
-        absolute_paths = [str(path) for path in found_paths if path.is_file()]
-        log.debug(f"Found files for pattern '{p}': {absolute_paths}")
+        absolute_paths: list[str] = [str(path) for path in found_paths if path.is_file()]
+        log.debug("Found files for pattern '%s': %s", p, absolute_paths)
         paths.extend(absolute_paths)
 
-    log.debug(f"Files found: {paths}")
+    log.debug("Files found: %s", paths)
 
-    no_dups_paths = _remove_duplicates_and_sort(paths)
+    no_dups_paths: list[str] = _remove_duplicates_and_sort(paths)
     for src in no_dups_paths:
         if len(os.path.basename(src)) > 255:
-            log.warn(f"Filename {os.path.basename(src)} is over 255 characters. Skipping...")
+            log.warning("Filename %s is over 255 characters. Skipping...", os.path.basename(src))
 
-        dest = os.path.join(dest_dir, src[len(workspace) + 1 :])
-        log.debug(f"{src} -> {dest}")
+        dest: str = os.path.join(dest_dir, src[len(workspace) + 1 :])
+        log.debug("%s -> %s", src, dest)
 
         if os.path.isfile(src):
             try:
-                shutil.move(src, dest)
+                _ = shutil.move(src, dest)
             except OSError as e:  # Switch to FileNotFoundError when Python 2 support is dropped.
-                log.debug(f"Missing path, will create it {os.path.dirname(dest)}.\n{e}")
+                log.debug("Missing path, will create it %s.\n%s", os.path.dirname(dest), e)
                 os.makedirs(os.path.dirname(dest))
-                shutil.move(src, dest)
+                _ = shutil.move(src, dest)
         else:
-            log.info(f"Not copying directories: {src}.")
+            log.info("Not copying directories: %s.", src)
 
     # Create a temp file to handle empty dirs in AWS S3 buckets.
     if os.environ.get("S3_BUCKET") is not None:
-        now = datetime.datetime.now()
+        now: datetime.datetime = datetime.datetime.now()
         p = now.strftime("_%d%m%Y_%H%M%S_")
         for dirpath, _dirnames, files in os.walk(dest_dir):
             if not files:
-                fd, tmp = tempfile.mkstemp(prefix=p, dir=dirpath)
+                fd, _tmp = tempfile.mkstemp(prefix=p, dir=dirpath)
                 os.close(fd)
-                log.debug(f"temp file created in dir: {dirpath}.")
+                log.debug("temp file created in dir: %s.", dirpath)
 
 
-def deploy_archives(nexus_url, nexus_path, workspace, pattern=None):
+def deploy_archives(nexus_url: str, nexus_path: str, workspace: str, pattern: list[str] | None = None) -> None:
     """Archive files to a Nexus site repository named logs.
 
     Provides 2 ways to archive files:
@@ -352,23 +373,23 @@ def deploy_archives(nexus_url, nexus_path, workspace, pattern=None):
             archive. (optional)
     """
     nexus_url = _format_url(nexus_url)
-    previous_dir = os.getcwd()
-    work_dir = tempfile.mkdtemp(prefix="lftools-da.")
+    previous_dir: str = os.getcwd()
+    work_dir: str = tempfile.mkdtemp(prefix="lftools-da.")
     os.chdir(work_dir)
-    log.debug(f"workspace: {workspace}, work_dir: {work_dir}")
+    log.debug("workspace: %s, work_dir: %s", workspace, work_dir)
 
     copy_archives(workspace, pattern)
     _compress_text(work_dir)
 
-    archives_zip = shutil.make_archive(f"{workspace}/archives", "zip")
-    log.debug(f"archives zip: {archives_zip}")
+    archives_zip: str = shutil.make_archive(f"{workspace}/archives", "zip")
+    log.debug("archives zip: %s", archives_zip)
     deploy_nexus_zip(nexus_url, "logs", nexus_path, archives_zip)
 
     os.chdir(previous_dir)
     shutil.rmtree(work_dir)
 
 
-def deploy_logs(nexus_url, nexus_path, build_url):
+def deploy_logs(nexus_url: str, nexus_path: str, build_url: str) -> None:
     """Deploy logs to a Nexus site repository named logs.
 
     Fetches logs and system information and pushes them to Nexus
@@ -387,18 +408,18 @@ def deploy_logs(nexus_url, nexus_path, build_url):
                     via the $BUILD_URL environment variable.
     """
     nexus_url = _format_url(nexus_url)
-    previous_dir = os.getcwd()
-    work_dir = tempfile.mkdtemp(prefix="lftools-dl.")
+    previous_dir: str = os.getcwd()
+    work_dir: str = tempfile.mkdtemp(prefix="lftools-dl.")
     os.chdir(work_dir)
-    log.debug(f"work_dir: {work_dir}")
+    log.debug("work_dir: %s", work_dir)
 
-    build_details = open("_build-details.log", "w+")
-    build_details.write(f"build-url: {build_url}")
+    build_details = open("_build-details.log", "w+")  # noqa: PTH123, SIM115
+    _ = build_details.write(f"build-url: {build_url}")
 
-    with open("_sys-info.log", "w+") as sysinfo_log:
-        sys_cmds = []
+    with open("_sys-info.log", "w+") as sysinfo_log:  # noqa: PTH123
+        sys_cmds: list[list[str]] = []
 
-        log.debug(f"Platform: {sys.platform}")
+        log.debug("Platform: %s", sys.platform)
         if sys.platform == "linux" or sys.platform == "linux2":
             sys_cmds = [
                 ["uname", "-a"],
@@ -413,34 +434,34 @@ def deploy_logs(nexus_url, nexus_path, build_url):
 
         for c in sys_cmds:
             try:
-                output = subprocess.check_output(c).decode("utf-8")
+                output: str = subprocess.check_output(c).decode("utf-8")  # noqa: S603
             except FileNotFoundError:
-                log.debug(f"Command not found: {c}")
+                log.debug("Command not found: %s", c)
                 continue
 
             output = "---> {}:\n{}\n".format(" ".join(c), output)
-            sysinfo_log.write(output)
+            _ = sysinfo_log.write(output)
             log.info(output)
 
     build_details.close()
 
     # Magic string used to trim console logs at the appropriate level during wget
-    MAGIC_STRING = "-----END_OF_BUILD-----"
+    MAGIC_STRING: str = "-----END_OF_BUILD-----"
     log.info(MAGIC_STRING)
 
-    resp = requests.get(f"{_format_url(build_url)}/consoleText")
-    with open("console.log", "w+", encoding="utf-8") as f:
-        f.write(str(resp.content.decode("utf-8").split(MAGIC_STRING)[0]))
+    resp: requests.Response = requests.get(f"{_format_url(build_url)}/consoleText", timeout=30)
+    with open("console.log", "w+", encoding="utf-8") as f:  # noqa: PTH123
+        _ = f.write(str(resp.content.decode("utf-8").split(MAGIC_STRING)[0]))
 
-    resp = requests.get(f"{_format_url(build_url)}/timestamps?time=HH:mm:ss&appendLog")
-    with open("console-timestamp.log", "w+", encoding="utf-8") as f:
-        f.write(str(resp.content.decode("utf-8").split(MAGIC_STRING)[0]))
+    resp = requests.get(f"{_format_url(build_url)}/timestamps?time=HH:mm:ss&appendLog", timeout=30)
+    with open("console-timestamp.log", "w+", encoding="utf-8") as f:  # noqa: PTH123
+        _ = f.write(str(resp.content.decode("utf-8").split(MAGIC_STRING)[0]))
 
     _compress_text(work_dir)
 
-    console_zip = tempfile.NamedTemporaryFile(prefix="lftools-dl", delete=True)
-    log.debug(f"console-zip: {console_zip.name}")
-    shutil.make_archive(console_zip.name, "zip", work_dir)
+    console_zip = tempfile.NamedTemporaryFile(prefix="lftools-dl", delete=True)  # noqa: SIM115
+    log.debug("console-zip: %s", console_zip.name)
+    _ = shutil.make_archive(console_zip.name, "zip", work_dir)
     deploy_nexus_zip(nexus_url, "logs", nexus_path, f"{console_zip.name}.zip")
     console_zip.close()
 
@@ -448,7 +469,7 @@ def deploy_logs(nexus_url, nexus_path, build_url):
     shutil.rmtree(work_dir)
 
 
-def deploy_s3(s3_bucket, s3_path, build_url, workspace, pattern=None):
+def deploy_s3(s3_bucket: str, s3_path: str, build_url: str, workspace: str, pattern: list[str] | None = None) -> None:
     """Add logs and archives to temp directory to be shipped to S3 bucket.
 
     Fetches logs and system information and pushes them and archives to S3
@@ -469,11 +490,13 @@ def deploy_s3(s3_bucket, s3_path, build_url, workspace, pattern=None):
             archive. (optional)
     """
 
-    def _upload_to_s3(file):
-        extra_args = {"ContentType": "text/plain"}
-        text_html_extra_args = {"ContentType": "text/html", "ContentEncoding": mimetypes.guess_type(file)[1]}
-        text_plain_extra_args = {"ContentType": "text/plain", "ContentEncoding": mimetypes.guess_type(file)[1]}
-        app_xml_extra_args = {"ContentType": "application/xml", "ContentEncoding": mimetypes.guess_type(file)[1]}
+    def _upload_to_s3(file: str) -> bool:
+        mime_type: str | None = mimetypes.guess_type(file)[0]
+        mime_encoding: str | None = mimetypes.guess_type(file)[1]
+        extra_args: dict[str, str | None] = {"ContentType": "text/plain"}
+        text_html_extra_args: dict[str, str | None] = {"ContentType": "text/html", "ContentEncoding": mime_encoding}
+        text_plain_extra_args: dict[str, str | None] = {"ContentType": "text/plain", "ContentEncoding": mime_encoding}
+        app_xml_extra_args: dict[str, str | None] = {"ContentType": "application/xml", "ContentEncoding": mime_encoding}
         if file == "_tmpfile":
             for dir in (logs_dir, silo_dir, jenkins_node_dir):
                 try:
@@ -482,14 +505,14 @@ def deploy_s3(s3_bucket, s3_path, build_url, workspace, pattern=None):
                     log.error(e)
                     return False
                 return True
-        if mimetypes.guess_type(file)[0] is None and mimetypes.guess_type(file)[1] is None:
+        if mime_type is None and mime_encoding is None:
             try:
                 s3.Bucket(s3_bucket).upload_file(file, f"{s3_path}{file}", ExtraArgs=extra_args)
             except ClientError as e:
                 log.error(e)
                 return False
             return True
-        elif mimetypes.guess_type(file)[0] is None or mimetypes.guess_type(file)[0] in "text/plain":
+        elif mime_type is None or mime_type in "text/plain":
             extra_args = text_plain_extra_args
             try:
                 s3.Bucket(s3_bucket).upload_file(file, f"{s3_path}{file}", ExtraArgs=extra_args)
@@ -497,7 +520,7 @@ def deploy_s3(s3_bucket, s3_path, build_url, workspace, pattern=None):
                 log.error(e)
                 return False
             return True
-        elif mimetypes.guess_type(file)[0] in "text/html":
+        elif mime_type in "text/html":
             extra_args = text_html_extra_args
             try:
                 s3.Bucket(s3_bucket).upload_file(file, f"{s3_path}{file}", ExtraArgs=extra_args)
@@ -505,7 +528,7 @@ def deploy_s3(s3_bucket, s3_path, build_url, workspace, pattern=None):
                 log.error(e)
                 return False
             return True
-        elif mimetypes.guess_type(file)[0] in "application/xml":
+        elif mime_type in "application/xml":
             extra_args = app_xml_extra_args
             try:
                 s3.Bucket(s3_bucket).upload_file(file, f"{s3_path}{file}", ExtraArgs=extra_args)
@@ -521,28 +544,28 @@ def deploy_s3(s3_bucket, s3_path, build_url, workspace, pattern=None):
                 return False
             return True
 
-    previous_dir = os.getcwd()
-    work_dir = tempfile.mkdtemp(prefix="lftools-dl.")
+    previous_dir: str = os.getcwd()
+    work_dir: str = tempfile.mkdtemp(prefix="lftools-dl.")
     os.chdir(work_dir)
     s3_bucket = s3_bucket.lower()
     s3 = boto3.resource("s3")
-    logs_dir = s3_path.split("/")[0] + "/"
-    silo_dir = s3_path.split("/")[1] + "/"
-    jenkins_node_dir = logs_dir + silo_dir + s3_path.split("/")[2] + "/"
+    logs_dir: str = s3_path.split("/")[0] + "/"
+    silo_dir: str = s3_path.split("/")[1] + "/"
+    jenkins_node_dir: str = logs_dir + silo_dir + s3_path.split("/")[2] + "/"
 
-    log.debug(f"work_dir: {work_dir}")
+    log.debug("work_dir: %s", work_dir)
 
     # Copy archive files to tmp dir
     copy_archives(workspace, pattern)
 
     # Create build logs
-    build_details = open("_build-details.log", "w+")
-    build_details.write(f"build-url: {build_url}")
+    build_details = open("_build-details.log", "w+")  # noqa: PTH123, SIM115
+    _ = build_details.write(f"build-url: {build_url}")
 
-    with open("_sys-info.log", "w+") as sysinfo_log:
-        sys_cmds = []
+    with open("_sys-info.log", "w+") as sysinfo_log:  # noqa: PTH123
+        sys_cmds: list[list[str]] = []
 
-        log.debug(f"Platform: {sys.platform}")
+        log.debug("Platform: %s", sys.platform)
         if sys.platform == "linux" or sys.platform == "linux2":
             sys_cmds = [
                 ["uname", "-a"],
@@ -557,59 +580,56 @@ def deploy_s3(s3_bucket, s3_path, build_url, workspace, pattern=None):
 
         for c in sys_cmds:
             try:
-                output = subprocess.check_output(c).decode("utf-8")
+                output: str = subprocess.check_output(c).decode("utf-8")  # noqa: S603
             except FileNotFoundError:
-                log.debug(f"Command not found: {c}")
+                log.debug("Command not found: %s", c)
                 continue
 
             output = "---> {}:\n{}\n".format(" ".join(c), output)
-            sysinfo_log.write(output)
+            _ = sysinfo_log.write(output)
             log.info(output)
 
     build_details.close()
-    sysinfo_log.close()
 
     # Magic string used to trim console logs at the appropriate level during wget
-    MAGIC_STRING = "-----END_OF_BUILD-----"
+    MAGIC_STRING: str = "-----END_OF_BUILD-----"
     log.info(MAGIC_STRING)
 
-    resp = requests.get(f"{_format_url(build_url)}/consoleText")
-    with open("console.log", "w+", encoding="utf-8") as f:
-        f.write(str(resp.content.decode("utf-8").split(MAGIC_STRING)[0]))
-        f.close()
+    resp: requests.Response = requests.get(f"{_format_url(build_url)}/consoleText", timeout=30)
+    with open("console.log", "w+", encoding="utf-8") as f:  # noqa: PTH123
+        _ = f.write(str(resp.content.decode("utf-8").split(MAGIC_STRING)[0]))
 
-    resp = requests.get(f"{_format_url(build_url)}/timestamps?time=HH:mm:ss&appendLog")
-    with open("console-timestamp.log", "w+", encoding="utf-8") as f:
-        f.write(str(resp.content.decode("utf-8").split(MAGIC_STRING)[0]))
-        f.close()
+    resp = requests.get(f"{_format_url(build_url)}/timestamps?time=HH:mm:ss&appendLog", timeout=30)
+    with open("console-timestamp.log", "w+", encoding="utf-8") as f:  # noqa: PTH123
+        _ = f.write(str(resp.content.decode("utf-8").split(MAGIC_STRING)[0]))
 
     # Create _tmpfile
     """ Because s3 does not have a filesystem, this file is uploaded to generate/update the
         index.html file in the top level "directories". """
-    open("_tmpfile", "a").close()
+    open("_tmpfile", "a").close()  # noqa: PTH123, SIM115
 
     # Compress tmp directory
     _compress_text(work_dir)
 
     # Create file list to upload
-    file_list = []
-    files = glob.glob("**/*", recursive=True)
+    file_list: list[str] = []
+    files: list[str] = glob.glob("**/*", recursive=True)
     for file in files:
         if os.path.isfile(file):
             file_list.append(file)
 
     log.info("#######################################################")
-    log.info(f"Deploying files from {work_dir} to {s3_bucket}/{s3_path}")
+    log.info("Deploying files from %s to %s/%s", work_dir, s3_bucket, s3_path)
 
     # Perform s3 upload
     for file in file_list:
-        log.info(f"Attempting to upload file {file}")
+        log.info("Attempting to upload file %s", file)
         if _upload_to_s3(file):
-            log.info(f"Successfully uploaded {file}")
+            log.info("Successfully uploaded %s", file)
         else:
-            log.error(f"FAILURE: Uploading {file} failed")
+            log.error("FAILURE: Uploading %s failed", file)
 
-    log.info(f"Finished deploying from {work_dir} to {s3_bucket}/{s3_path}")
+    log.info("Finished deploying from %s to %s/%s", work_dir, s3_bucket, s3_path)
     log.info("#######################################################")
 
     # Cleanup
@@ -620,7 +640,7 @@ def deploy_s3(s3_bucket, s3_path, build_url, workspace, pattern=None):
     # shutil.rmtree(work_dir)
 
 
-def deploy_nexus_zip(nexus_url, nexus_repo, nexus_path, zip_file):
+def deploy_nexus_zip(nexus_url: str, nexus_repo: str, nexus_path: str, zip_file: str) -> None:
     """"Deploy zip file containing artifacts to Nexus using requests.
 
     This function simply takes a zip file preformatted in the correct
@@ -647,21 +667,21 @@ def deploy_nexus_zip(nexus_url, nexus_repo, nexus_path, zip_file):
         tst_path \
         tests/fixtures/deploy/zip-test-files/test.zip
     """
-    url = f"{_format_url(nexus_url)}/service/local/repositories/{nexus_repo}/content-compressed/{nexus_path}"
-    log.debug(f"Uploading {zip_file} to {url}")
+    url: str = f"{_format_url(nexus_url)}/service/local/repositories/{nexus_repo}/content-compressed/{nexus_path}"
+    log.debug("Uploading %s to %s", zip_file, url)
 
     try:
-        resp = _request_post_file(url, zip_file)
+        resp: requests.Response = _request_post_file(url, zip_file)
     except requests.HTTPError as e:
-        files = _get_filenames_in_zipfile(zip_file)
-        log.info(f"Uploading {zip_file} failed. It contained the following files")
-        for f in files:
-            log.info(f"   {f}")
+        files_in_zip: list[str] = _get_filenames_in_zipfile(zip_file)
+        log.info("Uploading %s failed. It contained the following files", zip_file)
+        for f in files_in_zip:
+            log.info("   %s", f)
         raise requests.HTTPError(e) from e
-    log.debug(f"{resp.status_code}: {resp.text}")
+    log.debug("%s: %s", resp.status_code, resp.text)
 
 
-def nexus_stage_repo_create(nexus_url, staging_profile_id):
+def nexus_stage_repo_create(nexus_url: str, staging_profile_id: str) -> str:
     """Create a Nexus staging repo.
 
     Parameters:
@@ -676,9 +696,9 @@ def nexus_stage_repo_create(nexus_url, staging_profile_id):
     """
     nexus_url = f"{_format_url(nexus_url)}/service/local/staging/profiles/{staging_profile_id}/start"
 
-    log.debug(f"Nexus URL           = {nexus_url}")
+    log.debug("Nexus URL           = %s", nexus_url)
 
-    xml = """
+    xml: str = """
         <promoteRequest>
             <data>
                 <description>Create staging repository.</description>
@@ -686,14 +706,14 @@ def nexus_stage_repo_create(nexus_url, staging_profile_id):
         </promoteRequest>
     """
 
-    headers = {"Content-Type": "application/xml"}
-    resp = _request_post(nexus_url, xml, headers)
+    headers: dict[str, str] = {"Content-Type": "application/xml"}
+    resp: requests.Response = _request_post(nexus_url, xml, headers)
 
-    log.debug(f"resp.status_code = {resp.status_code}")
-    log.debug(f"resp.text = {resp.text}")
+    log.debug("resp.status_code = %s", resp.status_code)
+    log.debug("resp.text = %s", resp.text)
 
     if re.search("nexus-error", resp.text):
-        error_msg = _get_node_from_xml(resp.text, "msg")
+        error_msg: str = _get_node_from_xml(resp.text, "msg")
         if re.search(".*profile with id:.*does not exist.", error_msg):
             _log_error_and_exit(f"Staging profile id {staging_profile_id} not found.")
         _log_error_and_exit(error_msg)
@@ -705,13 +725,13 @@ def nexus_stage_repo_create(nexus_url, staging_profile_id):
     if not resp.status_code == 201:
         _log_error_and_exit(f"Failed with status code {resp.status_code}", resp.text)
 
-    staging_repo_id = _get_node_from_xml(resp.text, "stagedRepositoryId")
-    log.debug(f"staging_repo_id = {staging_repo_id}")
+    staging_repo_id: str = _get_node_from_xml(resp.text, "stagedRepositoryId")
+    log.debug("staging_repo_id = %s", staging_repo_id)
 
     return staging_repo_id
 
 
-def nexus_stage_repo_close(nexus_url, staging_profile_id, staging_repo_id):
+def nexus_stage_repo_close(nexus_url: str, staging_profile_id: str, staging_repo_id: str) -> None:
     """Close a Nexus staging repo.
 
     Parameters:
@@ -725,10 +745,10 @@ def nexus_stage_repo_close(nexus_url, staging_profile_id, staging_repo_id):
     """
     nexus_url = f"{_format_url(nexus_url)}/service/local/staging/profiles/{staging_profile_id}/finish"
 
-    log.debug(f"Nexus URL           = {nexus_url}")
-    log.debug(f"staging_repo_id     = {staging_repo_id}")
+    log.debug("Nexus URL           = %s", nexus_url)
+    log.debug("staging_repo_id     = %s", staging_repo_id)
 
-    xml = f"""
+    xml: str = f"""
         <promoteRequest>
             <data>
                 <stagedRepositoryId>{staging_repo_id}</stagedRepositoryId>
@@ -737,12 +757,13 @@ def nexus_stage_repo_close(nexus_url, staging_profile_id, staging_repo_id):
         </promoteRequest>
     """
 
-    headers = {"Content-Type": "application/xml"}
-    resp = _request_post(nexus_url, xml, headers)
+    headers: dict[str, str] = {"Content-Type": "application/xml"}
+    resp: requests.Response = _request_post(nexus_url, xml, headers)
 
-    log.debug(f"resp.status_code = {resp.status_code}")
-    log.debug(f"resp.text = {resp.text}")
+    log.debug("resp.status_code = %s", resp.status_code)
+    log.debug("resp.text = %s", resp.text)
 
+    error_msg: str
     if re.search("nexus-error", resp.text):
         error_msg = _get_node_from_xml(resp.text, "msg")
     else:
@@ -761,8 +782,15 @@ def nexus_stage_repo_close(nexus_url, staging_profile_id, staging_repo_id):
 
 
 def upload_maven_file_to_nexus(
-    nexus_url, nexus_repo_id, group_id, artifact_id, version, packaging, file, classifier=None
-):
+    nexus_url: str,
+    nexus_repo_id: str,
+    group_id: str,
+    artifact_id: str,
+    version: str,
+    packaging: str,
+    file: str,
+    classifier: str | None = None,
+) -> None:
     """Upload file to Nexus as a Maven artifact.
 
     This function will upload an artifact to Nexus while providing all of
@@ -785,10 +813,10 @@ def upload_maven_file_to_nexus(
             http://192.168.1.26:8081/nexus/content/repositories/releases \
             tests/fixtures/deploy/zip-test-files
     """
-    url = f"{_format_url(nexus_url)}/service/local/artifact/maven/content"
+    url: str = f"{_format_url(nexus_url)}/service/local/artifact/maven/content"
 
-    log.info(f"Uploading URL: {url}")
-    params = {}
+    log.info("Uploading URL: %s", url)
+    params: dict[str, tuple[None, str]] = {}
     params.update({"r": (None, f"{nexus_repo_id}")})
     params.update({"g": (None, f"{group_id}")})
     params.update({"a": (None, f"{artifact_id}")})
@@ -797,16 +825,16 @@ def upload_maven_file_to_nexus(
     if classifier:
         params.update({"c": (None, f"{classifier}")})
 
-    log.debug(f"Maven Parameters: {params}")
+    log.debug("Maven Parameters: %s", params)
 
-    resp = _request_post_file(url, file, params)
+    resp: requests.Response = _request_post_file(url, file, params)
 
     if re.search("nexus-error", resp.text):
-        error_msg = _get_node_from_xml(resp.text, "msg")
-        raise requests.HTTPError(f"Nexus Error: {error_msg}") from None
+        nexus_error_msg: str = _get_node_from_xml(resp.text, "msg")
+        raise requests.HTTPError(f"Nexus Error: {nexus_error_msg}") from None
 
 
-def deploy_nexus(nexus_repo_url, deploy_dir, snapshot=False, workers=2):
+def deploy_nexus(nexus_repo_url: str, deploy_dir: str, snapshot: bool = False, workers: int = 2) -> None:
     """Deploy a local directory of files to a Nexus repository.
 
     One purpose of this is so that we can get around the problematic
@@ -830,32 +858,32 @@ def deploy_nexus(nexus_repo_url, deploy_dir, snapshot=False, workers=2):
             tests/fixtures/deploy/zip-test-files
     """
 
-    def _get_filesize(file):
-        bytesize = os.path.getsize(file)
+    def _get_filesize(file: str) -> str:
+        bytesize: int = os.path.getsize(file)
         if bytesize == 0:
             return "0B"
-        suffix = ("b", "kb", "mb", "gb")
-        i = int(math.floor(math.log(bytesize, 1024)))
-        p = math.pow(1024, i)
-        s = round(bytesize / p, 2)
+        suffix: tuple[str, ...] = ("b", "kb", "mb", "gb")
+        i: int = int(math.floor(math.log(bytesize, 1024)))
+        p: float = math.pow(1024, i)
+        s: float = round(bytesize / p, 2)
         return f"{s} {suffix[i]}"
 
-    def _deploy_nexus_upload(file):
+    def _deploy_nexus_upload(file: str) -> bool:
         # Fix file path, and call _request_put_file.
-        nexus_url_with_file = f"{_format_url(nexus_repo_url)}/{file}"
-        log.info(f"Attempting to upload {file} ({_get_filesize(file)})")
+        nexus_url_with_file: str = f"{_format_url(nexus_repo_url)}/{file}"
+        log.info("Attempting to upload %s (%s)", file, _get_filesize(file))
         if _request_put_file(nexus_url_with_file, file):
             return True
         else:
             return False
 
-    file_list = []
-    previous_dir = os.getcwd()
+    file_list: list[str] = []
+    previous_dir: str = os.getcwd()
     os.chdir(deploy_dir)
-    files = glob.glob("**/*", recursive=True)
+    files: list[str] = glob.glob("**/*", recursive=True)
     for file in files:
         if os.path.isfile(file):
-            base_name = os.path.basename(file)
+            base_name: str = os.path.basename(file)
 
             # Skip blacklisted files
             if base_name == "_remote.repositories" or base_name == "resolver-status.properties":
@@ -868,38 +896,37 @@ def deploy_nexus(nexus_repo_url, deploy_dir, snapshot=False, workers=2):
             file_list.append(file)
 
     log.info("#######################################################")
-    log.info(f"Deploying directory {deploy_dir} to {nexus_repo_url}")
+    log.info("Deploying directory %s to %s", deploy_dir, nexus_repo_url)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
         # this creates a dict where the key is the Future object, and the value is the file name
         # see concurrent.futures.Future for more info
-        futures = {executor.submit(_deploy_nexus_upload, file_name): file_name for file_name in file_list}
+        futures: dict[concurrent.futures.Future[bool], str] = {
+            executor.submit(_deploy_nexus_upload, file_name): file_name for file_name in file_list
+        }
         for future in concurrent.futures.as_completed(futures):
-            filename = futures[future]
+            filename: str = futures[future]
             try:
-                data = future.result()
-                # remove pyflake warning
-                if data == data:
-                    pass
+                _ = future.result()
             except Exception as e:
-                log.error(f"Uploading {filename}: {e}")
+                log.error("Uploading %s: %s", filename, e)
 
         # wait until all threads complete (successfully or not)
         # then log the results of the upload threads
-        concurrent.futures.wait(futures)
+        _ = concurrent.futures.wait(futures)
         for k, v in futures.items():
             if k.result():
-                log.info(f"Successfully uploaded {v}")
+                log.info("Successfully uploaded %s", v)
             else:
-                log.error(f"FAILURE: Uploading {v} failed")
+                log.error("FAILURE: Uploading %s failed", v)
 
-    log.info(f"Finished deploying {deploy_dir} to {nexus_repo_url}")
+    log.info("Finished deploying %s to %s", deploy_dir, nexus_repo_url)
     log.info("#######################################################")
 
     os.chdir(previous_dir)
 
 
-def deploy_nexus_stage(nexus_url, staging_profile_id, deploy_dir):
+def deploy_nexus_stage(nexus_url: str, staging_profile_id: str, deploy_dir: str) -> None:
     """Deploy Maven artifacts to Nexus staging repo.
 
     Parameters:
@@ -918,16 +945,16 @@ def deploy_nexus_stage(nexus_url, staging_profile_id, deploy_dir):
             ~/LF/work/lftools-dev/lftools/shell
             Completed uploading files to aaf-1005.
     """
-    staging_repo_id = nexus_stage_repo_create(nexus_url, staging_profile_id)
-    log.info(f"Staging repository {staging_repo_id} created.")
+    staging_repo_id: str = nexus_stage_repo_create(nexus_url, staging_profile_id)
+    log.info("Staging repository %s created.", staging_repo_id)
 
-    deploy_nexus_url = f"{_format_url(nexus_url)}/service/local/staging/deployByRepositoryId/{staging_repo_id}"
+    deploy_nexus_url: str = f"{_format_url(nexus_url)}/service/local/staging/deployByRepositoryId/{staging_repo_id}"
 
-    sz_m2repo = sum(os.path.getsize(f) for f in os.listdir(deploy_dir) if os.path.isfile(f))
-    log.debug(f"Staging repository upload size: {sz_m2repo} bytes")
+    sz_m2repo: int = sum(os.path.getsize(f) for f in os.listdir(deploy_dir) if os.path.isfile(f))
+    log.debug("Staging repository upload size: %s bytes", sz_m2repo)
 
-    log.debug(f"Nexus Staging URL: {_format_url(deploy_nexus_url)}")
+    log.debug("Nexus Staging URL: %s", _format_url(deploy_nexus_url))
     deploy_nexus(deploy_nexus_url, deploy_dir)
 
     nexus_stage_repo_close(nexus_url, staging_profile_id, staging_repo_id)
-    log.info(f"Completed uploading files to {staging_repo_id}.")
+    log.info("Completed uploading files to %s.", staging_repo_id)

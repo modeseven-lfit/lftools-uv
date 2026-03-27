@@ -9,160 +9,204 @@
 ##############################################################################
 """Github stub."""
 
+from __future__ import annotations
+
 import logging
 import sys
+from typing import TYPE_CHECKING
 
 from github import Github, GithubException
+from github.NamedUser import NamedUser
+from github.Organization import Organization
+from github.Team import Team
 
 from lftools_uv import config
 
-log = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    from github.PaginatedList import PaginatedList
+
+log: logging.Logger = logging.getLogger(__name__)
 
 
-def helper_list(ctx, organization, repos, audit, full, teams, team, repofeatures):
-    """List options for github org repos."""
-    # Optionally pick token based on github org
-
-    if config.has_section("github"):
-        token = config.get_setting("github", "token")
-    else:
-        section = f"github.{organization}"
-        token = config.get_setting(section, "token")
-
-    g = Github(token)
-    orgName = organization
-
+def _get_org(g: Github, organization: str) -> Organization:
+    """Get a GitHub organization, exiting on failure."""
     try:
-        org = g.get_organization(orgName)
+        return g.get_organization(organization)
     except GithubException as ghe:
         log.error(ghe)
+        sys.exit(1)
+
+
+def _get_token(organization: str) -> str:
+    """Retrieve the GitHub token for an organization."""
+    if config.has_section("github"):
+        return config.get_setting("github", "token")
+    section: str = f"github.{organization}"
+    return config.get_setting(section, "token")
+
+
+def helper_list(  # noqa: C901, PLR0912
+    _ctx: object,
+    organization: str,
+    repos: bool,
+    audit: bool,
+    full: bool,
+    teams: bool,
+    team: str | None,
+    repofeatures: bool,
+) -> list[str] | None:
+    """List options for github org repos."""
+    token: str = _get_token(organization)
+    g: Github = Github(token)
+    org: Organization = _get_org(g, organization)
 
     # Extend this to check if a repo exists
     if repos:
-        print("All repos for organization: ", orgName)
-        repos = org.get_repos()
-        for repo in repos:
+        print("All repos for organization: ", organization)  # noqa: T201
+        all_repos = org.get_repos()
+        for repo in all_repos:
             log.info(repo.name)
 
     if audit:
-        log.info(f"{orgName} members without 2fa:")
+        log.info("%s members without 2fa:", organization)
         try:
-            members = org.get_members(filter_="2fa_disabled")
+            members: PaginatedList[NamedUser] = org.get_members(
+                filter_="2fa_disabled"
+            )
         except GithubException as ghe:
             log.error(ghe)
+            sys.exit(1)
         for member in members:
             log.info(member.login)
-        log.info(f"{orgName} outside collaborators without 2fa:")
+        log.info("%s outside collaborators without 2fa:", organization)
         try:
-            collaborators = org.get_outside_collaborators(filter_="2fa_disabled")
+            collaborators: PaginatedList[NamedUser] = (
+                org.get_outside_collaborators(filter_="2fa_disabled")
+            )
         except GithubException as ghe:
             log.error(ghe)
+            sys.exit(1)
         for collaborator in collaborators:
             log.info(collaborator.login)
 
     if repofeatures:
-        repos = org.get_repos()
-        for repo in repos:
-            log.info(f"{repo.name} wiki:{repo.has_wiki} issues:{repo.has_issues}")
+        feat_repos = org.get_repos()
+        for repo in feat_repos:
+            log.info(
+                "%s wiki:%s issues:%s",
+                repo.name,
+                repo.has_wiki,
+                repo.has_issues,
+            )
             issues = repo.get_issues
             for issue in issues():
-                log.info(f"{issue}")
+                log.info("%s", issue)
 
     if full:
         log.info("---")
-        log.info(f"#  All owners for {orgName}:")
-        log.info(f"{orgName}-owners:")
+        log.info("#  All owners for %s:", organization)
+        log.info("%s-owners:", organization)
 
         try:
-            members = org.get_members(role="admin")
+            admin_members: PaginatedList[NamedUser] = org.get_members(
+                role="admin"
+            )
         except GithubException as ghe:
             log.error(ghe)
-        for member in members:
-            log.info(f"  - '{member.login}'")
-        log.info(f"#  All members for {orgName}")
-        log.info(f"{orgName}-members:")
+            sys.exit(1)
+        for member in admin_members:
+            log.info("  - '%s'", member.login)
+        log.info("#  All members for %s", organization)
+        log.info("%s-members:", organization)
 
         try:
-            members = org.get_members()
+            all_members: PaginatedList[NamedUser] = org.get_members()
         except GithubException as ghe:
             log.error(ghe)
-        for member in members:
-            log.info(f"  - '{member.login}'")
-        log.info(f"#  All members and all teams for {orgName}")
+            sys.exit(1)
+        for member in all_members:
+            log.info("  - '%s'", member.login)
+        log.info("#  All members and all teams for %s", organization)
 
         try:
-            teams = org.get_teams
+            get_teams_fn = org.get_teams
         except GithubException as ghe:
             log.error(ghe)
-        for team in teams():
-            log.info(f"{team.name}:")
-            for user in team.get_members():
-                log.info(f"  - '{user.login}'")
+            sys.exit(1)
+        for org_team in get_teams_fn():
+            log.info("%s:", org_team.name)
+            for user in org_team.get_members():
+                log.info("  - '%s'", user.login)
             log.info("")
-        teams = None
 
     if teams:
         try:
-            teams = org.get_teams
+            get_teams_fn2 = org.get_teams
         except GithubException as ghe:
             log.error(ghe)
-        for team in teams():
-            log.info(f"{team.name}")
+            sys.exit(1)
+        for org_team in get_teams_fn2():
+            log.info("%s", org_team.name)
 
     if team:
         try:
-            teams = org.get_teams
+            get_teams_fn3 = org.get_teams
         except GithubException as ghe:
             log.error(ghe)
+            sys.exit(1)
 
-        team_members = []
+        team_members: list[str] = []
 
-        for t in teams():
+        for t in get_teams_fn3():
             if t.name == team:
-                log.info(f"{t.name}")
+                log.info("%s", t.name)
                 for user in t.get_members():
                     team_members.append(user.login)
-                    log.info(f"  - '{user.login}'")
+                    log.info("  - '%s'", user.login)
 
         return team_members
 
+    return None
 
-def prvotes(organization, repo, pr):
+
+def prvotes(
+    organization: str, repo: str, pr: int
+) -> list[str]:
     """Get votes on a github pr."""
-    token = config.get_setting("github", "token")
-    g = Github(token)
-    orgName = organization
-    try:
-        org = g.get_organization(orgName)
-    except GithubException as ghe:
-        log.error(ghe)
+    token: str = config.get_setting("github", "token")
+    g: Github = Github(token)
+    org: Organization = _get_org(g, organization)
 
-    repo = org.get_repo(repo)
-    approval_list = []
-    author = repo.get_pull(pr).user.login
+    gh_repo = org.get_repo(repo)
+    approval_list: list[str] = []
+    author: str = gh_repo.get_pull(pr).user.login
     approval_list.append(author)
 
-    pr_mergable = repo.get_pull(pr).mergeable
-    log.info(f"MERGEABLE: {pr_mergable}")
+    pr_mergable = gh_repo.get_pull(pr).mergeable
+    log.info("MERGEABLE: %s", pr_mergable)
 
-    approvals = repo.get_pull(pr).get_reviews()
+    approvals = gh_repo.get_pull(pr).get_reviews()
     for approve in approvals:
-        if approve.state == ("APPROVED"):
+        if approve.state == "APPROVED":
             approval_list.append(approve.user.login)
     return approval_list
 
 
-def helper_user_github(ctx, organization, user, team, delete, admin):
+def helper_user_github(  # noqa: C901, PLR0912
+    _ctx: object,
+    organization: str,
+    user: str,
+    team: str,
+    delete: bool,
+    admin: bool,
+) -> None:
     """Add and Remove users from an org team."""
-    token = config.get_setting("github", "token")
-    g = Github(token)
-    orgName = organization
+    token: str = config.get_setting("github", "token")
+    g: Github = Github(token)
+    org: Organization = _get_org(g, organization)
+
     try:
-        org = g.get_organization(orgName)
-    except GithubException as ghe:
-        log.error(ghe)
-    try:
-        user_object = g.get_user(user)
+        user_raw = g.get_user(user)
         # Avoid logging user object which may contain PII
         log.debug("User object retrieved successfully")
     except GithubException as ghe:
@@ -170,32 +214,43 @@ def helper_user_github(ctx, organization, user, team, delete, admin):
         # Use print() for user-facing output to avoid logging PII
         print("User not found")  # noqa: T201
         sys.exit(1)
+
+    if not isinstance(user_raw, NamedUser):
+        log.error("Expected NamedUser but got AuthenticatedUser")
+        sys.exit(1)
+    user_object: NamedUser = user_raw
+
     # check if user is a member
+    is_member: bool = False
     try:
         is_member = org.has_in_members(user_object)
         # Use print() for user-facing output to avoid logging PII
         print(f"User membership status: {is_member}")  # noqa: T201
     except GithubException as ghe:
         log.error(ghe)
+
     # get teams
     try:
-        teams = org.get_teams
+        get_teams_fn = org.get_teams
     except GithubException as ghe:
         log.error(ghe)
+        sys.exit(1)
 
     # set team to proper object
-    my_teams = [team]
-    this_team = [team for team in teams() if team.name in my_teams]
+    my_teams: list[str] = [team]
+    this_team: list[Team] = [
+        t for t in get_teams_fn() if t.name in my_teams
+    ]
+    team_id: int = 0
     for t in this_team:
         team_id = t.id
-    team = org.get_team(team_id)
-    teams = []
-    teams.append(team)
+    team_obj: Team = org.get_team(team_id)
+    team_list: list[Team] = [team_obj]
 
     if delete:
         if is_member:
             try:
-                team.remove_membership(user_object)
+                team_obj.remove_membership(user_object)
             except GithubException as ghe:
                 log.error(ghe)
             # Use print() for user-facing output to avoid logging PII
@@ -209,12 +264,18 @@ def helper_user_github(ctx, organization, user, team, delete, admin):
     if user and not delete:
         if admin and is_member:
             try:
-                team.add_membership(member=user_object, role="maintainer")
+                team_obj.add_membership(
+                    member=user_object, role="maintainer"
+                )
             except GithubException as ghe:
                 log.error(ghe)
         if admin and not is_member:
             try:
-                org.invite_user(user=user_object, role="admin", teams=teams)
+                org.invite_user(
+                    user=user_object,
+                    role="admin",
+                    teams=team_list,
+                )
             except GithubException as ghe:
                 log.error(ghe)
             # Use print() for user-facing output to avoid logging PII
@@ -222,13 +283,18 @@ def helper_user_github(ctx, organization, user, team, delete, admin):
 
         if not admin and is_member:
             try:
-                team.add_membership(member=user_object, role="member")
+                team_obj.add_membership(
+                    member=user_object, role="member"
+                )
             except GithubException as ghe:
                 log.error(ghe)
 
         if not admin and not is_member:
             try:
-                org.invite_user(user=user_object, teams=teams)
+                org.invite_user(
+                    user=user_object,
+                    teams=team_list,
+                )
             except GithubException as ghe:
                 log.error(ghe)
             # Use print() for user-facing output to avoid logging PII

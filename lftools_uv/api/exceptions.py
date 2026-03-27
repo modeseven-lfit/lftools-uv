@@ -11,7 +11,10 @@
 
 from __future__ import annotations
 
-from typing import override
+try:
+    from typing import override
+except ImportError:
+    from typing_extensions import override
 
 
 class UnsupportedRequestType(Exception):

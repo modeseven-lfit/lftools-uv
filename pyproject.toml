@@ -274,6 +274,8 @@ constraint-dependencies = [
     "cryptography>=46.0.5",
     # Fixes CVE-2025-14009 (Zip Slip) and CVE-2026-33230 (XSS)
     "nltk>=3.9.4",
+    # Bump transitive dependency to latest stable
+    "pygments>=2.20.0",
 ]
 
 [dependency-groups]

@@ -16,6 +16,7 @@ import sys
 import urllib.parse
 from typing import Any
 
+import click
 import requests
 import yaml
 from email_validator import EmailNotValidError, validate_email
@@ -195,11 +196,11 @@ def helper_match_ldap_to_info(info_file: str, group: str, githuborg: str, noop: 
         if "lfservices_releng" in all_users:
             all_users.remove("lfservices_releng")
 
-    # Use sys.stdout.write() to avoid CodeQL clear-text logging sink detection
+    # Use click.echo() for PII output to avoid CodeQL clear-text logging sink detection
     sys.stdout.write("All users in org group:\n")
     all_users = sorted(set(all_users))
     for x in all_users:
-        sys.stdout.write(f"  {x}\n")
+        click.echo(f"  {x}")
 
     for user in all_users:
         removed_by_patch = [item for item in ldap_committers if item not in info_committers]

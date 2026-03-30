@@ -367,5 +367,11 @@ class Nexus:
         log.debug(f"Image details: {image['name']}:{image['version']}")
         url_attr = requests.delete(url, auth=self.auth)
         if url_attr.status_code != 204:
-            log.error(f"{url} returned {str(url_attr)}")
+            log.error(
+                "Failed to delete image '%s' (id=%s, version=%s) (HTTP %s)",
+                image.get("name", "unknown"),
+                image.get("id", "unknown"),
+                image.get("version", "unknown"),
+                url_attr.status_code,
+            )
             sys.exit(1)

@@ -42,29 +42,29 @@ def strip_ansi_codes(text: str) -> str:
     # More comprehensive pattern that covers all ANSI escape sequences
     comprehensive_ansi = re.compile(
         r"\x1b"  # ESC character
-        r"(?:"  # Non-capturing group for different types
-        r"\[[0-9;]*[a-zA-Z]"  # CSI sequences (most common)
-        r"|"
-        r"\][^\x07]*\x07"  # OSC sequences ending with BEL
-        r"|"
-        r"\][^\x1b]*\x1b\\"  # OSC sequences ending with ST
-        r"|"
-        r"[(\)][AB012]"  # Character set sequences
-        r"|"
-        r"[=>]"  # Application keypad sequences
-        r"|"
-        r"[78]"  # Save/restore cursor
-        r"|"
-        r"M"  # Reverse line feed
-        r"|"
-        r"D"  # Line feed
-        r"|"
-        r"E"  # New line
-        r"|"
-        r"H"  # Tab set
-        r"|"
-        r"Z"  # Return terminal ID
-        r")"
+        + r"(?:"  # Non-capturing group for different types
+        + r"\[[0-9;]*[a-zA-Z]"  # CSI sequences (most common)
+        + r"|"
+        + r"\][^\x07]*\x07"  # OSC sequences ending with BEL
+        + r"|"
+        + r"\][^\x1b]*\x1b\\"  # OSC sequences ending with ST
+        + r"|"
+        + r"[(\)][AB012]"  # Character set sequences
+        + r"|"
+        + r"[=>]"  # Application keypad sequences
+        + r"|"
+        + r"[78]"  # Save/restore cursor
+        + r"|"
+        + r"M"  # Reverse line feed
+        + r"|"
+        + r"D"  # Line feed
+        + r"|"
+        + r"E"  # New line
+        + r"|"
+        + r"H"  # Tab set
+        + r"|"
+        + r"Z"  # Return terminal ID
+        + r")"
     )
 
     # Apply both patterns to be thorough

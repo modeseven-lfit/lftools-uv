@@ -37,6 +37,9 @@ def lfidapi(ctx):
 def search_members(ctx, group):
     """List members of a group."""
     members = helper_search_members(group)
+    if members is None:
+        log.error(f"No members found for group {group}")
+        return
     for member in members:
         # Use print() instead of log.info() to avoid logging PII (emails) to log files
         print(f"{member['username']} <{member['mail']}>")  # noqa: T201

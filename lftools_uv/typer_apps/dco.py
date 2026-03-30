@@ -48,7 +48,7 @@ def check(
     if not repo_path:
         repo_path = "."
     status = dco_checker.check(repo_path, signoffs)
-    raise typer.Exit(status)
+    raise typer.Exit(status or 0)
 
 
 @dco_app.command(name="match")
@@ -74,4 +74,4 @@ def match(
     if not repo_path:
         repo_path = "."
     status = dco_checker.match(repo_path, signoffs)
-    raise typer.Exit(status)
+    raise typer.Exit(status or 0)

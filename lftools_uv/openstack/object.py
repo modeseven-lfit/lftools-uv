@@ -1,4 +1,6 @@
 # -*- code: utf-8 -*-
+from __future__ import annotations
+
 # SPDX-License-Identifier: EPL-1.0
 ##############################################################################
 # Copyright (c) 2019 The Linux Foundation and others.
@@ -13,10 +15,10 @@
 __author__ = "Thanh Ha"
 
 import openstack
-import openstack.config
+import openstack.connection
 
 
-def list_containers(os_cloud):
+def list_containers(os_cloud: str) -> None:
     """List volumes found according to parameters."""
     cloud = openstack.connection.from_config(cloud=os_cloud)
     containers = cloud.list_containers()

@@ -100,9 +100,9 @@ def csv(ctx, ldap_server, ldap_group_base, ldap_user_base, groups):
     def ldap_connect(ldap_object):
         """Start the connection to LDAP."""
         try:
-            ldap_object.protocol_version = ldap.VERSION3
+            ldap_object.protocol_version = ldap.VERSION3  # pyright: ignore[reportAttributeAccessIssue]
             ldap_object.simple_bind_s()
-        except ldap.LDAPError as e:
+        except ldap.LDAPError as e:  # pyright: ignore[reportAttributeAccessIssue]
             if type(e.message) is dict and "desc" in e.message:
                 log.error(e.message["desc"])
             else:
@@ -120,7 +120,7 @@ def csv(ctx, ldap_server, ldap_group_base, ldap_user_base, groups):
     def ldap_query(ldap_object, dn, search_filter, attrs):
         """Perform an LDAP query and return the results."""
         try:
-            ldap_result_id = ldap_object.search(dn, ldap.SCOPE_SUBTREE, search_filter, attrs)
+            ldap_result_id = ldap_object.search(dn, ldap.SCOPE_SUBTREE, search_filter, attrs)  # pyright: ignore[reportAttributeAccessIssue]
             result_set = []
             while 1:
                 result_type, result_data = ldap_object.result(ldap_result_id, 0)
@@ -129,10 +129,10 @@ def csv(ctx, ldap_server, ldap_group_base, ldap_user_base, groups):
                 else:
                     # if you are expecting multiple results you can append them
                     # otherwise you can just wait until the initial result and break out
-                    if result_type == ldap.RES_SEARCH_ENTRY:
+                    if result_type == ldap.RES_SEARCH_ENTRY:  # pyright: ignore[reportAttributeAccessIssue]
                         result_set.append(result_data)
             return result_set
-        except ldap.LDAPError:
+        except ldap.LDAPError:  # pyright: ignore[reportAttributeAccessIssue]
             sys.exit(1)
 
     def package_groups(groups):

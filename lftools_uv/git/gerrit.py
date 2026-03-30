@@ -10,15 +10,18 @@
 
 """Gerrit git interface."""
 
+from __future__ import annotations
+
 import configparser
 import json
 import logging
 import os
 import tempfile
-import urllib
+import urllib.parse
+from typing import Any
 
 import requests
-from git import Repo
+from git import Remote, Repo
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 from lftools_uv import config
@@ -29,11 +32,11 @@ log = logging.getLogger(__name__)
 class Gerrit:
     """Wrapper for Gerrit-specific git methods."""
 
-    def __init__(self, **params):
+    def __init__(self, **params: str | dict[str, str]) -> None:
         """Initialize the class."""
-        self.params = params
-        self.fqdn = self.params["fqdn"]
-        self.project = self.params["project"]
+        self.params: dict[str, Any] = params
+        self.fqdn: str = self.params["fqdn"]
+        self.project: str = self.params["project"]
         if "creds" not in self.params:
             creds = {
                 "authtype": "basic",
@@ -54,19 +57,19 @@ class Gerrit:
             self.params["creds"]["username"], self.params["creds"]["password"], project_endpoint
         )
         Repo.clone_from(remote, working_dir)
-        self.repo = Repo.init(working_dir)
+        self.repo: Repo = Repo.init(working_dir)
         self.get_commit_hook(self.params["creds"]["endpoint"], working_dir)
 
         with self.repo.config_writer() as git_config:
             git_config.set_value("user", "name", self.params["creds"]["username"])
             git_config.set_value("user", "email", self.params["creds"]["email"])
-        self.origin = self.repo.remote(name="origin")
+        self.origin: Remote = self.repo.remote(name="origin")
 
         # Get the default branch from the repo
         default_ref = self.repo.git.rev_parse("origin/HEAD", abbrev_ref=True)
-        self.default_branch = default_ref.split("/")[-1]
+        self.default_branch: str = default_ref.split("/")[-1]
 
-    def get_commit_hook(self, endpoint, working_dir):
+    def get_commit_hook(self, endpoint: str, working_dir: str) -> None:
         """Pulls in the Gerrit server's commit hook to add a changeId."""
         hook_url = urllib.parse.urljoin(endpoint, "tools/hooks/commit-msg")
         # The hook url does not include the /a that is typically part of a
@@ -85,7 +88,7 @@ class Gerrit:
                 file.write(hook.text)
             os.chmod(commit_msg_hook_path, 0o755)
 
-    def add_file(self, filepath, content):
+    def add_file(self, filepath: str, content: str) -> None:
         """Add a file to the current git repo."""
         if filepath.find("/") >= 0:
             try:
@@ -98,7 +101,7 @@ class Gerrit:
         self.repo.git.add(filepath)
         log.debug(self.repo.git.status())
 
-    def add_symlink(self, filepath, target):
+    def add_symlink(self, filepath: str, target: str) -> None:
         """Add a symlink to the current git repo."""
         try:
             os.symlink(target, filepath)
@@ -108,7 +111,7 @@ class Gerrit:
                 return
         self.repo.git.add(filepath)
 
-    def commit(self, commit_msg, issue_id, push=False):
+    def commit(self, commit_msg: str, issue_id: str | None, push: bool = False) -> None:
         """Commit staged changes.
 
         This will commit all currently-staged changes, using the provided commit
@@ -140,7 +143,7 @@ class Gerrit:
         if push:
             self.repo.git.push(self.origin, f"HEAD:refs/for/{self.default_branch}")
 
-    def add_info_job(self, fqdn, gerrit_project, issue_id, agent):
+    def add_info_job(self, fqdn: str, gerrit_project: str, issue_id: str | None, agent: str | None) -> None:
         """Add info-verify jenkins job for the new project.
 
         Example:
@@ -152,6 +155,7 @@ class Gerrit:
         gerrit_project_dashed = gerrit_project.replace("/", "-")
         filename = f"{gerrit_project_dashed}.yaml"
 
+        buildnode = agent if agent else ""
         if not agent:
             if fqdn == "gerrit.o-ran-sc.org":
                 buildnode = "centos7-builder-1c-1g"
@@ -177,7 +181,7 @@ class Gerrit:
         commit_msg = f"Chore: Automation adds {filename}"
         self.commit(commit_msg, issue_id, push=True)
 
-    def add_git_review(self, fqdn, gerrit_project, issue_id):
+    def add_git_review(self, fqdn: str, gerrit_project: str, issue_id: str | None) -> None:
         """Add and push a .gitreview for a project.
 
         Example:
@@ -199,7 +203,7 @@ class Gerrit:
         commit_msg = f"Chore: Automation adds {filename}"
         self.commit(commit_msg, issue_id, push=True)
 
-    def add_maven_config(self, fqdn, gerrit_project, issue_id, nexus3_url="", nexus3_ports=""):
+    def add_maven_config(self, fqdn: str, gerrit_project: str, issue_id: str | None, nexus3_url: str = "", nexus3_ports: str = "") -> None:
         """Add the four required JCasC files to create settings for a new project."""
         project_dashed = gerrit_project.replace("/", "-")
         params_path = "config-params.yaml"
@@ -231,15 +235,16 @@ class Gerrit:
             except configparser.NoOptionError:
                 pass  # If no url is passed in or present in lftools.ini, skip it.
 
+        nexus3_port_list: list[str] = []
         if nexus3_url and not nexus3_ports:
             try:
                 nexus3_ports = config.get_setting(self.fqdn, "nexus3_ports")
-                nexus3_ports = nexus3_ports.split(",")
+                nexus3_port_list = nexus3_ports.split(",")
             except configparser.NoOptionError:
-                nexus3_ports = ["10001", "10002", "10003", "10004"]
+                nexus3_port_list = ["10001", "10002", "10003", "10004"]
         elif nexus3_ports:
             try:
-                nexus3_ports = nexus3_ports.split(",")
+                nexus3_port_list = nexus3_ports.split(",")
             except AttributeError:
                 log.error("Invalid nexus3_ports designated.")
 
@@ -255,7 +260,7 @@ class Gerrit:
             project_dashed=project_dashed,
             default_servers=default_servers,
             nexus3_url=nexus3_url,
-            nexus3_ports=nexus3_ports,
+            nexus3_ports=nexus3_port_list,
             additional_credentials=additional_credentials,
         )
         log.debug(f"config-params.yaml contents:\n{server_creds_content}")

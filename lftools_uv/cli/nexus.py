@@ -73,7 +73,7 @@ def create(ctx):
     ),
 )
 @click.pass_context
-def repo(ctx, configfile, url, settings=False):
+def repo(ctx, configfile, url, settings=None):
     """Create a Nexus repository as defined by a repo-config.yaml file."""
     nexuscmd.create_repos(configfile, settings, url)
 
@@ -212,10 +212,10 @@ def release(ctx, repos, verify, server):
     default=False,
     required=False,
     help="Repo Name is a file name, which contains one repo per row."
-    " Syntax:                                                       "
-    " 'Nexus3 docker.release repo'; 'dockerhub dockername'          "
-    " Sample:                                                       "
-    " onap/msb/msb_apigateway; onap/msb-msb_apigateway",
+    + " Syntax:                                                       "
+    + " 'Nexus3 docker.release repo'; 'dockerhub dockername'          "
+    + " Sample:                                                       "
+    + " onap/msb/msb_apigateway; onap/msb-msb_apigateway",
 )
 @click.option(
     "-x",
@@ -224,8 +224,8 @@ def release(ctx, repos, verify, server):
     default="",
     required=False,
     help="Specify a file which contains a regexp expression to validate version number."
-    " File sample:                                                  "
-    r" ^\d+.\d+.\d+$                                                 ",
+    + " File sample:                                                  "
+    + r" ^\d+.\d+.\d+$                                                 ",
 )
 @click.pass_context
 def copy_from_nexus3_to_dockerhub(ctx, org, repo, exact, summary, verbose, copy, progbar, repofile, version_regexp):

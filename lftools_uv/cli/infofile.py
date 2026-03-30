@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # SPDX-License-Identifier: EPL-1.0
 ##############################################################################
 # Copyright (c) 2019 The Linux Foundation and others.
@@ -14,11 +16,13 @@ import inspect
 import logging
 import re
 import sys
+from typing import Any, cast
 
 import click
 import ruamel.yaml
 import yaml
 from pygerrit2 import GerritRestAPI, HTTPBasicAuth
+from ruamel.yaml.comments import CommentedMap
 
 from lftools_uv import config
 from lftools_uv.cli.errors import error_handler
@@ -62,6 +66,9 @@ def create_info_file(ctx, gerrit_url, gerrit_project, directory, empty, tsc_appr
 
     umbrella = gerrit_url.split(".")[1]
     match = re.search(r"(?<=\.).*", gerrit_url)
+    if match is None:
+        log.error("Could not parse TLD from gerrit_url: %s", gerrit_url)
+        sys.exit(1)
     umbrella_tld = match.group(0)
 
     if not empty:
@@ -71,7 +78,7 @@ def create_info_file(ctx, gerrit_url, gerrit_project, directory, empty, tsc_appr
         rest = GerritRestAPI(url=url, auth=auth)
         access_str = f"projects/{projectid_encoded}/access"
         headers = {"Content-Type": "application/json; charset=UTF-8"}
-        result = rest.get(access_str, headers=headers)
+        result: dict[str, Any] = cast(dict[str, Any], rest.get(access_str, headers=headers))
 
         if "inherits_from" in result:
             inherits = result["inherits_from"]["id"]
@@ -87,7 +94,8 @@ def create_info_file(ctx, gerrit_url, gerrit_project, directory, empty, tsc_appr
 
         for x in owner:
             match = re.search(r"[^=]+(?=,)", x)
-            ldap_group = match.group(0)
+            if match is not None:
+                ldap_group = match.group(0)
 
     if umbrella == "o-ran-sc":
         umbrella = "oran"
@@ -246,7 +254,7 @@ def sync_committers(ctx, id, info_file, ldap_file, repo):
             log.error(f"{id} does not exist in {ldap_file}")
             sys.exit(1)
 
-        user = ruamel.yaml.comments.CommentedMap(
+        user = CommentedMap(
             (("name", name), ("company", company), ("email", email), ("id", formatid), ("timezone", timezone))
         )
 
@@ -286,11 +294,13 @@ def check_votes(ctx, info_file, endpoint, change_number, tsc, github_repo):
 
     def main(ctx, info_file, endpoint, change_number, tsc, github_repo, majority_of_committers):
         """Function so we can iterate into TSC members after committer vote has happened."""
+        info_data: dict[str, Any] = {}
         with open(info_file) as file:
             try:
                 info_data = yaml.safe_load(file)
             except yaml.YAMLError as exc:
                 log.error(exc)
+                sys.exit(1)
 
         committer_info = info_data["committers"]
         info_committers = []
@@ -306,7 +316,7 @@ def check_votes(ctx, info_file, endpoint, change_number, tsc, github_repo):
         else:
             id = "id"
             rest = GerritRestAPI(url=endpoint)
-            changes = rest.get(f"changes/{change_number}/reviewers")
+            changes: list[dict[str, Any]] = cast(list[dict[str, Any]], rest.get(f"changes/{change_number}/reviewers"))
             for change in changes:
                 line = (change["username"], change["approvals"]["Code-Review"])
                 if "+1" in line[1] or "+2" in line[1]:

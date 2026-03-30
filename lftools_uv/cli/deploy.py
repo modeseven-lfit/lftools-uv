@@ -249,9 +249,9 @@ def nexus(ctx, nexus_repo_url, deploy_dir, snapshot):
     log.debug(f"nexus_repo_url={nexus_repo_url}, deploy_dir={deploy_dir}, snapshot={snapshot}")
     try:
         deploy_sys.deploy_nexus(nexus_repo_url, deploy_dir, snapshot)
-    except OSError as e:
-        deploy_sys._log_error_and_exit(str(e))
     except HTTPError as e:
+        deploy_sys._log_error_and_exit(str(e))
+    except OSError as e:
         deploy_sys._log_error_and_exit(str(e))
 
 
@@ -306,10 +306,10 @@ def nexus_zip(ctx, nexus_url, nexus_repo, nexus_path, deploy_zip):
     """
     try:
         deploy_sys.deploy_nexus_zip(nexus_url, nexus_repo, nexus_path, deploy_zip)
-    except OSError as e:
+    except HTTPError as e:
         log.error(str(e))
         sys.exit(1)
-    except HTTPError as e:
+    except OSError as e:
         log.error(str(e))
         sys.exit(1)
 

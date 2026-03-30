@@ -53,8 +53,7 @@ def archives(
     To use this command the Nexus server must have a site repository configured
     with the name "logs" as this is a hardcoded log path.
     """
-    pattern_str = None if not pattern else pattern[0] if pattern else None
-    deploy_sys.deploy_archives(nexus_url, nexus_path, workspace, pattern_str)
+    deploy_sys.deploy_archives(nexus_url, nexus_path, workspace, pattern if pattern else None)
 
 
 @deploy_app.command(name="copy-archives")
@@ -182,10 +181,10 @@ def nexus(
     """
     try:
         deploy_sys.deploy_nexus(nexus_repo_url, deploy_dir, snapshot)
-    except OSError as e:
+    except HTTPError as e:
         log.error(str(e))
         raise typer.Exit(1) from None
-    except HTTPError as e:
+    except OSError as e:
         log.error(str(e))
         raise typer.Exit(1) from None
 
@@ -241,10 +240,10 @@ def nexus_zip(
     """
     try:
         deploy_sys.deploy_nexus_zip(nexus_url, nexus_repo, nexus_path, deploy_zip)
-    except OSError as e:
+    except HTTPError as e:
         log.error(str(e))
         raise typer.Exit(1) from None
-    except HTTPError as e:
+    except OSError as e:
         log.error(str(e))
         raise typer.Exit(1) from None
 

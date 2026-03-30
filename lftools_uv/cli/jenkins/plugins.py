@@ -146,6 +146,7 @@ def sec(ctx):
     for w in warn:
         name = w["name"]
         url = w["url"]
+        lastversion = None
         for version in w["versions"]:
             lastversion = version.get("lastVersion")
         nv = {name: lastversion}
@@ -176,6 +177,7 @@ def sec(ctx):
             for w in warn:
                 name = w["name"]
                 url = w["url"]
+                lastversion = None
                 for version in w["versions"]:
                     lastversion = version.get("lastVersion")
                 if name == key and secdict[key] == lastversion:

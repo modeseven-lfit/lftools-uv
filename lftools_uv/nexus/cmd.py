@@ -10,6 +10,8 @@
 ##############################################################################
 """Contains functions for various Nexus tasks."""
 
+from __future__ import annotations
+
 import configparser
 import csv
 import logging
@@ -17,6 +19,7 @@ import re
 import sys
 import xml.etree.ElementTree as et  # nosec
 from time import sleep
+from typing import Any, cast
 
 import requests
 import yaml
@@ -27,7 +30,7 @@ from lftools_uv.nexus import Nexus, util
 log = logging.getLogger(__name__)
 
 
-def get_credentials(settings_file, url=None):
+def get_credentials(settings_file: str | None, url: str | None = None) -> dict[str, str]:
     """Return credentials for Nexus instantiation."""
 
     if settings_file:
@@ -56,7 +59,7 @@ def get_credentials(settings_file, url=None):
     sys.exit(1)
 
 
-def get_url(settings_file):
+def get_url(settings_file: str | None) -> str:
     """Return URL from settings file, if it exists."""
     if settings_file:
         try:
@@ -72,7 +75,7 @@ def get_url(settings_file):
     return ""
 
 
-def reorder_staged_repos(settings_file):
+def reorder_staged_repos(settings_file: str) -> None:
     """Reorder staging repositories in Nexus.
 
     NOTE: This is a hack for forcing the 'Staging Repositories' repo group
@@ -95,7 +98,7 @@ def reorder_staged_repos(settings_file):
         log.error("Staging repository 'Staging Repositories' cannot be found")
         sys.exit(1)
 
-    repo_details = _nexus.get_repo_group_details(repo_id)
+    repo_details = cast(dict[str, Any], _nexus.get_repo_group_details(repo_id))
 
     sorted_repos = sorted(repo_details["repositories"], key=lambda k: k["id"], reverse=True)
 
@@ -111,7 +114,7 @@ def reorder_staged_repos(settings_file):
     _nexus.update_repo_group_details(repo_id, repo_update)
 
 
-def create_repos(config_file, settings_file, url):
+def create_repos(config_file: str, settings_file: str | None, url: str) -> None:
     """Create repositories as defined by configuration file.
 
     :arg str config_file: Configuration file containing repository definitions that
@@ -121,6 +124,8 @@ def create_repos(config_file, settings_file, url):
     :arg str url: url in the format https:// user nad password will be taken from lftools-uv
     if url is provided.
     """
+    username: str = ""
+    password: str = ""
     if not settings_file:
         from lftools_uv import config
 
@@ -130,6 +135,7 @@ def create_repos(config_file, settings_file, url):
 
     with open(config_file) as f:
         config = yaml.safe_load(f)
+    settings: dict[str, Any] = {}
     if settings_file:
         with open(settings_file) as f:
             settings = yaml.safe_load(f)
@@ -150,7 +156,7 @@ def create_repos(config_file, settings_file, url):
     else:
         _nexus = Nexus(url, username, password)
 
-    def create_nexus_perms(name, targets, email, password, extra_privs=None):
+    def create_nexus_perms(name: str, targets: list[str], email: str, password: str, extra_privs: list[str] | None = None) -> None:
         if extra_privs is None:
             extra_privs = []
         # Create target
@@ -180,7 +186,7 @@ def create_repos(config_file, settings_file, url):
             role_id = _nexus.get_role(name)
             log.info(f"Role {role_id} already exists.")
         except LookupError:
-            role_id = _nexus.create_role(name, privs)
+            role_id = _nexus.create_role(name, cast(list[str], cast(object, privs)))
 
         # Create user
         try:
@@ -189,15 +195,14 @@ def create_repos(config_file, settings_file, url):
         except LookupError:
             _nexus.create_user(name, email, role_id, password, extra_privs)
 
-    def build_repo(repo, repoId, config, base_groupId, global_privs, email_domain, strict=True):
+    def build_repo(repo: str, repoId: str, config: dict[str, Any], base_groupId: str, global_privs: list[str], email_domain: str, strict: bool = True) -> None:
         log.info(f"-> Building for {base_groupId}.{repo} in Nexus")
         groupId = f"{base_groupId}.{repo}"
         target = util.create_repo_target_regex(groupId, strict)
 
-        if not global_privs and "extra_privs" not in config:
-            extra_privs = []
-        elif global_privs:
-            extra_privs = global_privs
+        extra_privs: list[str] = []
+        if global_privs:
+            extra_privs = list(global_privs)
             if "extra_privs" in config:
                 extra_privs += config["extra_privs"]
             log.info("Privileges for this repo:" + ", ".join(extra_privs))
@@ -236,7 +241,7 @@ def create_repos(config_file, settings_file, url):
         )
 
 
-def create_roles(config_file, settings_file):
+def create_roles(config_file: str, settings_file: str) -> None:
     """Create Nexus roles as defined by configuration file.
 
     :arg str config: Configuration file containing role definitions that
@@ -262,8 +267,7 @@ def create_roles(config_file, settings_file):
         for setting in required_settings:
             if setting not in config[role]:
                 log.error(
-                    f"{setting} not defined for role {role}. Please ensure that {required_settings} "
-                    f"are defined for each role in {config_file}"
+                    f"{setting} not defined for role {role}. Please ensure that {required_settings} are defined for each role in {config_file}"
                 )
                 sys.exit(1)
 
@@ -290,7 +294,7 @@ def create_roles(config_file, settings_file):
         )
 
 
-def search(settings_file, url, repo, pattern):
+def search(settings_file: str | None, url: str | None, repo: str, pattern: str | None) -> list[dict[str, Any]]:
     """Return of list of images in the repo matching the pattern.
 
     :arg str settings_file: Path to yaml file with Nexus settings.
@@ -320,16 +324,17 @@ def search(settings_file, url, repo, pattern):
     included_keys = ["name", "version", "id"]
     images = []
     for image in all_images:
-        if set(included_keys).issubset(image):
+        image_dict = cast(dict[str, Any], image)
+        if set(included_keys).issubset(image_dict):
             # Keep only the keys we're using
             restricted_image = {}
             for key in included_keys:
-                restricted_image[key] = image[key]
+                restricted_image[key] = image_dict[key]
             images.append(restricted_image)
     return images
 
 
-def output_images(images, csv_path=None):
+def output_images(images: list[dict[str, Any]], csv_path: str | None = None) -> None:
     """Output a list of images to stdout, or a provided file path.
 
     This method expects a list of dicts with, at a minimum, "name", "version",
@@ -344,7 +349,7 @@ def output_images(images, csv_path=None):
     included_keys = images[0].keys()
 
     if csv_path:
-        with open(csv_path, "wb") as out_file:
+        with open(csv_path, "w", newline="") as out_file:
             dw = csv.DictWriter(out_file, fieldnames=included_keys, quoting=csv.QUOTE_ALL)
             dw.writeheader()
             for image in images:
@@ -355,7 +360,7 @@ def output_images(images, csv_path=None):
     log.info(f"Found {count} images matching the query")
 
 
-def delete_images(settings_file, url, images):
+def delete_images(settings_file: str | None, url: str | None, images: list[dict[str, Any]]) -> None:
     """Delete all images in a list.
 
     :arg str settings_file: Path to yaml file with Nexus settings.
@@ -369,7 +374,7 @@ def delete_images(settings_file, url, images):
         _nexus.delete_image(image)
 
 
-def get_activity_text(act_element):
+def get_activity_text(act_element: et.Element) -> str:
     """Extract ordered `<value>` text strings from a stagingActivityEvent Element.
 
     Returns a single string joined by ' --> ' or empty string if none found.
@@ -385,26 +390,26 @@ def get_activity_text(act_element):
     return " --> ".join(values)
 
 
-def add_str_if_not_exist(new_str, existing_str_lst):
+def add_str_if_not_exist(new_str: et.Element, existing_str_lst: list[str]) -> bool:
     """Will return True if the new string provided is not already in the list of strings."""
     addthis = True
     for fail2txt in existing_str_lst:
-        if new_str.text in fail2txt:
+        if new_str.text is not None and new_str.text in fail2txt:
             addthis = False
     return addthis
 
 
-def find_release_time(events):
+def find_release_time(events: list[et.Element]) -> str | None:
     """Returns the time when a repository was released, or None if it has not been released yet."""
     for event in events:
         name = event.find("name")
         stopped = event.find("stopped")
-        if name.text == "release" and stopped is not None:
+        if name is not None and name.text == "release" and stopped is not None:
             return stopped.text
     return None
 
 
-def release_staging_repos(repos, verify, nexus_url=""):
+def release_staging_repos(repos: tuple[str, ...], verify: bool, nexus_url: str = "") -> None:
     """Release one or more staging repos.
 
     :arg tuple repos: A tuple containing one or more repo name strings.

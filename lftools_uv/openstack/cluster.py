@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # SPDX-License-Identifier: EPL-1.0
 ##############################################################################
 # Copyright (c) 2025 The Linux Foundation and others.
@@ -15,6 +17,7 @@ import json
 import sys
 
 import openstack
+import openstack.connection
 import requests
 from openstack.cloud.exc import OpenStackCloudException
 

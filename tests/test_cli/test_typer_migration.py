@@ -36,6 +36,8 @@ from tests.test_utils import assert_in_output
 class TestTyperCLI:
     """Test cases for the main Typer CLI application."""
 
+    runner: CliRunner = CliRunner()
+
     def setup_method(self):
         """Set up test fixtures."""
         self.runner = CliRunner()
@@ -64,6 +66,8 @@ class TestTyperCLI:
 
 class TestTyperUtilsPassgen:
     """Test cases for the Typer-based utils passgen command."""
+
+    runner: CliRunner = CliRunner()
 
     def setup_method(self):
         """Set up test fixtures."""
@@ -143,6 +147,8 @@ class TestTyperUtilsPassgen:
 class TestTyperIntegration:
     """Test cases for Typer integration with the main CLI."""
 
+    runner: CliRunner = CliRunner()
+
     def setup_method(self):
         """Set up test fixtures."""
         self.runner = CliRunner()
@@ -176,6 +182,8 @@ class TestTyperIntegration:
 class TestEnvironmentSwitching:
     """Test cases for environment-based CLI switching."""
 
+    runner: CliRunner = CliRunner()
+
     def setup_method(self):
         """Set up test fixtures."""
         self.runner = CliRunner()
@@ -204,6 +212,8 @@ class TestEnvironmentSwitching:
 class TestStateManagement:
     """Test cases for state management in Typer CLI."""
 
+    runner: CliRunner = CliRunner()
+
     def setup_method(self):
         """Set up test fixtures."""
         self.runner = CliRunner()
@@ -230,6 +240,8 @@ class TestStateManagement:
 
 class TestBackwardCompatibility:
     """Test cases for backward compatibility during migration."""
+
+    runner: CliRunner = CliRunner()
 
     def setup_method(self):
         """Set up test fixtures."""
@@ -263,6 +275,8 @@ class TestBackwardCompatibility:
 
 class TestTyperVersion:
     """Test cases for the Typer-based version command."""
+
+    runner: CliRunner = CliRunner()
 
     def setup_method(self):
         """Set up test fixtures."""
@@ -364,6 +378,8 @@ class TestTyperVersion:
 class TestTyperConfig:
     """Test cases for the config Typer command."""
 
+    runner: CliRunner = CliRunner()
+
     def setup_method(self):
         """Set up test fixtures."""
         self.runner = CliRunner()
@@ -415,6 +431,8 @@ class TestTyperConfig:
 
 class TestTyperDCO:
     """Test cases for the DCO Typer command."""
+
+    runner: CliRunner = CliRunner()
 
     def setup_method(self):
         """Set up test fixtures."""
@@ -482,6 +500,8 @@ class TestTyperDCO:
 class TestTyperDeploy:
     """Test cases for the deploy Typer command."""
 
+    runner: CliRunner = CliRunner()
+
     def setup_method(self):
         """Set up test fixtures."""
         self.runner = CliRunner()
@@ -547,6 +567,8 @@ class TestTyperDeploy:
 
 class TestTyperGitHub:
     """Test cases for the GitHub Typer command."""
+
+    runner: CliRunner = CliRunner()
 
     def setup_method(self):
         """Set up test fixtures."""
@@ -633,6 +655,8 @@ class TestTyperGitHub:
 
 class TestTyperGerrit:
     """Test cases for the Gerrit Typer command."""
+
+    runner: CliRunner = CliRunner()
 
     def setup_method(self):
         """Set up test fixtures."""
@@ -758,6 +782,8 @@ class TestTyperGerrit:
 
 class TestTyperJenkins:
     """Test cases for the Jenkins Typer command."""
+
+    runner: CliRunner = CliRunner()
 
     def setup_method(self):
         """Set up test fixtures."""
@@ -1017,6 +1043,8 @@ class TestTyperJenkins:
 class TestTyperNexus2:
     """Test cases for the Nexus2 Typer command."""
 
+    runner: CliRunner = CliRunner()
+
     def setup_method(self):
         """Set up test fixtures."""
         self.runner = CliRunner()
@@ -1174,6 +1202,8 @@ class TestTyperNexus2:
 
 class TestTyperNexus3:
     """Test cases for the Nexus3 Typer command."""
+
+    runner: CliRunner = CliRunner()
 
     def setup_method(self):
         """Set up test fixtures."""

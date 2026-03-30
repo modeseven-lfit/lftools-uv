@@ -51,6 +51,10 @@ def search_members(
     """
     try:
         members = helper_search_members(group)
+        if members is None:
+            log.error(f"No members found or failed to search group {group}")
+            typer.echo(f"Error: No members found for group {group}", err=True)
+            raise typer.Exit(1)
         for member in members:
             typer.echo(f"{member['username']} <{member['mail']}>")
     except Exception as e:
@@ -131,10 +135,15 @@ def create_group_command(
 
 
 @lfidapi_app.command("match-ldap-info")
-def match_ldap_info():
+def match_ldap_info(
+    info_file: str = typer.Argument(..., help="Path to INFO.yaml file"),
+    group: str = typer.Argument(..., help="LDAP group name"),
+    githuborg: str = typer.Option("", help="GitHub organization (leave empty for LDAP)"),
+    noop: bool = typer.Option(False, "--noop", help="Dry run mode"),
+):
     """Match LDAP information to INFO files."""
     try:
-        helper_match_ldap_to_info()
+        helper_match_ldap_to_info(info_file, group, githuborg, noop)
         typer.echo("✅ LDAP to INFO matching completed")
     except Exception as e:
         log.error(f"Failed to match LDAP to INFO: {e}")

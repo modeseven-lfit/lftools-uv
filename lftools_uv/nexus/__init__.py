@@ -315,7 +315,11 @@ class Nexus:
             items = result["items"]
             cont_token = result["continuationToken"]
         else:
-            log.error(f"{url} returned {str(url_attr)}")
+            log.error(
+                "Image listing for repo '%s' failed (HTTP %s)",
+                repo,
+                url_attr.status_code,
+            )
             sys.exit(1)
 
         # Check if there are multiple pages of data
@@ -337,7 +341,12 @@ class Nexus:
             items = result["items"]
             cont_token = result["continuationToken"]
         else:
-            log.error(f"{url} returned {str(url_attr)}")
+            log.error(
+                "Image search for pattern '%s' in repo '%s' failed (HTTP %s)",
+                pattern,
+                repo,
+                url_attr.status_code,
+            )
             sys.exit(1)
 
         # Check if there are multiple pages of data

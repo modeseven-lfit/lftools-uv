@@ -422,8 +422,8 @@ def release_staging_repos(repos: tuple[str, ...], verify: bool, nexus_url: str =
     for repo in repos:
         # Verify repo before releasing
         activity_url = f"{_nexus.baseurl}/staging/repository/{repo}/activity"
-        # Use debug level to avoid logging URLs that may contain sensitive paths
-        log.debug(f"Request URL: {activity_url}")
+        # Avoid logging full URL to prevent clear-text credential taint (CodeQL)
+        log.debug("Verifying staging repository activity for: %s", repo)
         response = requests.get(activity_url, auth=_nexus.auth)
 
         if response.status_code != 200:
@@ -494,10 +494,10 @@ def release_staging_repos(repos: tuple[str, ...], verify: bool, nexus_url: str =
         log.info("running release")
         for repo in repos:
             data = {"data": {"stagedRepositoryIds": [repo]}}
-            # Use debug level to avoid logging potentially sensitive request data
             log.debug("Sending staging repository release request")
             request_url = f"{_nexus.baseurl}/staging/bulk/promote"
-            log.debug(f"Request URL: {request_url}")
+            # Avoid logging full URL to prevent clear-text credential taint (CodeQL)
+            log.debug("Releasing staging repository: %s", repo)
             log.info(f"Requesting Nexus to release {repo}")
 
             response = requests.post(request_url, json=data, auth=_nexus.auth)

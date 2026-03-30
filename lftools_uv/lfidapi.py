@@ -9,9 +9,12 @@
 ##############################################################################
 """Use the LFIDAPI to add, remove and list members as well as create groups."""
 
+from __future__ import annotations
+
 import logging
 import sys
-import urllib
+import urllib.parse
+from typing import Any
 
 import requests
 import yaml
@@ -25,7 +28,7 @@ log = logging.getLogger(__name__)
 PARSE = urllib.parse.urljoin
 
 
-def check_response_code(response):
+def check_response_code(response: requests.Response) -> None:
     """Response Code Helper function."""
     if response.status_code != 200:
         raise requests.HTTPError(
@@ -33,7 +36,7 @@ def check_response_code(response):
         )
 
 
-def helper_check_group_exists(group):
+def helper_check_group_exists(group: str) -> int:
     """Check group exists."""
     access_token, url = oauth_helper()
     url = PARSE(url, group)
@@ -43,7 +46,7 @@ def helper_check_group_exists(group):
     return status_code
 
 
-def helper_search_members(group):
+def helper_search_members(group: str) -> list[dict[str, str]] | None:
     """List members of a group."""
     response_code = helper_check_group_exists(group)
     if response_code != 200:
@@ -60,13 +63,13 @@ def helper_search_members(group):
             log.error(e)
             exit(1)
         result = response.json()
-        members = result["members"]
+        members: list[dict[str, str]] = result["members"]
         # Avoid logging PII (member data) - use debug level only for non-sensitive metadata
         log.debug("Retrieved %d members from group", len(members))
         return members
 
 
-def helper_user(user, group, delete):
+def helper_user(user: str, group: str, delete: bool | str) -> None:
     """Add and remove users from groups."""
     access_token, url = oauth_helper()
     url = PARSE(url, group)
@@ -89,7 +92,7 @@ def helper_user(user, group, delete):
     log.debug("User operation completed successfully")
 
 
-def helper_invite(email, group):
+def helper_invite(email: str, group: str) -> None:
     """Email invitation to join group."""
     access_token, url = oauth_helper()
     prejoin = group + "/invite"
@@ -116,7 +119,7 @@ def helper_invite(email, group):
     log.debug("Invite operation completed successfully")
 
 
-def helper_create_group(group):
+def helper_create_group(group: str) -> None:
     """Create group."""
     response_code = helper_check_group_exists(group)
     if response_code == 200:
@@ -138,21 +141,23 @@ def helper_create_group(group):
         log.debug("Group creation completed successfully")
 
 
-def helper_match_ldap_to_info(info_file, group, githuborg, noop):
+def helper_match_ldap_to_info(info_file: str, group: str, githuborg: str, noop: bool) -> None:
     """Helper matches ldap or github group to users in an info file.
 
     Used in automation.
     """
+    info_data: dict[str, Any] = {}
     with open(info_file) as file:
         try:
             info_data = yaml.safe_load(file)
         except yaml.YAMLError as exc:
             print(exc)
     id = "id"
+    ldap_data: list[str] | list[dict[str, str]] | None = None
     if githuborg:
         id = "github_id"
         ldap_data = helper_list(
-            ctx=False,
+            _ctx=False,
             organization=githuborg,
             repos=False,
             audit=False,
@@ -171,16 +176,17 @@ def helper_match_ldap_to_info(info_file, group, githuborg, noop):
         committer = committer_info[count][id]
         info_committers.append(committer)
 
-    ldap_committers = []
+    ldap_committers: list[str] = []
+    if ldap_data is None:
+        log.error("Failed to retrieve member data for group %s", group)
+        sys.exit(1)
     if githuborg:
         for x in ldap_data:
-            committer = x
-            ldap_committers.append(committer)
-
+            ldap_committers.append(str(x))
     else:
-        for count, _item in enumerate(ldap_data):
-            committer = ldap_data[count]["username"]
-            ldap_committers.append(committer)
+        for member in ldap_data:
+            if isinstance(member, dict):
+                ldap_committers.append(member["username"])
 
     all_users = ldap_committers + info_committers
 
@@ -203,7 +209,7 @@ def helper_match_ldap_to_info(info_file, group, githuborg, noop):
                 print(f"Removing user from group {group}")  # noqa: T201
                 if githuborg:
                     helper_user_github(
-                        ctx=False, organization=githuborg, user=user, team=group, delete=True, admin=False
+                        _ctx=False, organization=githuborg, user=user, team=group, delete=True, admin=False
                     )
                 else:
                     helper_user(user, group, "--delete")
@@ -216,7 +222,7 @@ def helper_match_ldap_to_info(info_file, group, githuborg, noop):
                 print(f"Adding user to group {group}")  # noqa: T201
                 if githuborg:
                     helper_user_github(
-                        ctx=False, organization=githuborg, user=user, team=group, delete=False, admin=False
+                        _ctx=False, organization=githuborg, user=user, team=group, delete=False, admin=False
                     )
 
                 else:

@@ -35,8 +35,7 @@ log = logging.getLogger(__name__)
     type=str,
     envvar="JENKINS_URL",
     default="jenkins",
-    help="The URL to a Jenkins server. Alternatively the jenkins_jobs.ini "
-    "section to parse for url/user/password configuration if available.",
+    help="The URL to a Jenkins server. Alternatively the jenkins_jobs.ini section to parse for url/user/password configuration if available.",
 )
 @click.option("-u", "--user", type=str, envvar="JENKINS_USER", default="admin")
 @click.option("-p", "--password", type=str, envvar="JENKINS_PASSWORD")
@@ -160,9 +159,7 @@ def quiet_down(ctx, n):
         except HTTPError as m:
             if m.code == 405:
                 log.error(
-                    f"\n[{m}]\nJenkins {version} does not support Quiet Down "
-                    "without a CSRF Token. (CVE-2017-04-26)\nPlease "
-                    "file a bug with 'python-jenkins'"
+                    f"\n[{m}]\nJenkins {version} does not support Quiet Down without a CSRF Token. (CVE-2017-04-26)\nPlease file a bug with 'python-jenkins'"
                 )
             else:
                 raise m

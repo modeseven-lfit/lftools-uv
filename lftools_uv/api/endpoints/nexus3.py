@@ -10,26 +10,34 @@
 
 """Nexus3 REST API interface."""
 
+from __future__ import annotations
+
 __author__ = "DW Talton"
 
 import json
 import logging
+from typing import cast
 
 import lftools_uv.api.client as client
 from lftools_uv import config, helpers
+from lftools_uv.api.client import ApiResponse
 
-log = logging.getLogger(__name__)
+log: logging.Logger = logging.getLogger(__name__)
 
 
 class Nexus3(client.RestApi):
     """API endpoint wrapper for Nexus3."""
 
-    def __init__(self, **params):
+    def __init__(self, **params: str | dict[str, str]) -> None:
         """Initialize the class."""
-        self.params = params
-        self.fqdn = self.params["fqdn"]
+        self.params: dict[str, str | dict[str, str]] = params
+        fqdn_raw: str | dict[str, str] = self.params["fqdn"]
+        if not isinstance(fqdn_raw, str):
+            msg: str = "fqdn must be a string"
+            raise TypeError(msg)
+        self.fqdn: str = fqdn_raw
         if "creds" not in self.params:
-            creds = {
+            creds: dict[str, str] = {
                 "authtype": "basic",
                 "username": config.get_setting(self.fqdn, "username"),
                 "password": config.get_setting(self.fqdn, "password"),
@@ -39,7 +47,49 @@ class Nexus3(client.RestApi):
 
         super().__init__(**params)
 
-    def create_role(self, name, description, privileges, roles):
+    # -----------------------------------------------------------------------
+    # Helpers
+    # -----------------------------------------------------------------------
+
+    @staticmethod
+    def _as_dict(obj: object) -> dict[str, object]:
+        """Narrow an object to ``dict[str, object]``.
+
+        Returns an empty dict when *obj* is not a dict.
+        """
+        if isinstance(obj, dict):
+            return cast("dict[str, object]", obj)
+        return {}
+
+    def _items_from_response(
+        self, response: ApiResponse
+    ) -> list[dict[str, object]]:
+        """Extract the ``items`` list from a Nexus 3 paged response.
+
+        Nexus 3 wraps paged collection responses in::
+
+            {"items": [ ... ], "continuationToken": ...}
+
+        Returns the inner list of dicts, or an empty list when the
+        body cannot be parsed.
+        """
+        body: dict[str, object] = self._json_body(response)
+        items: object = body.get("items", [])
+        if isinstance(items, list):
+            return [
+                cast("dict[str, object]", item)
+                for item in cast("list[object]", items)
+                if isinstance(item, dict)
+            ]
+        return []
+
+    # -----------------------------------------------------------------------
+    # Roles
+    # -----------------------------------------------------------------------
+
+    def create_role(
+        self, name: str, description: str, privileges: str, roles: str
+    ) -> str:
         """Create a new role.
 
         :param name: the role name
@@ -47,10 +97,10 @@ class Nexus3(client.RestApi):
         :param privileges: privileges assigned to this role
         :param roles: other roles attached to this role
         """
-        list_of_privileges = privileges.split(",")
-        list_of_roles = roles.split(",")
+        list_of_privileges: list[str] = privileges.split(",")
+        list_of_roles: list[str] = roles.split(",")
 
-        data = {
+        data: dict[str, object] = {
             "id": name,
             "name": name,
             "description": description,
@@ -58,82 +108,251 @@ class Nexus3(client.RestApi):
             "roles": list_of_roles,
         }
 
-        json_data = json.dumps(data, indent=4)
-        response = self.post("service/rest/beta/security/roles", data=json_data)
+        json_data: str = json.dumps(data, indent=4)
+        response: ApiResponse = self.post(
+            "service/rest/beta/security/roles", data=json_data
+        )
+        resp = self._response_of(response)
 
-        if isinstance(response, tuple):
-            if response[0].status_code == 200:
-                return f"Role {name} created"
-            else:
-                return "Failed to create role"
-        else:
-            response.raise_for_status()
-            return "Failed to create role"
+        if resp.status_code == 200:
+            return f"Role {name} created"
+        resp.raise_for_status()
+        return "Failed to create role"
 
-    def create_script(self, name, content):
+    # -----------------------------------------------------------------------
+    # Scripts
+    # -----------------------------------------------------------------------
+
+    def create_script(self, name: str, content: str) -> str:
         """Create a new script.
 
         :param name: script name
         :param content: content of the script (groovy code)
         """
-        data = {"name": name, "content": content, "type": "groovy"}
+        data: dict[str, str] = {
+            "name": name,
+            "content": content,
+            "type": "groovy",
+        }
 
-        json_data = json.dumps(data)
-        response = self.post("service/rest/v1/script", data=json_data)
+        json_data: str = json.dumps(data)
+        response: ApiResponse = self.post(
+            "service/rest/v1/script", data=json_data
+        )
+        resp = self._response_of(response)
 
-        if isinstance(response, tuple):
-            if response[0].status_code == 204:
-                return f"Script {name} successfully added."
-            else:
-                return f"Failed to create script {name}"
-        else:
-            if response.status_code == 204:
-                return f"Script {name} successfully added."
-            else:
-                response.raise_for_status()
-                return f"Failed to create script {name}"
+        if resp.status_code == 204:
+            return f"Script {name} successfully added."
+        resp.raise_for_status()
+        return f"Failed to create script {name}"
 
-    def create_tag(self, name, attributes):
+    def delete_script(self, name: str) -> str:
+        """Delete a script from the server.
+
+        :param name: the script name
+        """
+        response: ApiResponse = self.delete(f"service/rest/v1/script/{name}")
+        resp = self._response_of(response)
+
+        if resp.status_code == 204:
+            return f"Successfully deleted {name}"
+        resp.raise_for_status()
+        return f"Failed to delete script {name}"
+
+    def read_script(self, name: str) -> dict[str, object] | str:
+        """Get the contents of a script.
+
+        :param name: the script name
+        """
+        response: ApiResponse = self.get(f"service/rest/v1/script/{name}")
+        resp = self._response_of(response)
+
+        if resp.status_code == 200:
+            if isinstance(response, tuple):
+                body: client.ApiBody = response[1]
+                if isinstance(body, dict):
+                    return body
+            return cast("dict[str, object]", resp.json())
+        resp.raise_for_status()
+        return f"Failed to read script {name}"
+
+    def run_script(self, name: str) -> dict[str, object] | str:
+        """Run a script on the server.
+
+        :param name: the script name
+        """
+        response: ApiResponse = self.post(
+            f"service/rest/v1/script/{name}/run"
+        )
+        resp = self._response_of(response)
+
+        if resp.status_code == 200:
+            if isinstance(response, tuple):
+                body: client.ApiBody = response[1]
+                if isinstance(body, dict):
+                    return body
+            return cast("dict[str, object]", resp.json())
+        resp.raise_for_status()
+        return f"Failed to execute script {name}"
+
+    def update_script(self, name: str, content: str) -> str:
+        """Update an existing script on the server.
+
+        :param name: script name
+        :param content: new content for the script (groovy code)
+        """
+        data: dict[str, str] = {
+            "name": name,
+            "content": content,
+            "type": "groovy",
+        }
+
+        json_data: str = json.dumps(data)
+        response: ApiResponse = self.put(
+            f"service/rest/v1/script/{name}", data=json_data
+        )
+        resp = self._response_of(response)
+
+        if resp.status_code == 204:
+            return f"Successfully updated {name}"
+        resp.raise_for_status()
+        return f"Failed to update script {name}"
+
+    def list_scripts(self) -> list[str]:
+        """List server scripts."""
+        response: ApiResponse = self.get("service/rest/v1/script")
+        result: list[object] = self._list_body(response)
+        list_of_scripts: list[str] = []
+        for raw_script in result:
+            script: dict[str, object] = self._as_dict(raw_script)
+            if script:
+                list_of_scripts.append(str(script.get("name", "")))
+        return list_of_scripts
+
+    # -----------------------------------------------------------------------
+    # Tags
+    # -----------------------------------------------------------------------
+
+    def create_tag(self, name: str, attributes: str | None) -> str:
         """Create a new tag.
 
         :param name: the tag name
         :param attributes: the tag's attributes
         """
-        data = {
+        data: dict[str, object] = {
             "name": name,
         }
 
         if attributes is not None:
             data["attributes"] = attributes
 
-        json_data = json.dumps(data)
-        response = self.post("service/rest/v1/tags", data=json_data)
+        json_data: str = json.dumps(data)
+        response: ApiResponse = self.post(
+            "service/rest/v1/tags", data=json_data
+        )
+        resp = self._response_of(response)
 
+        if resp.status_code == 200:
+            return f"Tag {name} successfully added."
+        resp.raise_for_status()
+        return f"Failed to create tag {name}"
+
+    def delete_tag(self, name: str) -> str:
+        """Delete a tag from the server.
+
+        :param name: the tag's name
+        """
+        response: ApiResponse = self.delete(
+            f"service/rest/v1/tags/{name}"
+        )
+        resp = self._response_of(response)
+
+        if resp.status_code == 204:
+            return f"Tag {name} successfully deleted."
+        resp.raise_for_status()
+        return f"Failed to delete tag {name}."
+
+    def show_tag(self, name: str) -> dict[str, object]:
+        """Get tag details.
+
+        :param name: tag name
+        """
+        response: ApiResponse = self.get(f"service/rest/v1/tags/{name}")
         if isinstance(response, tuple):
-            if response[0].status_code == 200:
-                return f"Tag {name} successfully added."
-            else:
-                return f"Failed to create tag {name}"
-        else:
-            if response.status_code == 200:
-                return f"Tag {name} successfully added."
-            else:
-                response.raise_for_status()
-                return f"Failed to create tag {name}"
+            body: client.ApiBody = response[1]
+            if isinstance(body, dict):
+                return body
+        return {}
 
-    def create_user(self, username, first_name, last_name, email_address, roles, password=None):
+    def list_tags(self) -> list[str] | str:
+        """List all tags."""
+        response: ApiResponse = self.get("service/rest/v1/tags")
+        if not isinstance(response, tuple):
+            response.raise_for_status()
+            return "There are no tags"
+
+        body: dict[str, object] = self._json_body(response)
+        list_of_tags: list[str] = []
+        token: object = body.get("continuationToken")
+
+        if token is not None:
+            result: dict[str, object] = body
+            while token is not None:
+                items: object = result.get("items", [])
+                if isinstance(items, list):
+                    for raw_tag in cast("list[object]", items):
+                        tag: dict[str, object] = self._as_dict(raw_tag)
+                        if tag:
+                            list_of_tags.append(str(tag.get("name", "")))
+                cont_token: object = result.get("continuationToken")
+                next_response: ApiResponse = self.get(
+                    "service/rest/v1/tags?continuationToken={}".format(
+                        str(cont_token)
+                    )
+                )
+                if isinstance(next_response, tuple):
+                    result = self._json_body(next_response)
+                    token = result.get("continuationToken")
+                else:
+                    break
+        else:
+            items_obj: object = body.get("items", [])
+            if isinstance(items_obj, list):
+                for raw_tag in cast("list[object]", items_obj):
+                    tag_dict: dict[str, object] = self._as_dict(raw_tag)
+                    if tag_dict:
+                        list_of_tags.append(
+                            str(tag_dict.get("name", ""))
+                        )
+
+        if list_of_tags:
+            return list_of_tags
+        return "There are no tags"
+
+    # -----------------------------------------------------------------------
+    # Users
+    # -----------------------------------------------------------------------
+
+    def create_user(
+        self,
+        username: str,
+        first_name: str,
+        last_name: str,
+        email_address: str,
+        roles: str,
+        password: str | None = None,
+    ) -> str | None:
         """Create a new user.
 
         @param username:
         @param first_name:
         @param last_name:
-        @param email:
-        @param status:
+        @param email_address:
         @param roles:
         @param password:
         """
-        list_of_roles = roles.split(",")
-        data = {
+        list_of_roles: list[str] = roles.split(",")
+        data: dict[str, object] = {
             "userId": username,
             "firstName": first_name,
             "lastName": last_name,
@@ -147,397 +366,257 @@ class Nexus3(client.RestApi):
         else:
             data["password"] = helpers.generate_password()
 
-        json_data = json.dumps(data)
-        response = self.post("service/rest/beta/security/users", data=json_data)
+        json_data: str = json.dumps(data)
+        response: ApiResponse = self.post(
+            "service/rest/beta/security/users", data=json_data
+        )
+        resp = self._response_of(response)
 
-        if isinstance(response, tuple):
-            if response[0].status_code == 200:
-                return "User {} successfully created with password {}".format(username, data["password"])
-            else:
-                log.error(f"Failed to create user {username}")
-        else:
-            if response.status_code == 200:
-                return "User {} successfully created with password {}".format(username, data["password"])
-            else:
-                response.raise_for_status()
-                log.error(f"Failed to create user {username}")
+        if resp.status_code == 200:
+            return "User {} successfully created with password {}".format(
+                username, data["password"]
+            )
+        resp.raise_for_status()
+        log.error("Failed to create user %s", username)
+        return None
 
-    def delete_script(self, name):
-        """Delete a script from the server.
-
-        :param name: the script name
-        """
-        response = self.delete(f"service/rest/v1/script/{name}")
-
-        if isinstance(response, tuple):
-            if response[0].status_code == 204:
-                return f"Successfully deleted {name}"
-            else:
-                return f"Failed to delete script {name}"
-        else:
-            if response.status_code == 204:
-                return f"Successfully deleted {name}"
-            else:
-                response.raise_for_status()
-                return f"Failed to delete script {name}"
-
-    def delete_tag(self, name):
-        """Delete a tag from the server.
-
-        :param name: the tag's name
-        """
-        response = self.delete(f"service/rest/v1/tags/{name}")
-
-        if isinstance(response, tuple):
-            if response[0].status_code == 204:
-                return f"Tag {name} successfully deleted."
-            else:
-                return f"Failed to delete tag {name}."
-        else:
-            if response.status_code == 204:
-                return f"Tag {name} successfully deleted."
-            else:
-                response.raise_for_status()
-                return f"Failed to delete tag {name}."
-
-    def delete_user(self, username):
+    def delete_user(self, username: str) -> str:
         """Delete a user.
 
         @param username:
         """
-        response = self.delete(f"service/rest/beta/security/users/{username}")
+        response: ApiResponse = self.delete(
+            f"service/rest/beta/security/users/{username}"
+        )
+        resp = self._response_of(response)
 
+        if resp.status_code == 204:
+            return f"Successfully deleted user {username}"
         if isinstance(response, tuple):
-            if response[0].status_code == 204:
-                return f"Successfully deleted user {username}"
-            else:
-                return f"Failed to delete user {username} with error: {response[1]}"
-        else:
-            if response.status_code == 204:
-                return f"Successfully deleted user {username}"
-            else:
-                response.raise_for_status()
-                return f"Failed to delete user {username}"
+            return (
+                f"Failed to delete user {username}"
+                f" with error: {response[1]}"
+            )
+        resp.raise_for_status()
+        return f"Failed to delete user {username}"
 
-    def list_assets(self, repository, **kwargs):
-        """List the assets of a given repo.
-
-        :param repository: repo name
-        """
-        response = self.get(f"service/rest/v1/assets?repository={repository}")
-        if isinstance(response, tuple):
-            result = response[1]["items"]
-            if not result:
-                return "This repository has no assets"
-            else:
-                item_list = []
-                for item in result:
-                    item_list.append(item["path"])
-                return item_list
-        else:
-            response.raise_for_status()
-            return "This repository has no assets"
-
-    def list_blobstores(self, **kwargs):
-        """List server blobstores."""
-        response = self.get("service/rest/beta/blobstores")
-        if isinstance(response, tuple):
-            result = response[1]
-            list_of_blobstores = []
-            for blob in result:
-                list_of_blobstores.append(blob["name"])
-            return list_of_blobstores
-        else:
-            response.raise_for_status()
-            return []
-
-    def list_components(self, repository, **kwargs):
-        """List components from a repo.
-
-        :param repository: the repo name
-        """
-        response = self.get(f"service/rest/v1/components?repository={repository}")
-        if isinstance(response, tuple):
-            result = response[1]["items"]
-            if not result:
-                return "This repository has no components"
-            else:
-                return result
-        else:
-            response.raise_for_status()
-            return "This repository has no components"
-
-    def list_privileges(self, **kwargs):
-        """List server-configured privileges."""
-        response = self.get("service/rest/beta/security/privileges")
-        if isinstance(response, tuple):
-            result = response[1]
-            list_of_privileges = []
-            for privilege in result:
-                list_of_privileges.append(
-                    [
-                        privilege["type"],
-                        privilege["name"],
-                        privilege["description"],
-                        privilege["readOnly"],
-                    ]
-                )
-            return list_of_privileges
-        else:
-            response.raise_for_status()
-            return []
-
-    def list_repositories(self, **kwargs):
-        """List server repositories."""
-        response = self.get("service/rest/v1/repositories")
-        if isinstance(response, tuple):
-            result = response[1]
-            list_of_repositories = []
-            for repository in result:
-                list_of_repositories.append(repository["name"])
-            return list_of_repositories
-        else:
-            response.raise_for_status()
-            return []
-
-    def list_roles(self, **kwargs):
-        """List server roles."""
-        response = self.get("service/rest/beta/security/roles")
-        if isinstance(response, tuple):
-            result = response[1]
-            list_of_roles = []
-            for role in result:
-                list_of_roles.append([role["name"]])
-            return list_of_roles
-        else:
-            response.raise_for_status()
-            return []
-
-    def list_scripts(self, **kwargs):
-        """List server scripts."""
-        response = self.get("service/rest/v1/script")
-        if isinstance(response, tuple):
-            result = response[1]
-            list_of_scripts = []
-            for script in result:
-                list_of_scripts.append(script["name"])
-            return list_of_scripts
-        else:
-            response.raise_for_status()
-            return []
-
-    def show_tag(self, name):
-        """Get tag details.
-
-        :param name: tag name
-        :return:
-        """
-        response = self.get(f"service/rest/v1/tags/{name}")
-        if isinstance(response, tuple):
-            return response[1]
-        else:
-            response.raise_for_status()
-            return {}
-
-    def list_tags(self):
-        """List all tag."""
-        response = self.get("service/rest/v1/tags")
-        if isinstance(response, tuple):
-            result = response[1]
-            list_of_tags = []
-            token = result["continuationToken"]
-            if token is not None:
-                while token is not None:
-                    for tag in result["items"]:
-                        list_of_tags.append(tag["name"])
-                    next_response = self.get(
-                        "service/rest/v1/tags?continuationToken={}".format(result["continuationToken"])
-                    )
-                    if isinstance(next_response, tuple):
-                        result = next_response[1]
-                        token = result["continuationToken"]
-                    else:
-                        break
-            else:
-                for tag in result["items"]:
-                    list_of_tags.append(tag["name"])
-
-            if list_of_tags:
-                return list_of_tags
-            else:
-                return "There are no tags"
-        else:
-            response.raise_for_status()
-            return "There are no tags"
-
-    def list_tasks(self, **kwargs):
-        """List all tasks."""
-        response = self.get("service/rest/v1/tasks")
-        if isinstance(response, tuple):
-            result = response[1]["items"]
-            list_of_tasks = []
-            for task in result:
-                list_of_tasks.append(
-                    [
-                        task["name"],
-                        task["message"],
-                        task["currentState"],
-                        task["lastRunResult"],
-                    ]
-                )
-            return list_of_tasks
-        else:
-            response.raise_for_status()
-            return []
-
-    def list_user(self, username, **kwargs):
+    def list_user(self, username: str) -> list[list[object]]:
         """Show user details.
 
         :param username: the user's username
         """
-        response = self.get(f"service/rest/beta/security/users?userId={username}")
-        if isinstance(response, tuple):
-            result = response[1]
-            user_info = []
-            for user in result:
+        response: ApiResponse = self.get(
+            f"service/rest/beta/security/users?userId={username}"
+        )
+        result: list[object] = self._list_body(response)
+        user_info: list[list[object]] = []
+        for raw_user in result:
+            user: dict[str, object] = self._as_dict(raw_user)
+            if user:
                 user_info.append(
                     [
-                        user["userId"],
-                        user["firstName"],
-                        user["lastName"],
-                        user["emailAddress"],
-                        user["status"],
-                        user["roles"],
+                        user.get("userId", ""),
+                        user.get("firstName", ""),
+                        user.get("lastName", ""),
+                        user.get("emailAddress", ""),
+                        user.get("status", ""),
+                        user.get("roles", []),
                     ]
                 )
-            return user_info
-        else:
-            response.raise_for_status()
-            return []
+        return user_info
 
-    def list_users(self, **kwargs):
+    def list_users(self) -> list[list[object]]:
         """List all users."""
-        response = self.get("service/rest/beta/security/users")
-        if isinstance(response, tuple):
-            result = response[1]
-            list_of_users = []
-            for user in result:
+        response: ApiResponse = self.get(
+            "service/rest/beta/security/users"
+        )
+        result: list[object] = self._list_body(response)
+        list_of_users: list[list[object]] = []
+        for raw_user in result:
+            user: dict[str, object] = self._as_dict(raw_user)
+            if user:
                 list_of_users.append(
                     [
-                        user["userId"],
-                        user["firstName"],
-                        user["lastName"],
-                        user["emailAddress"],
-                        user["status"],
-                        user["roles"],
+                        user.get("userId", ""),
+                        user.get("firstName", ""),
+                        user.get("lastName", ""),
+                        user.get("emailAddress", ""),
+                        user.get("status", ""),
+                        user.get("roles", []),
                     ]
                 )
-            return list_of_users
-        else:
-            response.raise_for_status()
-            return []
+        return list_of_users
 
-    def staging_promotion(self, destination_repo, tag):
-        """Promote repo assets to a new location.
+    # -----------------------------------------------------------------------
+    # Assets & Components
+    # -----------------------------------------------------------------------
 
-        :param destination_repo: the repo to promote into
-        :param tag: the tag used to identify the assets
+    def list_assets(self, repository: str) -> list[str] | str:
+        """List the assets of a given repo.
+
+        :param repository: repo name
         """
-        data = {"tag": tag}
-        json_data = json.dumps(data)
-        response = self.post(f"service/rest/v1/staging/move/{destination_repo}", data=json_data)
-        return response
+        response: ApiResponse = self.get(
+            f"service/rest/v1/assets?repository={repository}"
+        )
+        items: list[dict[str, object]] = self._items_from_response(response)
+        if not items:
+            return "This repository has no assets"
 
-    def read_script(self, name):
-        """Get the contents of a script.
+        item_list: list[str] = []
+        for item in items:
+            item_list.append(str(item.get("path", "")))
+        return item_list
 
-        :param name: the script name
+    def list_components(self, repository: str) -> list[dict[str, object]] | str:
+        """List components from a repo.
+
+        :param repository: the repo name
         """
-        response = self.get(f"service/rest/v1/script/{name}")
+        response: ApiResponse = self.get(
+            f"service/rest/v1/components?repository={repository}"
+        )
+        items: list[dict[str, object]] = self._items_from_response(response)
+        if not items:
+            return "This repository has no components"
+        return items
 
-        if isinstance(response, tuple):
-            if response[0].status_code == 200:
-                return response[1]
-            else:
-                return f"Failed to read script {name}"
-        else:
-            if response.status_code == 200:
-                return response.json()
-            else:
-                response.raise_for_status()
-                return f"Failed to read script {name}"
-
-    def run_script(self, name):
-        """Run a script on the server.
-
-        :param name: the script name
-        """
-        response = self.post(f"service/rest/v1/script/{name}/run")
-
-        if isinstance(response, tuple):
-            if response[0].status_code == 200:
-                return response[1]
-            else:
-                return f"Failed to execute script {name}"
-        else:
-            if response.status_code == 200:
-                return response.json()
-            else:
-                response.raise_for_status()
-                return f"Failed to execute script {name}"
-
-    def search_asset(self, query, repository, details=False):
+    def search_asset(
+        self, query: str, repository: str, details: bool = False
+    ) -> list[str] | str:
         """Search for an asset.
 
         :param query: querystring to use, eg myjar-1 to find myjar-1.2.3.jar
         :param repository: the repo to search in
         :param details: returns a fully-detailed json dump
         """
-        data = {
+        data: dict[str, str] = {
             "q": query,
             "repository": repository,
         }
-        json_data = json.dumps(data)
-        response = self.get(
+        json_data: str = json.dumps(data)
+        response: ApiResponse = self.get(
             f"service/rest/v1/search/assets?q={query}&repository={repository}",
             data=json_data,
         )
 
-        if isinstance(response, tuple):
-            result = response[1]["items"]
-            list_of_assets = []
+        items: list[dict[str, object]] = self._items_from_response(response)
 
-            if details:
-                return json.dumps(result, indent=4)
+        if details:
+            return json.dumps(items, indent=4)
 
-            for item in result:
-                list_of_assets.append(item["path"])
+        list_of_assets: list[str] = []
+        for item in items:
+            list_of_assets.append(str(item.get("path", "")))
+        return list_of_assets
 
-            return list_of_assets
-        else:
-            response.raise_for_status()
-            return []
+    # -----------------------------------------------------------------------
+    # Blob stores
+    # -----------------------------------------------------------------------
 
-    def update_script(self, name, content):
-        """Update an existing script on the server.
+    def list_blobstores(self) -> list[str]:
+        """List server blobstores."""
+        response: ApiResponse = self.get("service/rest/beta/blobstores")
+        result: list[object] = self._list_body(response)
+        list_of_blobstores: list[str] = []
+        for raw_blob in result:
+            blob: dict[str, object] = self._as_dict(raw_blob)
+            if blob:
+                list_of_blobstores.append(str(blob.get("name", "")))
+        return list_of_blobstores
 
-        :param name: script name
-        :param content: new content for the script (groovy code)
+    # -----------------------------------------------------------------------
+    # Privileges
+    # -----------------------------------------------------------------------
+
+    def list_privileges(self) -> list[list[object]]:
+        """List server-configured privileges."""
+        response: ApiResponse = self.get(
+            "service/rest/beta/security/privileges"
+        )
+        result: list[object] = self._list_body(response)
+        list_of_privileges: list[list[object]] = []
+        for raw_priv in result:
+            priv: dict[str, object] = self._as_dict(raw_priv)
+            if priv:
+                list_of_privileges.append(
+                    [
+                        priv.get("type", ""),
+                        priv.get("name", ""),
+                        priv.get("description", ""),
+                        priv.get("readOnly", False),
+                    ]
+                )
+        return list_of_privileges
+
+    # -----------------------------------------------------------------------
+    # Repositories
+    # -----------------------------------------------------------------------
+
+    def list_repositories(self) -> list[str]:
+        """List server repositories."""
+        response: ApiResponse = self.get("service/rest/v1/repositories")
+        result: list[object] = self._list_body(response)
+        list_of_repositories: list[str] = []
+        for raw_repo in result:
+            repo: dict[str, object] = self._as_dict(raw_repo)
+            if repo:
+                list_of_repositories.append(str(repo.get("name", "")))
+        return list_of_repositories
+
+    # -----------------------------------------------------------------------
+    # Roles (list)
+    # -----------------------------------------------------------------------
+
+    def list_roles(self) -> list[list[str]]:
+        """List server roles."""
+        response: ApiResponse = self.get(
+            "service/rest/beta/security/roles"
+        )
+        result: list[object] = self._list_body(response)
+        list_of_roles: list[list[str]] = []
+        for raw_role in result:
+            role: dict[str, object] = self._as_dict(raw_role)
+            if role:
+                list_of_roles.append([str(role.get("name", ""))])
+        return list_of_roles
+
+    # -----------------------------------------------------------------------
+    # Tasks
+    # -----------------------------------------------------------------------
+
+    def list_tasks(self) -> list[list[object]]:
+        """List all tasks."""
+        response: ApiResponse = self.get("service/rest/v1/tasks")
+        items: list[dict[str, object]] = self._items_from_response(response)
+        list_of_tasks: list[list[object]] = []
+        for task in items:
+            list_of_tasks.append(
+                [
+                    task.get("name", ""),
+                    task.get("message", ""),
+                    task.get("currentState", ""),
+                    task.get("lastRunResult", ""),
+                ]
+            )
+        return list_of_tasks
+
+    # -----------------------------------------------------------------------
+    # Staging
+    # -----------------------------------------------------------------------
+
+    def staging_promotion(
+        self, destination_repo: str, tag: str
+    ) -> ApiResponse:
+        """Promote repo assets to a new location.
+
+        :param destination_repo: the repo to promote into
+        :param tag: the tag used to identify the assets
         """
-        data = {"name": name, "content": content, "type": "groovy"}
-
-        json_data = json.dumps(data)
-
-        response = self.put(f"service/rest/v1/script/{name}", data=json_data)
-
-        if isinstance(response, tuple):
-            if response[0].status_code == 204:
-                return f"Successfully updated {name}"
-            else:
-                return f"Failed to update script {name}"
-        else:
-            if response.status_code == 204:
-                return f"Successfully updated {name}"
-            else:
-                response.raise_for_status()
-                return f"Failed to update script {name}"
+        data: dict[str, str] = {"tag": tag}
+        json_data: str = json.dumps(data)
+        response: ApiResponse = self.post(
+            f"service/rest/v1/staging/move/{destination_repo}",
+            data=json_data,
+        )
+        return response

@@ -77,7 +77,7 @@ def test_release_staging_repos(datafiles, responses, mocker, nexus2_obj_create, 
     responses.add(responses.GET, activity_url, releasing_return, status=200)
     responses.add(responses.GET, activity_url, released_return, status=200)
 
-    cmd.release_staging_repos(repos, False)
+    cmd.release_staging_repos(tuple(repos), False)
 
 
 def test_create_repo_target_regex():
@@ -116,9 +116,12 @@ def test_create_repo_target_regex():
     ]
 
     for url in test_url_3_par:
-        a = util.create_repo_target_regex(url[1], url[0])
+        strict = bool(url[0])
+        group_id = str(url[1])
+        match_term = str(url[2])
+        a = util.create_repo_target_regex(group_id, strict)
         a_regex = re.compile(a)
-        assert a_regex.match(url[2]) is not None
+        assert a_regex.match(match_term) is not None
 
     test_url_2_par = [
         ["org.o-ran-sc.org", "/org/o-ran-sc/org/"],

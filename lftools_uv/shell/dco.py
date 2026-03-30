@@ -133,8 +133,7 @@ def match(path=getcwd(), signoffs_dir="dco_signoffs"):
                         continue
 
                 log.info(
-                    f"For commit ID {commit_id}: \n\tCommitter is {commit_author_email}"
-                    f"\n\tbut commit is signed off by {sob_results}\n"
+                    f"For commit ID {commit_id}: \n\tCommitter is {commit_author_email}\n\tbut commit is signed off by {sob_results}\n"
                 )
                 exit_code = 1
 

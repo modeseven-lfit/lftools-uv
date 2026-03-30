@@ -16,7 +16,7 @@ import sys
 from datetime import datetime, timedelta
 
 import openstack
-import openstack.config
+import openstack.connection
 from openstack.cloud.exc import OpenStackCloudException
 
 

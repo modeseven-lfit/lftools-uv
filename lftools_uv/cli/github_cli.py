@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # SPDX-License-Identifier: EPL-1.0
 ##############################################################################
 # Copyright (c) 2019 The Linux Foundation and others.
@@ -46,6 +48,7 @@ def submit_pr(ctx, organization, repo, pr):
         org = g.get_organization(orgName)
     except GithubException as ghe:
         log.error(ghe)
+        sys.exit(1)
 
     repo = org.get_repo(repo)
     pr_mergable = repo.get_pull(pr).mergeable
@@ -112,6 +115,7 @@ def createrepo(ctx, organization, repository, description, has_issues, has_proje
         org = g.get_organization(orgName)
     except GithubException as ghe:
         log.error(ghe)
+        sys.exit(1)
     repos = org.get_repos()
     for repo in repos:
         if repo.name == repository:
@@ -162,6 +166,7 @@ def updaterepo(ctx, organization, repository, has_issues, has_projects, has_wiki
         org = g.get_organization(orgName)
     except GithubException as ghe:
         log.error(ghe)
+        sys.exit(1)
 
     repos = org.get_repos()
 
@@ -175,11 +180,12 @@ def updaterepo(ctx, organization, repository, has_issues, has_projects, has_wiki
     if add_team or remove_team:
         teams = org.get_teams()
 
+        repo_actual = None
         for repo in repos:
             if repo.name == repository:
                 repo_actual = repo
 
-        if "repo_actual" not in locals() or repo_actual is None:
+        if repo_actual is None:
             log.error("repo not found")
             exit(1)
 
@@ -217,12 +223,15 @@ def createteam(ctx, organization, name, repo, privacy):
         org = g.get_organization(orgName)
     except GithubException as ghe:
         log.error(ghe)
+        sys.exit(1)
 
+    repos = []
     if repo:
         try:
             repos = org.get_repos
         except GithubException as ghe:
             log.error(ghe)
+            sys.exit(1)
 
         my_repos = [repo]
         repos = [repo for repo in repos() if repo.name in my_repos]
@@ -238,6 +247,7 @@ def createteam(ctx, organization, name, repo, privacy):
         teams = org.get_teams
     except GithubException as ghe:
         log.error(ghe)
+        sys.exit(1)
 
     for team in teams():
         if team.name == name:

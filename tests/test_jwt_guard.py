@@ -102,8 +102,7 @@ def test_no_insecure_jwt_decode_usage() -> None:
     if offenders:
         lines = "\n".join(f" - {path}:{line_num}: {snippet}" for path, line_num, snippet in offenders)
         raise AssertionError(
-            "Found jwt.decode() calls without an explicit 'algorithms=' keyword:\n"
-            f"{lines}\n\n"
-            "Remediation: Add an explicit algorithms=[...] argument to each "
-            "jwt.decode() invocation (e.g., algorithms=['RS256'])."
+            f"Found jwt.decode() calls without an explicit 'algorithms=' keyword:\n{lines}\n\n"
+            + "Remediation: Add an explicit algorithms=[...] argument to each "
+            + "jwt.decode() invocation (e.g., algorithms=['RS256'])."
         )

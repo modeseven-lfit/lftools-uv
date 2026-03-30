@@ -13,6 +13,8 @@
 
 """Library for working with Sonatype Nexus REST API."""
 
+from __future__ import annotations
+
 __author__ = "Andrew Grimberg"
 __license__ = "Apache 2.0"
 __copyright__ = "Copyright 2017 Andrew Grimberg"
@@ -31,26 +33,33 @@ log = logging.getLogger(__name__)
 class Nexus:
     """Nexus class to handle communicating with Nexus over a rest api."""
 
-    def __init__(self, baseurl=None, username=None, password=None):
+    def __init__(
+        self,
+        baseurl: str | None = None,
+        username: str | None = None,
+        password: str | None = None,
+    ) -> None:
         """Initialize Nexus instance."""
-        self.baseurl = baseurl
+        if baseurl is None:
+            raise ValueError("baseurl is required")
+        self.baseurl: str = baseurl
         self.set_full_baseurl()
         if self.baseurl.find("local") < 0:
-            self.version = 3
+            self.version: int = 3
         else:
             self.version = 2
 
         if username and password:
             self.add_credentials(username, password)
         else:
-            self.auth = None
+            self.auth: HTTPBasicAuth | None = None
 
-        self.headers = {
+        self.headers: dict[str, str] = {
             "Accept": "application/json",
             "Content-Type": "application/json",
         }
 
-    def set_full_baseurl(self):
+    def set_full_baseurl(self) -> None:
         """Find the correct REST API endpoint for this version of Nexus."""
         endpoints = [
             "service/local/repo_targets",
@@ -66,25 +75,25 @@ class Nexus:
                 return
         raise LookupError("Could not determine Nexus version")
 
-    def add_credentials(self, username, password):
+    def add_credentials(self, username: str, password: str) -> None:
         """Create an authentication object to be used."""
         self.auth = HTTPBasicAuth(username, password)
 
-    def add_baseurl(self, url):
+    def add_baseurl(self, url: str) -> None:
         """Set the base URL for nexus."""
         self.baseurl = url
 
-    def get_target(self, name):
+    def get_target(self, name: str) -> str:
         """Get the ID of a given target name."""
         url = os.path.join(self.baseurl, "repo_targets")
         targets = requests.get(url, auth=self.auth, headers=self.headers).json()
 
         for priv in targets["data"]:
             if priv["name"] == name:
-                return priv["id"]
+                return str(priv["id"])
         raise LookupError(f"No target found named '{name}'")
 
-    def create_target(self, name, patterns):
+    def create_target(self, name: str, patterns: list[str]) -> str:
         """Create a target with the given patterns."""
         url = os.path.join(self.baseurl, "repo_targets")
 
@@ -100,17 +109,18 @@ class Nexus:
 
         r = requests.post(url, auth=self.auth, headers=self.headers, data=json_data)
 
-        if r.status_code != requests.codes.created:
+        if r.status_code != 201:
             raise Exception(f"Target not created for '{name}', code '{r.status_code}'")
 
-        return r.json()["data"]["id"]
+        resp = r.json()
+        return str(resp["data"]["id"])
 
-    def get_priv(self, name, priv):
+    def get_priv(self, name: str, priv: str) -> None:
         """Get the ID for the privilege with the given name and privilege type."""
         search_name = f"{name} - ({priv})"
-        self.get_priv_by_name(search_name)
+        _ = self.get_priv_by_name(search_name)
 
-    def get_priv_by_name(self, name):
+    def get_priv_by_name(self, name: str) -> str:
         """Get the ID for the privilege with the given name."""
         url = os.path.join(self.baseurl, "privileges")
 
@@ -118,11 +128,11 @@ class Nexus:
 
         for priv in privileges["data"]:
             if priv["name"] == name:
-                return priv["id"]
+                return str(priv["id"])
 
         raise LookupError(f"No privilege found named '{name}'")
 
-    def create_priv(self, name, target_id, priv):
+    def create_priv(self, name: str, target_id: str, priv: str) -> str:
         """Create a given privilege.
 
         Privilege must be one of the following:
@@ -134,7 +144,7 @@ class Nexus:
         """
         url = os.path.join(self.baseurl, "privileges_target")
 
-        privileges = {
+        priv_payload = {
             "data": {
                 "name": name,
                 "description": name,
@@ -148,32 +158,39 @@ class Nexus:
             }
         }
 
-        json_data = json.dumps(privileges).encode(encoding="utf-8")
+        json_data = json.dumps(priv_payload).encode(encoding="utf-8")
         r = requests.post(url, auth=self.auth, headers=self.headers, data=json_data)
-        privileges = r.json()
+        result = r.json()
 
-        if r.status_code != requests.codes.created:
+        if r.status_code != 201:
             raise Exception(f"Privilege not created for '{name}', code '{r.status_code}'")
 
-        return privileges["data"][0]["id"]
+        return str(result["data"][0]["id"])
 
-    def get_role(self, name):
+    def get_role(self, name: str) -> str:
         """Get the id of a role with a given name."""
         url = os.path.join(self.baseurl, "roles")
         roles = requests.get(url, auth=self.auth, headers=self.headers).json()
 
         for role in roles["data"]:
             if role["name"] == name:
-                return role["id"]
+                return str(role["id"])
 
         # If name is not found in names, check ids
         for role in roles["data"]:
             if role["id"] == name:
-                return role["id"]
+                return str(role["id"])
 
         raise LookupError(f"No role with name '{name}'")
 
-    def create_role(self, name, privs, role_id="", description="", roles=None):
+    def create_role(
+        self,
+        name: str,
+        privs: list[str],
+        role_id: str = "",
+        description: str = "",
+        roles: list[str] | None = None,
+    ) -> str:
         """Create a role with the given privileges."""
         if roles is None:
             roles = []
@@ -191,25 +208,27 @@ class Nexus:
         }
 
         json_data = json.dumps(role).encode(encoding="utf-8")
-        log.debug(f"Sending role {json_data} to Nexus")
+        log.debug(f"Sending role {json_data.decode('utf-8')} to Nexus")
 
         r = requests.post(url, auth=self.auth, headers=self.headers, data=json_data)
 
-        if r.status_code != requests.codes.created:
-            if r.status_code == 400 and "errors" in r.json().keys():
-                error_msgs = ""
-                for error in r.json()["errors"]:
-                    error_msgs += error["msg"] + "\n"
+        if r.status_code != 201:
+            resp_err = r.json()
+            if r.status_code == 400 and "errors" in resp_err:
+                error_msgs: str = ""
+                for error in resp_err["errors"]:
+                    error_msgs += str(error["msg"]) + "\n"
                 raise Exception(
                     f"Role not created for '{name}', code '{r.status_code}', failed "
-                    f"with the following errors: {error_msgs}"
+                    + f"with the following errors: {error_msgs}"
                 )
             else:
                 raise Exception(f"Role not created for '{role_id}', code '{r.status_code}'")
 
-        return r.json()["data"]["id"]
+        resp_ok = r.json()
+        return str(resp_ok["data"]["id"])
 
-    def get_user(self, user_id):
+    def get_user(self, user_id: str) -> None:
         """Determine if a user with a given userId exists."""
         url = os.path.join(self.baseurl, "users")
         users = requests.get(url, auth=self.auth, headers=self.headers).json()
@@ -220,41 +239,46 @@ class Nexus:
 
         raise LookupError(f"No user with id '{user_id}'")
 
-    def create_user(self, name, domain, role_id, password, extra_roles=None):
-        """Create a Deployment user with a specific role_id and potentially extra roles.
+    def create_user(
+        self,
+        name: str,
+        domain: str,
+        role_id: str,
+        password: str,
+        extra_roles: list[str] | None = None,
+    ) -> None:
+        """Create a Deployment user with a specific role_id and extra roles.
+
+        User is created with the nx-deployment role attached.
+        """
         if extra_roles is None:
             extra_roles = []
-
-        User is created with the nx-deployment role attached
-        """
         url = os.path.join(self.baseurl, "users")
 
-        user = {
+        roles_list: list[str] = [role_id, "nx-deployment"]
+        for role in extra_roles:
+            roles_list.append(self.get_role(role))
+
+        user_payload = {
             "data": {
                 "userId": name,
                 "email": f"{name}-deploy@{domain}",
                 "firstName": name,
                 "lastName": "Deployment",
-                "roles": [
-                    role_id,
-                    "nx-deployment",
-                ],
+                "roles": roles_list,
                 "password": password,
                 "status": "active",
             }
         }
 
-        for role in extra_roles:
-            user["data"]["roles"].append(self.get_role(role))
+        json_data = json.dumps(user_payload).encode(encoding="utf-8")
 
-        json_data = json.dumps(user).encode(encoding="utf-8")
+        response = requests.post(url, auth=self.auth, headers=self.headers, data=json_data)
 
-        user = requests.post(url, auth=self.auth, headers=self.headers, data=json_data)
+        if response.status_code != 201:
+            raise Exception(f"User not created for '{name}', code '{response.status_code}'")
 
-        if user.status_code != requests.codes.created:
-            raise Exception(f"User not created for '{name}', code '{user.status_code}'")
-
-    def get_repo_group(self, name):
+    def get_repo_group(self, name: str) -> str:
         """Get the repository ID for a repo group that has a specific name."""
         url = os.path.join(self.baseurl, "repo_groups")
 
@@ -262,17 +286,17 @@ class Nexus:
 
         for repo in repos["data"]:
             if repo["name"] == name:
-                return repo["id"]
+                return str(repo["id"])
 
         raise LookupError(f"No repository group named '{name}'")
 
-    def get_repo_group_details(self, repoId):
+    def get_repo_group_details(self, repoId: str) -> object:
         """Get the current configuration of a given repo group with a specific ID."""
         url = os.path.join(self.baseurl, "repo_groups", repoId)
 
         return requests.get(url, auth=self.auth, headers=self.headers).json()["data"]
 
-    def update_repo_group_details(self, repoId, data):
+    def update_repo_group_details(self, repoId: str, data: object) -> None:
         """Update the given repo group with new configuration."""
         url = os.path.join(self.baseurl, "repo_groups", repoId)
 
@@ -280,9 +304,9 @@ class Nexus:
 
         json_data = json.dumps(repo).encode(encoding="utf-8")
 
-        requests.put(url, auth=self.auth, headers=self.headers, data=json_data)
+        _ = requests.put(url, auth=self.auth, headers=self.headers, data=json_data)
 
-    def get_all_images(self, repo):
+    def get_all_images(self, repo: str) -> list[object]:
         """Get a list of all images in the given repository."""
         url = f"{self.baseurl}/search?repository={repo}"
         url_attr = requests.get(url)
@@ -302,9 +326,9 @@ class Nexus:
             items += result["items"]
             cont_token = result["continuationToken"]
 
-        return items
+        return list(items)
 
-    def search_images(self, repo, pattern):
+    def search_images(self, repo: str, pattern: str) -> list[object]:
         """Find all images in the given repository matching the pattern."""
         url = f"{self.baseurl}/search?q={pattern}&repository={repo}"
         url_attr = requests.get(url)
@@ -324,11 +348,11 @@ class Nexus:
             items += result["items"]
             cont_token = result["continuationToken"]
 
-        return items
+        return list(items)
 
-    def delete_image(self, image):
+    def delete_image(self, image: dict[str, object]) -> None:
         """Delete an image from the repo, using the id field."""
-        url = os.path.join(self.baseurl, "components", image["id"])
+        url = os.path.join(self.baseurl, "components", str(image["id"]))
         # Log sanitized message at info level, detailed metadata at debug level
         log.info("Deleting image from Nexus")
         log.debug(f"Image details: {image['name']}:{image['version']}")

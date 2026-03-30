@@ -10,12 +10,16 @@
 
 """Read the Docs REST API interface."""
 
+from __future__ import annotations
+
 __author__ = "DW Talton"
 
 import json
+from typing import cast
 
 import lftools_uv.api.client as client
 from lftools_uv import config
+from lftools_uv.api.client import ApiResponse
 
 
 class ReadTheDocs(client.RestApi):
@@ -25,11 +29,11 @@ class ReadTheDocs(client.RestApi):
     new methods.
     """
 
-    def __init__(self, **params):
+    def __init__(self, **params: str | dict[str, str]) -> None:
         """Initialize the class."""
-        self.params = params
+        self.params: dict[str, str | dict[str, str]] = params
         if "creds" not in self.params:
-            creds = {
+            creds: dict[str, str] = {
                 "authtype": "token",
                 "token": config.get_setting("rtd", "token"),
                 "endpoint": config.get_setting("rtd", "endpoint"),
@@ -38,7 +42,7 @@ class ReadTheDocs(client.RestApi):
 
         super().__init__(**params)
 
-    def project_list(self):
+    def project_list(self) -> list[str]:
         """Return a list of projects.
 
         This returns the list of projects by their slug name ['slug'],
@@ -48,67 +52,94 @@ class ReadTheDocs(client.RestApi):
         :param kwargs:
         :return: [projects]
         """
-        result = self.get("projects/?limit=999")[1]  # NOQA
-        data = result["results"]
-        project_list = []
+        response: ApiResponse = self.get("projects/?limit=999")  # NOQA
+        result: dict[str, object] = self._json_body(response)
+        data: object = result["results"]
+        project_list: list[str] = []
 
-        for project in data:
-            if "slug" in project:
-                project_list.append(project["slug"])
+        if isinstance(data, list):
+            for project in cast("list[object]", data):
+                if isinstance(project, dict):
+                    project_dict = cast("dict[str, object]", project)
+                    if "slug" in project_dict:
+                        slug: object = project_dict["slug"]
+                        if isinstance(slug, str):
+                            project_list.append(slug)
         return project_list
 
-    def project_details(self, project):
+    def project_details(self, project: str) -> dict[str, object]:
         """Retrieve the details of a specific project.
 
         :param project: The project's slug
         :param kwargs:
         :return: {result}
         """
-        result = self.get(f"projects/{project}/?expand=active_versions")[1]
+        response: ApiResponse = self.get(f"projects/{project}/?expand=active_versions")
+        result: dict[str, object] = self._json_body(response)
         return result
 
-    def project_version_list(self, project):
+    def project_version_list(self, project: str) -> list[str]:
         """Retrieve a list of all ACTIVE versions of a project.
 
         :param project: The project's slug
         :return: {result}
         """
-        result = self.get(f"projects/{project}/versions/?active=True")[1]
-        more_results = None
-        versions = []
+        response: ApiResponse = self.get(f"projects/{project}/versions/?active=True")
+        result: dict[str, object] = self._json_body(response)
+        more_results: str | None = None
+        versions: list[str] = []
 
         # I feel like there must be a better way...but, this works. -DWTalton
-        initial_versions = result["results"]
-        for version in initial_versions:
-            versions.append(version["slug"])
+        initial_versions: object = result["results"]
+        if isinstance(initial_versions, list):
+            for version in cast("list[object]", initial_versions):
+                if isinstance(version, dict):
+                    version_dict = cast("dict[str, object]", version)
+                    slug: object = version_dict["slug"]
+                    if isinstance(slug, str):
+                        versions.append(slug)
 
-        if result["next"]:
-            more_results = result["next"].rsplit("/", 1)[-1]
+        next_val: object = result["next"]
+        if isinstance(next_val, str):
+            more_results = next_val.rsplit("/", 1)[-1]
 
         if more_results:
             while more_results is not None:
-                get_more_results = self.get(f"projects/{project}/versions/" + more_results)[1]
-                more_results = get_more_results["next"]
+                next_response: ApiResponse = self.get(
+                    f"projects/{project}/versions/" + more_results
+                )
+                get_more_results: dict[str, object] = self._json_body(next_response)
+                raw_next: object = get_more_results["next"]
+                more_results = raw_next if isinstance(raw_next, str) else None
 
-                for version in get_more_results["results"]:
-                    versions.append(version["slug"])
+                results_data: object = get_more_results["results"]
+                if isinstance(results_data, list):
+                    for version in cast("list[object]", results_data):
+                        if isinstance(version, dict):
+                            version_dict = cast("dict[str, object]", version)
+                            slug = version_dict["slug"]
+                            if isinstance(slug, str):
+                                versions.append(slug)
 
                 if more_results is not None:
                     more_results = more_results.rsplit("/", 1)[-1]
 
         return versions
 
-    def project_version_details(self, project, version):
+    def project_version_details(self, project: str, version: str) -> str:
         """Retrieve details of a single version.
 
         :param project: The project's slug
         :param version: The version's slug
         :return: {result}
         """
-        result = self.get(f"projects/{project}/versions/{version}/")[1]
+        response: ApiResponse = self.get(f"projects/{project}/versions/{version}/")
+        result: dict[str, object] = self._json_body(response)
         return json.dumps(result, indent=2)
 
-    def project_version_update(self, project, version, active):
+    def project_version_update(
+        self, project: str, version: str, active: bool
+    ) -> ApiResponse:
         """Edit version activity.
 
         :param project: The project slug
@@ -116,29 +147,40 @@ class ReadTheDocs(client.RestApi):
         :param active: 'true' or 'false'
         :return: {result}
         """
-        data = {"active": active}
+        data: dict[str, bool] = {"active": active}
 
-        json_data = json.dumps(data)
-        result = self.patch(f"projects/{project}/versions/{version}/", data=json_data)
+        json_data: str = json.dumps(data)
+        result: ApiResponse = self.patch(
+            f"projects/{project}/versions/{version}/", data=json_data
+        )
         return result
 
-    def project_update(self, project, *args):
+    def project_update(self, project: str, *args: object) -> tuple[bool, int]:
         """Update any project details.
 
         :param project: Project's name (slug).
         :param args: Any of the JSON keys allows by RTD API.
         :return: Bool
         """
-        data = args[0]
-        json_data = json.dumps(data)
-        result = self.patch(f"projects/{project}/", data=json_data)
+        data: object = args[0]
+        json_data: str = json.dumps(data)
+        result: ApiResponse = self.patch(f"projects/{project}/", data=json_data)
+        resp = self._response_of(result)
 
-        if result.status_code == 204:
-            return True, result.status_code
+        if resp.status_code == 204:
+            return True, resp.status_code
         else:
-            return False, result.status_code
+            return False, resp.status_code
 
-    def project_create(self, name, repository_url, repository_type, homepage, programming_language, language, **kwargs):
+    def project_create(
+        self,
+        name: str,
+        repository_url: str,
+        repository_type: str,
+        homepage: str,
+        programming_language: str,
+        language: str,
+    ) -> ApiResponse:
         """Create a new Read the Docs project.
 
         :param name: Project name. Any spaces will convert to dashes for the
@@ -154,7 +196,7 @@ class ReadTheDocs(client.RestApi):
         :param kwargs:
         :return: {results}
         """
-        data = {
+        data: dict[str, str | dict[str, str]] = {
             "name": name,
             "repository": {"url": repository_url, "type": repository_type},
             "homepage": homepage,
@@ -162,11 +204,11 @@ class ReadTheDocs(client.RestApi):
             "language": language,
         }
 
-        json_data = json.dumps(data)
-        result = self.post("projects/", data=json_data, **kwargs)
+        json_data: str = json.dumps(data)
+        result: ApiResponse = self.post("projects/", data=json_data)
         return result
 
-    def project_build_list(self, project, **kwargs):
+    def project_build_list(self, project: str) -> str:
         """Retrieve the project's running build list.
 
         For future expansion, the statuses are cloning,
@@ -176,14 +218,16 @@ class ReadTheDocs(client.RestApi):
         :param kwargs:
         :return: {result}
         """
-        result = self.get(f"projects/{project}/builds/?running=True", **kwargs)[1]
+        response: ApiResponse = self.get(f"projects/{project}/builds/?running=True")
+        result: dict[str, object] = self._json_body(response)
 
-        if result["count"] > 0:
+        count: object = result["count"]
+        if isinstance(count, int) and count > 0:
             return json.dumps(result, indent=2)
         else:
             return "There are no active builds."
 
-    def project_build_details(self, project, build_id, **kwargs):
+    def project_build_details(self, project: str, build_id: str) -> str:
         """Retrieve the details of a specific build.
 
         :param project: The project's slug
@@ -191,10 +235,11 @@ class ReadTheDocs(client.RestApi):
         :param kwargs:
         :return: {result}
         """
-        result = self.get(f"projects/{project}/builds/{build_id}/")[1]
+        response: ApiResponse = self.get(f"projects/{project}/builds/{build_id}/")
+        result: dict[str, object] = self._json_body(response)
         return json.dumps(result, indent=2)
 
-    def project_build_trigger(self, project, version):
+    def project_build_trigger(self, project: str, version: str) -> str:
         """Trigger a project build.
 
         :param project: The project's slug
@@ -202,10 +247,13 @@ class ReadTheDocs(client.RestApi):
                         (must be an active version)
         :return: {result}
         """
-        result = self.post(f"projects/{project}/versions/{version}/builds/")[1]
+        response: ApiResponse = self.post(
+            f"projects/{project}/versions/{version}/builds/"
+        )
+        result: dict[str, object] = self._json_body(response)
         return json.dumps(result, indent=2)
 
-    def subproject_list(self, project):
+    def subproject_list(self, project: str) -> list[str]:
         """Return a list of subprojects.
 
         This returns the list of subprojects by their slug name ['slug'],
@@ -214,26 +262,44 @@ class ReadTheDocs(client.RestApi):
         :param kwargs:
         :return: [subprojects]
         """
-        result = self.get("projects/{}/subprojects/?limit=999".format(project))[1]  # NOQA
-        data = result["results"]
-        subproject_list = []
+        response: ApiResponse = self.get(
+            f"projects/{project}/subprojects/?limit=999"
+        )  # NOQA
+        result: dict[str, object] = self._json_body(response)
+        data: object = result["results"]
+        subproject_list: list[str] = []
 
-        for subproject in data:
-            subproject_list.append(subproject["child"]["slug"])
+        if isinstance(data, list):
+            for subproject in cast("list[object]", data):
+                if isinstance(subproject, dict):
+                    subproject_dict = cast("dict[str, object]", subproject)
+                    child: object = subproject_dict.get("child")
+                    if isinstance(child, dict):
+                        child_dict = cast("dict[str, object]", child)
+                        slug: object = child_dict.get("slug")
+                        if isinstance(slug, str):
+                            subproject_list.append(slug)
 
         return subproject_list
 
-    def subproject_details(self, project, subproject):
+    def subproject_details(
+        self, project: str, subproject: str
+    ) -> dict[str, object]:
         """Retrieve the details of a specific subproject.
 
         :param project:
         :param subproject:
         :return:
         """
-        result = self.get(f"projects/{project}/subprojects/{subproject}/")[1]
+        response: ApiResponse = self.get(
+            f"projects/{project}/subprojects/{subproject}/"
+        )
+        result: dict[str, object] = self._json_body(response)
         return result
 
-    def subproject_create(self, project, subproject, alias=None):
+    def subproject_create(
+        self, project: str, subproject: str, alias: str | None = None
+    ) -> ApiResponse:
         """Create a subproject.
 
         Subprojects are actually just top-level projects that
@@ -246,24 +312,28 @@ class ReadTheDocs(client.RestApi):
         :param alias: An alias (not required). (user-defined slug)
         :return:
         """
-        data = {"child": subproject, "alias": alias}
-        json_data = json.dumps(data)
-        result = self.post(f"projects/{project}/subprojects/", data=json_data)
+        data: dict[str, str | None] = {"child": subproject, "alias": alias}
+        json_data: str = json.dumps(data)
+        result: ApiResponse = self.post(
+            f"projects/{project}/subprojects/", data=json_data
+        )
         return result
 
-    def subproject_delete(self, project, subproject):
+    def subproject_delete(
+        self, project: str, subproject: str
+    ) -> bool | tuple[bool, int]:
         """Delete project/sub relationship.
 
         :param project:
         :param subproject:
         :return:
         """
-        result = self.delete(f"projects/{project}/subprojects/{subproject}/")
+        result: ApiResponse = self.delete(
+            f"projects/{project}/subprojects/{subproject}/"
+        )
+        resp = self._response_of(result)
 
-        if hasattr(result, "status_code"):
-            if result.status_code == 204:
-                return True
-            else:
-                return False, result.status_code
+        if resp.status_code == 204:
+            return True
         else:
-            return False
+            return False, resp.status_code

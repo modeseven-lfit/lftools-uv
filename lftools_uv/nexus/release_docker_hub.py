@@ -38,35 +38,39 @@ Set the repo to a str to find all projects that contains that string
 lftools nexus docker releasedockerhub
 """
 
+from __future__ import annotations
+
 import json
 import logging
 import multiprocessing
 import os
 import re
-import socket
 import time
 from multiprocessing.dummy import Pool as ThreadPool
 
 import docker
+import docker.errors
+import docker.models.images
 import requests
 import tqdm
 import urllib3
 
 log = logging.getLogger(__name__)
 
-NexusCatalog = []
-projects = []
-TotTagsToBeCopied = 0
+NexusCatalog: list[list[str]] = []
+projects: list[ProjectClass] = []
+TotTagsToBeCopied: int = 0
+project_max_len_chars: int = 0
 
-NEXUS3_BASE = ""
-NEXUS3_CATALOG = ""
-NEXUS3_PROJ_NAME_HEADER = ""
-DOCKER_PROJ_NAME_HEADER = ""
-VERSION_REGEXP = ""
-DEFAULT_REGEXP = r"^\d+.\d+.\d+$"
+_nexus3_base: str = ""
+_nexus3_catalog: str = ""
+_nexus3_proj_name_header: str = ""
+_docker_proj_name_header: str = ""
+_version_regexp: str = ""
+DEFAULT_REGEXP: str = r"^\d+.\d+.\d+$"
 
 
-def _remove_http_from_url(url):
+def _remove_http_from_url(url: str) -> str:
     """Remove http[s]:// from url."""
     if url.startswith("https://"):
         return url[len("https://") :]
@@ -75,7 +79,7 @@ def _remove_http_from_url(url):
     return url
 
 
-def _format_image_id(id):
+def _format_image_id(id: str) -> str:
     """Remove sha256: from beginning of string."""
     if id.startswith("sha256:"):
         return id[len("sha256:") :]
@@ -83,67 +87,54 @@ def _format_image_id(id):
         return id
 
 
-def _request_get(url):
+def _request_get(url: str) -> requests.Response:
     """Execute a request get, return the resp."""
-    resp = {}
     try:
         resp = requests.get(url)
     except requests.exceptions.RequestException as excinfo:
         log.debug(f"in _request_get RequestException. {type(excinfo)}")
         raise requests.HTTPError(f"Issues with URL: {url} - {type(excinfo)}") from excinfo
-    except socket.gaierror as excinfo:
-        log.debug(f"in _request_get gaierror. {type(excinfo)}")
-        raise requests.HTTPError(f"Issues with URL: {url} - {type(excinfo)}") from excinfo
-    except requests.exceptions.ConnectionError as excinfo:
-        log.debug(f"in _request_get ConnectionError. {type(excinfo)}")
-        raise requests.HTTPError(f"Issues with URL: {url} - {type(excinfo)}") from excinfo
-    except urllib3.exceptions.NewConnectionError as excinfo:
-        log.debug(f"in _request_get NewConnectionError. {type(excinfo)}")
-        raise requests.HTTPError(f"Issues with URL: {url} - {type(excinfo)}") from excinfo
-    except urllib3.exceptions.MaxRetryError as excinfo:
-        log.debug(f"in _request_get MaxRetryError. {type(excinfo)}")
-        raise requests.HTTPError(f"Issues with URL: {url} - {type(excinfo)}") from excinfo
     return resp
 
 
-def which_version_regexp_to_use(input_regexp_or_filename):
+def which_version_regexp_to_use(input_regexp_or_filename: str) -> None:
     """Set version regexp as per user request.
 
     regexp is either a regexp to be directly used, or its a file name,
     and the file contains the regexp to use
     """
-    global VERSION_REGEXP
+    global _version_regexp
     if len(input_regexp_or_filename) == 0:
-        VERSION_REGEXP = DEFAULT_REGEXP
+        _version_regexp = DEFAULT_REGEXP
     else:
         isFile = os.path.isfile(input_regexp_or_filename)
         if isFile:
             with open(input_regexp_or_filename) as fp:
-                VERSION_REGEXP = fp.readline().strip()
+                _version_regexp = fp.readline().strip()
         else:
-            VERSION_REGEXP = input_regexp_or_filename
+            _version_regexp = input_regexp_or_filename
 
 
-def validate_regexp():
-    global VERSION_REGEXP
+def validate_regexp() -> bool:
+    global _version_regexp
     try:
-        re.compile(VERSION_REGEXP)
+        re.compile(_version_regexp)
         is_valid = True
     except re.error:
         is_valid = False
     return is_valid
 
 
-def initialize(org_name, input_regexp_or_filename=""):
+def initialize(org_name: str, input_regexp_or_filename: str = "") -> None:
     """Set constant strings."""
-    global NEXUS3_BASE
-    global NEXUS3_CATALOG
-    global NEXUS3_PROJ_NAME_HEADER
-    global DOCKER_PROJ_NAME_HEADER
-    NEXUS3_BASE = f"https://nexus3.{org_name}.org:10002"
-    NEXUS3_CATALOG = NEXUS3_BASE + "/v2/_catalog"
-    NEXUS3_PROJ_NAME_HEADER = "Nexus3 Project Name"
-    DOCKER_PROJ_NAME_HEADER = "Docker HUB Project Name"
+    global _nexus3_base
+    global _nexus3_catalog
+    global _nexus3_proj_name_header
+    global _docker_proj_name_header
+    _nexus3_base = f"https://nexus3.{org_name}.org:10002"
+    _nexus3_catalog = _nexus3_base + "/v2/_catalog"
+    _nexus3_proj_name_header = "Nexus3 Project Name"
+    _docker_proj_name_header = "Docker HUB Project Name"
     which_version_regexp_to_use(input_regexp_or_filename)
 
 
@@ -161,16 +152,16 @@ class TagClass:
         repo_from_file : Repository name was taken from input file.
     """
 
-    def __init__(self, org_name, repo_name, repo_from_file):
+    def __init__(self, org_name: str, repo_name: str, repo_from_file: bool) -> None:
         """Initialize this class."""
-        self.valid = []
-        self.invalid = []
-        self.repository_exist = True
-        self.org = org_name
-        self.repo = repo_name
-        self.repofromfile = repo_from_file
+        self.valid: list[str] = []
+        self.invalid: list[str] = []
+        self.repository_exist: bool = True
+        self.org: str = org_name
+        self.repo: str = repo_name
+        self.repofromfile: bool = repo_from_file
 
-    def _validate_tag(self, check_tag):
+    def _validate_tag(self, check_tag: str) -> re.Match[str] | None:
         r"""Local helper function to simplify validity check of version number.
 
         Returns true or false, depending if the version pattern is a valid one.
@@ -180,11 +171,11 @@ class TagClass:
           where keyword = STAGING or SNAPSHOT
           '^\d+.\d+.\d+-(STAGING|SNAPSHOT)-(20\d{2})(\d{2})(\d{2})T([01]\d|2[0-3])([0-5]\d)([0-5]\d)Z$'
         """
-        pattern = re.compile(rf"{VERSION_REGEXP}")
+        pattern = re.compile(rf"{_version_regexp}")
         log.debug(f"validate tag {check_tag} in {self.repo} --> {pattern.match(check_tag)}")
         return pattern.match(check_tag)
 
-    def add_tag(self, new_tag):
+    def add_tag(self, new_tag: str) -> None:
         """Add tag to a list.
 
         This function will take a tag, and add it to the correct list
@@ -225,7 +216,9 @@ class NexusTagClass(TagClass):
         If no repository is found, self.repository_exist will be set to False.
     """
 
-    def __init__(self, org_name, repo_name, repo_from_file):
+    repository_exist: bool
+
+    def __init__(self, org_name: str, repo_name: str, repo_from_file: bool) -> None:
         """Initialize this class."""
         TagClass.__init__(self, org_name, repo_name, repo_from_file)
         retries = 0
@@ -234,9 +227,10 @@ class NexusTagClass(TagClass):
         if repo_from_file:
             org_repo_name = f"{repo_name}"
         log.debug(f"Fetching nexus3 tags for {org_repo_name}")
+        r = None
         while retries < 20:
             try:
-                r = _request_get(NEXUS3_BASE + "/v2/" + org_repo_name + "/tags/list")
+                r = _request_get(_nexus3_base + "/v2/" + org_repo_name + "/tags/list")
                 break
             except requests.HTTPError as excinfo:
                 log.debug(f"Fetching Nexus3 tags. {excinfo}")
@@ -245,6 +239,10 @@ class NexusTagClass(TagClass):
                     self.repository_exist = False
                     return
 
+        if r is None:
+            self.repository_exist = False
+            return
+
         log.debug(f"r.status_code = {r.status_code}, ok={r.status_code == requests.codes.ok}")
         if r.status_code == requests.codes.ok:
             raw_tags = r.text
@@ -252,8 +250,8 @@ class NexusTagClass(TagClass):
             raw_tags = raw_tags.replace("}", "")
             raw_tags = raw_tags.replace("]", "")
             raw_tags = raw_tags.replace(" ", "")
-            raw_tags = raw_tags.split("[")
-            TmpSplittedTags = raw_tags[1].split(",")
+            split_tags = raw_tags.split("[")
+            TmpSplittedTags = split_tags[1].split(",")
             if len(TmpSplittedTags) > 0:
                 for tag_2_add in TmpSplittedTags:
                     self.add_tag(tag_2_add)
@@ -296,9 +294,10 @@ class DockerTagClass(TagClass):
         If no repository is found, self.repository_exist will be set to False.
     """
 
-    _docker_base_start = "https://registry.hub.docker.com/v2/namespaces/"
+    _docker_base_start: str = "https://registry.hub.docker.com/v2/namespaces/"
+    repository_exist: bool
 
-    def __init__(self, org_name, repo_name, repo_from_file):
+    def __init__(self, org_name: str, repo_name: str, repo_from_file: bool) -> None:
         """Initialize this class."""
         TagClass.__init__(self, org_name, repo_name, repo_from_file)
         if repo_from_file:
@@ -312,6 +311,7 @@ class DockerTagClass(TagClass):
         while still_more:
             raw_json = None
             retries = 0
+            r = None
             while retries < 20:
                 try:
                     log.debug(f"URL={docker_tag_url}")
@@ -330,6 +330,10 @@ class DockerTagClass(TagClass):
                     if retries > 19:
                         self.repository_exist = False
                         return
+
+            if r is None:
+                self.repository_exist = False
+                return
 
             log.debug(f"r.status_code = {r.status_code}, ok={r.status_code == requests.codes.ok}")
             if r.status_code == 429:
@@ -374,34 +378,35 @@ class ProjectClass:
     Main external function is docker_pull_tag_push
     """
 
-    def __init__(self, nexus_proj, docker_client=None):
+    def __init__(self, nexus_proj: list[str], docker_client: docker.DockerClient | None = None) -> None:
         """Initialize this class."""
-        self.org_name = nexus_proj[0]
-        self.nexus_repo_name = nexus_proj[1]
+        self.org_name: str = nexus_proj[0]
+        self.nexus_repo_name: str = nexus_proj[1]
         repo_from_file = len(nexus_proj[2]) > 0
+        self.docker_repo_name: str = ""
         if repo_from_file:
             self.docker_repo_name = nexus_proj[2].strip()
         else:
             self._set_docker_repo_name(self.nexus_repo_name)
-        self.nexus_tags = NexusTagClass(self.org_name, self.nexus_repo_name, repo_from_file)
-        self.docker_tags = DockerTagClass(self.org_name, self.docker_repo_name, repo_from_file)
-        self.tags_2_copy = TagClass(self.org_name, self.nexus_repo_name, repo_from_file)
+        self.nexus_tags: NexusTagClass = NexusTagClass(self.org_name, self.nexus_repo_name, repo_from_file)
+        self.docker_tags: DockerTagClass = DockerTagClass(self.org_name, self.docker_repo_name, repo_from_file)
+        self.tags_2_copy: TagClass = TagClass(self.org_name, self.nexus_repo_name, repo_from_file)
         self._populate_tags_to_copy()
-        self.docker_client = docker_client if docker_client is not None else docker.from_env()
+        self.docker_client: docker.DockerClient = docker_client if docker_client is not None else docker.from_env()
 
-    def __lt__(self, other):
+    def __lt__(self, other: ProjectClass) -> bool:
         """Implement sort order base on Nexus3 repo name."""
         return self.nexus_repo_name < other.nexus_repo_name
 
-    def calc_nexus_project_name(self):
+    def calc_nexus_project_name(self) -> str:
         """Get Nexus3 project name."""
         return self.org_name + "/" + self.nexus_repo_name
 
-    def calc_docker_project_name(self):
+    def calc_docker_project_name(self) -> str:
         """Get Docker Hub project name."""
         return self.org_name + "/" + self.docker_repo_name
 
-    def _set_docker_repo_name(self, nexus_repo_name):
+    def _set_docker_repo_name(self, nexus_repo_name: str) -> None:
         """Set Docker Hub repo name.
 
         Docker repository will be based on the Nexus3 repo name.
@@ -410,7 +415,7 @@ class ProjectClass:
         self.docker_repo_name = self.nexus_repo_name.replace("/", "-")
         log.debug(f"ProjName = {self.nexus_repo_name} ---> Docker name = {self.docker_repo_name}")
 
-    def _populate_tags_to_copy(self):
+    def _populate_tags_to_copy(self) -> None:
         """Populate tags_to_copy list.
 
         Check that all valid Nexus3 tags are among the Docker Hub valid tags.
@@ -426,7 +431,7 @@ class ProjectClass:
                     log.debug(f"Need to copy tag {nexustag} from {self.nexus_repo_name}")
                     self.tags_2_copy.add_tag(nexustag)
 
-    def _pull_tag_push_msg(self, info_text, count, retry_text="", progbar=False):
+    def _pull_tag_push_msg(self, info_text: str, count: int, retry_text: str = "", progbar: bool = False) -> None:
         """Print a formatted message using log.info."""
         due_to_txt = ""
         if len(retry_text) > 0:
@@ -441,7 +446,7 @@ class ProjectClass:
         else:
             log.info(f"{b4_txt}: {info_text} {due_to_txt}")
 
-    def _docker_pull(self, nexus_image_str, count, tag, retry_text="", progbar=False):
+    def _docker_pull(self, nexus_image_str: str, count: int, tag: str, retry_text: str = "", progbar: bool = False) -> docker.models.images.Image:
         """Pull an image from Nexus."""
         self._pull_tag_push_msg(
             f"Pulling  Nexus3 image {self.calc_nexus_project_name()} with tag {tag}", count, retry_text
@@ -449,21 +454,21 @@ class ProjectClass:
         image = self.docker_client.images.pull(nexus_image_str)
         return image
 
-    def _docker_tag(self, count, image, tag, retry_text="", progbar=False):
+    def _docker_tag(self, count: int, image: docker.models.images.Image, tag: str, retry_text: str = "", progbar: bool = False) -> None:
         """Tag the image with proper docker name and version."""
         self._pull_tag_push_msg(
             f"Creating docker image {self.calc_docker_project_name()} with tag {tag}", count, retry_text
         )
         image.tag(self.calc_docker_project_name(), tag=tag)
 
-    def _docker_push(self, count, image, tag, retry_text, progbar=False):
+    def _docker_push(self, count: int, image: docker.models.images.Image, tag: str, retry_text: str, progbar: bool = False) -> None:
         """Push the docker image to Docker Hub."""
         self._pull_tag_push_msg(
             f"Pushing  docker image {self.calc_docker_project_name()} with tag {tag}", count, retry_text
         )
         self.docker_client.images.push(self.calc_docker_project_name(), tag=tag)
 
-    def _docker_cleanup(self, count, image, tag, retry_text="", progbar=False):
+    def _docker_cleanup(self, count: int, image: docker.models.images.Image, tag: str, retry_text: str = "", progbar: bool = False) -> None:
         """Remove the local copy of the image."""
         image_id = _format_image_id(image.short_id)
         self._pull_tag_push_msg(
@@ -473,7 +478,7 @@ class ProjectClass:
         )
         self.docker_client.images.remove(image.id, force=True)
 
-    def docker_pull_tag_push(self, progbar=False):
+    def docker_pull_tag_push(self, progbar: bool = False) -> None:
         """Copy all missing Docker Hub images from Nexus3.
 
         This is the main function which will copy a specific tag from Nexu3
@@ -486,9 +491,10 @@ class ProjectClass:
             return
 
         for tag in self.tags_2_copy.valid:
-            org_path = _remove_http_from_url(NEXUS3_BASE)
+            org_path = _remove_http_from_url(_nexus3_base)
             nexus_image_str = f"{org_path}/{self.org_name}/{self.nexus_repo_name}:{tag}"
             log.debug(f"Nexus Image Str = {nexus_image_str}")
+            image = None
             for stage in ["pull", "tag", "push", "cleanup"]:
                 cnt_break_loop = 1
                 retry_text = ""
@@ -500,15 +506,18 @@ class ProjectClass:
                             break
 
                         if stage == "tag":
-                            self._docker_tag(cnt_break_loop, image, tag, retry_text, progbar)
+                            if image is not None:
+                                self._docker_tag(cnt_break_loop, image, tag, retry_text, progbar)
                             break
 
                         if stage == "push":
-                            self._docker_push(cnt_break_loop, image, tag, retry_text, progbar)
+                            if image is not None:
+                                self._docker_push(cnt_break_loop, image, tag, retry_text, progbar)
                             break
 
                         if stage == "cleanup":
-                            self._docker_cleanup(cnt_break_loop, image, tag, retry_text, progbar)
+                            if image is not None:
+                                self._docker_cleanup(cnt_break_loop, image, tag, retry_text, progbar)
                             break
                     except TimeoutError:
                         retry_text = "Socket Timeout"
@@ -523,7 +532,7 @@ class ProjectClass:
                         raise requests.HTTPError(retry_text)
 
 
-def repo_is_in_file(check_repo="", repo_file_name=""):
+def repo_is_in_file(check_repo: str = "", repo_file_name: str = "") -> bool:
     """Function to verify of a repo name exists in a file name.
 
     The file contains rows of repo names to be included.
@@ -545,7 +554,7 @@ def repo_is_in_file(check_repo="", repo_file_name=""):
     return False
 
 
-def get_docker_name_from_file(check_repo="", repo_file_name=""):
+def get_docker_name_from_file(check_repo: str = "", repo_file_name: str = "") -> str:
     """Function to verify of a repo name exists in a file name.
 
     The file contains rows of repo names to be included.
@@ -568,7 +577,7 @@ def get_docker_name_from_file(check_repo="", repo_file_name=""):
     return ""
 
 
-def get_nexus3_catalog(org_name="", find_pattern="", exact_match=False, repo_is_filename=False):
+def get_nexus3_catalog(org_name: str = "", find_pattern: str = "", exact_match: bool = False, repo_is_filename: bool = False) -> bool:
     """Main function to collect all Nexus3 repositories.
 
     This function will collect the Nexus catalog for all projects starting with
@@ -613,7 +622,7 @@ def get_nexus3_catalog(org_name="", find_pattern="", exact_match=False, repo_is_
     log.info(f"{info_str}{containing_str}.")
 
     try:
-        r = _request_get(NEXUS3_CATALOG)
+        r = _request_get(_nexus3_catalog)
     except requests.HTTPError as excinfo:
         log.info(f"Fetching Nexus3 catalog. {excinfo}")
         return False
@@ -626,11 +635,12 @@ def get_nexus3_catalog(org_name="", find_pattern="", exact_match=False, repo_is_
         raw_catalog = raw_catalog.replace("}", "")
         raw_catalog = raw_catalog.replace("[", "")
         raw_catalog = raw_catalog.replace("]", "")
-        raw_catalog = raw_catalog.split(":")
-        TmpCatalog = raw_catalog[1].split(",")
+        split_catalog = raw_catalog.split(":")
+        TmpCatalog = split_catalog[1].split(",")
         for word in TmpCatalog:
             # Remove all projects that do not start with org_name
             use_this_repo = False
+            project: list[str] = []
             if repo_is_filename and repo_is_in_file(word, find_pattern):
                 use_this_repo = True
                 project = [org_name, word, get_docker_name_from_file(word, find_pattern)]
@@ -655,7 +665,7 @@ def get_nexus3_catalog(org_name="", find_pattern="", exact_match=False, repo_is_
     return True
 
 
-def fetch_all_tags(progbar=False, docker_client=None):
+def fetch_all_tags(progbar: bool = False, docker_client: docker.DockerClient | None = None) -> None:
     """Fetch all tags function.
 
     This function will use multi-threading to fetch all tags for all projects in
@@ -663,12 +673,13 @@ def fetch_all_tags(progbar=False, docker_client=None):
     """
     NbrProjects = len(NexusCatalog)
     log.info(
-        f"Fetching tags from Nexus3 and Docker Hub for {NbrProjects} projects with version regexp >>{VERSION_REGEXP}<<"
+        f"Fetching tags from Nexus3 and Docker Hub for {NbrProjects} projects with version regexp >>{_version_regexp}<<"
     )
+    pbar = None
     if progbar:
         pbar = tqdm.tqdm(total=NbrProjects, bar_format="{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}]")
 
-    def _fetch_all_tags(proj):
+    def _fetch_all_tags(proj: list[str]) -> None:
         """Helper function for multi-threading.
 
         This function, will create an instance of ProjectClass (which triggers
@@ -681,7 +692,7 @@ def fetch_all_tags(progbar=False, docker_client=None):
         """
         new_proj = ProjectClass(proj, docker_client)
         projects.append(new_proj)
-        if progbar:
+        if pbar is not None:
             pbar.update(1)
 
     pool = ThreadPool(multiprocessing.cpu_count())
@@ -689,12 +700,12 @@ def fetch_all_tags(progbar=False, docker_client=None):
     pool.close()
     pool.join()
 
-    if progbar:
+    if pbar is not None:
         pbar.close()
     projects.sort()
 
 
-def copy_from_nexus_to_docker(progbar=False):
+def copy_from_nexus_to_docker(progbar: bool = False) -> None:
     """Copy all missing tags.
 
     This function will use multi-threading to copy all missing tags in the project list.
@@ -703,10 +714,11 @@ def copy_from_nexus_to_docker(progbar=False):
     for proj in projects:
         _tot_tags = _tot_tags + len(proj.tags_2_copy.valid)
     log.info(f"About to start copying from Nexus3 to Docker Hub for {_tot_tags} missing tags")
+    pbar = None
     if progbar:
         pbar = tqdm.tqdm(total=_tot_tags, bar_format="{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}]")
 
-    def _docker_pull_tag_push(proj):
+    def _docker_pull_tag_push(proj: ProjectClass) -> None:
         """Helper function for multi-threading.
 
         This function, will call the ProjectClass proj's docker_pull_tag_push.
@@ -716,23 +728,23 @@ def copy_from_nexus_to_docker(progbar=False):
                     ('onap', 'aaf/aaf_service')
         """
         proj.docker_pull_tag_push(progbar)
-        if progbar:
+        if pbar is not None:
             pbar.update(len(proj.tags_2_copy.valid))
 
     pool = ThreadPool(multiprocessing.cpu_count())
     pool.map(_docker_pull_tag_push, projects)
     pool.close()
     pool.join()
-    if progbar:
+    if pbar is not None:
         pbar.close()
 
 
-def print_nexus_docker_proj_names():
+def print_nexus_docker_proj_names() -> None:
     """Print Nexus3 - Docker Hub repositories."""
     fmt_str = "{:<" + str(project_max_len_chars) + "} : "
     log.info("")
-    log_str = fmt_str.format(NEXUS3_PROJ_NAME_HEADER)
-    log_str = f"{log_str}{DOCKER_PROJ_NAME_HEADER}"
+    log_str = fmt_str.format(_nexus3_proj_name_header)
+    log_str = f"{log_str}{_docker_proj_name_header}"
     log.info(log_str)
     log.info("-" * project_max_len_chars * 2)
     docker_i = 0
@@ -744,7 +756,7 @@ def print_nexus_docker_proj_names():
     log.info("")
 
 
-def print_tags_header(header_str, col_1_str):
+def print_tags_header(header_str: str, col_1_str: str) -> None:
     """Print simple header."""
     fmt_str = "{:<" + str(project_max_len_chars) + "} : "
     log.info(header_str)
@@ -754,7 +766,7 @@ def print_tags_header(header_str, col_1_str):
     log.info("-" * project_max_len_chars * 2)
 
 
-def print_tags_data(proj_name, tags):
+def print_tags_data(proj_name: str, tags: list[str]) -> None:
     """Print tag data."""
     fmt_str = "{:<" + str(project_max_len_chars) + "} : "
     if len(tags) > 0:
@@ -768,41 +780,41 @@ def print_tags_data(proj_name, tags):
         log.info(log_str)
 
 
-def print_nexus_valid_tags():
+def print_nexus_valid_tags() -> None:
     """Print Nexus valid tags."""
-    print_tags_header("Nexus Valid Tags", NEXUS3_PROJ_NAME_HEADER)
+    print_tags_header("Nexus Valid Tags", _nexus3_proj_name_header)
     for proj in projects:
         print_tags_data(proj.nexus_repo_name, proj.nexus_tags.valid)
     log.info("")
 
 
-def print_nexus_invalid_tags():
+def print_nexus_invalid_tags() -> None:
     """Print Nexus invalid tags."""
-    print_tags_header("Nexus InValid Tags", NEXUS3_PROJ_NAME_HEADER)
+    print_tags_header("Nexus InValid Tags", _nexus3_proj_name_header)
     for proj in projects:
         print_tags_data(proj.nexus_repo_name, proj.nexus_tags.invalid)
     log.info("")
 
 
-def print_docker_valid_tags():
+def print_docker_valid_tags() -> None:
     """Print Docker valid tags."""
-    print_tags_header("Docker Valid Tags", DOCKER_PROJ_NAME_HEADER)
+    print_tags_header("Docker Valid Tags", _docker_proj_name_header)
     for proj in projects:
         print_tags_data(proj.docker_repo_name, proj.docker_tags.valid)
     log.info("")
 
 
-def print_docker_invalid_tags():
+def print_docker_invalid_tags() -> None:
     """Print Docker invalid tags."""
-    print_tags_header("Docker InValid Tags", DOCKER_PROJ_NAME_HEADER)
+    print_tags_header("Docker InValid Tags", _docker_proj_name_header)
     for proj in projects:
         print_tags_data(proj.docker_repo_name, proj.docker_tags.invalid)
     log.info("")
 
 
-def print_stats():
+def print_stats() -> None:
     """Print simple repo/tag statistics."""
-    print_tags_header("Tag statistics (V=Valid, I=InValid)", NEXUS3_PROJ_NAME_HEADER)
+    print_tags_header("Tag statistics (V=Valid, I=InValid)", _nexus3_proj_name_header)
     fmt_str = "{:<" + str(project_max_len_chars) + "} : "
     for proj in projects:
         log.info(
@@ -811,12 +823,12 @@ def print_stats():
     log.info("")
 
 
-def print_missing_docker_proj():
+def print_missing_docker_proj() -> None:
     """Print missing docker repos."""
     log.info("Missing corresponding Docker Project")
     fmt_str = "{:<" + str(project_max_len_chars) + "} : "
-    log_str = fmt_str.format(NEXUS3_PROJ_NAME_HEADER)
-    log_str = f"{log_str}{DOCKER_PROJ_NAME_HEADER}"
+    log_str = fmt_str.format(_nexus3_proj_name_header)
+    log_str = f"{log_str}{_docker_proj_name_header}"
     log.info(log_str)
     log.info("-" * project_max_len_chars * 2)
     all_docker_repos_found = True
@@ -831,11 +843,11 @@ def print_missing_docker_proj():
     log.info("")
 
 
-def print_nexus_tags_to_copy():
+def print_nexus_tags_to_copy() -> None:
     """Print tags that needs to be copied."""
     log.info("Nexus project tags to copy to docker")
     fmt_str = "{:<" + str(project_max_len_chars) + "} : "
-    log_str = fmt_str.format(NEXUS3_PROJ_NAME_HEADER)
+    log_str = fmt_str.format(_nexus3_proj_name_header)
     log_str = "{}{}".format(log_str, "Tags to copy")
     log.info(log_str)
     log.info("-" * project_max_len_chars * 2)
@@ -853,7 +865,7 @@ def print_nexus_tags_to_copy():
     log.info("")
 
 
-def print_nbr_tags_to_copy():
+def print_nbr_tags_to_copy() -> None:
     """Print how many tags that needs to be copied."""
     _tot_tags = 0
     for proj in projects:
@@ -862,17 +874,17 @@ def print_nbr_tags_to_copy():
 
 
 def start_point(
-    org_name,
-    find_pattern="",
-    exact_match=False,
-    summary=False,
-    verbose=False,
-    copy=False,
-    progbar=False,
-    repofile=False,
-    version_regexp="",
-    docker_client=None,
-):
+    org_name: str,
+    find_pattern: str = "",
+    exact_match: bool = False,
+    summary: bool = False,
+    verbose: bool = False,
+    copy: bool = False,
+    progbar: bool = False,
+    repofile: bool = False,
+    version_regexp: str = "",
+    docker_client: docker.DockerClient | None = None,
+) -> None:
     """Main function."""
     # Verify find_pattern and specified_repo are not both used.
     if len(find_pattern) == 0 and exact_match:
@@ -880,7 +892,7 @@ def start_point(
         return
     initialize(org_name, version_regexp)
     if not validate_regexp():
-        log.error(f"Found issues with the provided regexp >>{VERSION_REGEXP}<< ")
+        log.error(f"Found issues with the provided regexp >>{_version_regexp}<< ")
         return
     if not get_nexus3_catalog(org_name, find_pattern, exact_match, repofile):
         log.info(f"Could not get any catalog from Nexus3 with org = {org_name}")

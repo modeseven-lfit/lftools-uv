@@ -1,4 +1,6 @@
 # -*- code: utf-8 -*-
+from __future__ import annotations
+
 # SPDX-License-Identifier: EPL-1.0
 ##############################################################################
 # Copyright (c) 2018 The Linux Foundation and others.
@@ -16,11 +18,13 @@ import json
 import logging
 import sys
 import time
+import urllib.error
 import urllib.request
 from datetime import datetime
+from typing import Any
 
 import openstack
-import openstack.config
+import openstack.connection
 from openstack.cloud.exc import OpenStackCloudHTTPError
 
 from lftools_uv.jenkins import Jenkins
@@ -28,10 +32,11 @@ from lftools_uv.jenkins import Jenkins
 log = logging.getLogger(__name__)
 
 
-def create(os_cloud, name, template_file, parameter_file, timeout=900, tries=2):
+def create(os_cloud: str, name: str, template_file: str, parameter_file: str, timeout: int = 900, tries: int = 2) -> None:
     """Create a heat stack from a template_file and a parameter_file."""
     cloud = openstack.connection.from_config(cloud=os_cloud)
     stack_success = False
+    stack = None
 
     print(f"Creating stack {name}")
     for _attempt in range(tries):
@@ -46,24 +51,24 @@ def create(os_cloud, name, template_file, parameter_file, timeout=900, tries=2):
                 print(e)
             sys.exit(1)
 
-        stack_id = stack.id
+        stack_id = stack.id  # pyright: ignore[reportOptionalMemberAccess, reportAttributeAccessIssue]
         t_end = time.time() + timeout
         while time.time() < t_end:
             time.sleep(10)
             stack = cloud.get_stack(stack_id)
 
-            if stack.status == "CREATE_IN_PROGRESS":
+            if stack.status == "CREATE_IN_PROGRESS":  # pyright: ignore[reportOptionalMemberAccess, reportAttributeAccessIssue]
                 print("Waiting to initialize infrastructure...")
-            elif stack.status == "CREATE_COMPLETE":
+            elif stack.status == "CREATE_COMPLETE":  # pyright: ignore[reportOptionalMemberAccess, reportAttributeAccessIssue]
                 print("Stack initialization successful.")
                 stack_success = True
                 break
-            elif stack.status == "CREATE_FAILED":
-                print(f"WARN: Failed to initialize stack. Reason: {stack.status_reason}")
+            elif stack.status == "CREATE_FAILED":  # pyright: ignore[reportOptionalMemberAccess, reportAttributeAccessIssue]
+                print(f"WARN: Failed to initialize stack. Reason: {stack.status_reason}")  # pyright: ignore[reportOptionalMemberAccess, reportAttributeAccessIssue]
                 if delete(os_cloud, stack_id):
                     break
             else:
-                print(f"Unexpected status: {stack.status}")
+                print(f"Unexpected status: {stack.status}")  # pyright: ignore[reportOptionalMemberAccess, reportAttributeAccessIssue]
 
         if stack_success:
             break
@@ -75,7 +80,7 @@ def create(os_cloud, name, template_file, parameter_file, timeout=900, tries=2):
     print("------------------------------------")
 
 
-def cost(os_cloud, stack_name, timeout=60):
+def cost(os_cloud: str, stack_name: str, timeout: int = 60) -> None:
     """Get current cost info for the stack.
 
     Return the cost in dollars & cents (x.xx).
@@ -86,13 +91,13 @@ def cost(os_cloud, stack_name, timeout=60):
         timeout: Timeout in seconds for network operations (default: 60)
     """
 
-    def get_server_cost(server_id):
+    def get_server_cost(server_id: str) -> float:
         try:
             flavor, seconds = get_server_info(server_id)
             url = "https://pricing.vexxhost.net/v1/pricing/%s/cost?seconds=%d"
             with urllib.request.urlopen(url % (flavor, seconds), timeout=timeout) as response:  # nosec
                 data = json.loads(response.read())
-            return data["cost"]
+            return float(data["cost"])
         except (TimeoutError, urllib.error.URLError) as e:
             log.warning("Failed to get cost for server %s: %s", server_id, e)
             log.warning("Returning 0 cost for this server")
@@ -101,32 +106,32 @@ def cost(os_cloud, stack_name, timeout=60):
             log.error("Unexpected error getting cost for server %s: %s", server_id, e)
             return 0.0
 
-    def parse_iso8601_time(time):
+    def parse_iso8601_time(time: str) -> datetime:
         return datetime.strptime(time, "%Y-%m-%dT%H:%M:%S.%f")
 
-    def get_server_info(server_id):
-        server = cloud.compute.find_server(server_id)
+    def get_server_info(server_id: str) -> tuple[str, float]:
+        server = cloud.compute.find_server(server_id)  # pyright: ignore[reportAttributeAccessIssue]
         diff = datetime.utcnow() - parse_iso8601_time(server.launched_at)
         return server.flavor["original_name"], diff.total_seconds()
 
-    def get_server_ids(stack_name):
+    def get_server_ids(stack_name: str) -> list[str]:
         servers = get_resources_by_type(stack_name, "OS::Nova::Server")
         return [s["physical_resource_id"] for s in servers]
 
-    def get_resources_by_type(stack_name, resource_type):
+    def get_resources_by_type(stack_name: str, resource_type: str) -> list[Any]:
         resources = get_stack_resources(stack_name)
         return [r for r in resources if r.resource_type == resource_type]
 
-    def get_stack_resources(stack_name):
+    def get_stack_resources(stack_name: str) -> list[Any]:
         resources = []
 
-        def _is_nested(resource):
+        def _is_nested(resource: Any) -> bool:
             link_types = [link["rel"] for link in resource.links]
             if "nested" in link_types:
                 return True
             return False
 
-        for r in cloud.orchestration.resources(stack_name):
+        for r in cloud.orchestration.resources(stack_name):  # pyright: ignore[reportAttributeAccessIssue]
             if _is_nested(r):
                 resources += get_stack_resources(r.physical_resource_id)
                 continue
@@ -153,7 +158,7 @@ def cost(os_cloud, stack_name, timeout=60):
         print("total: 0.0")
 
 
-def delete(os_cloud, name_or_id, force=False, timeout=900):
+def delete(os_cloud: str, name_or_id: str, force: bool = False, timeout: int = 900) -> bool | None:
     """Delete a stack.
 
     Return True if delete was successful.
@@ -167,26 +172,27 @@ def delete(os_cloud, name_or_id, force=False, timeout=900):
         time.sleep(10)
         stack = cloud.get_stack(name_or_id)
 
-        if not stack or stack.status == "DELETE_COMPLETE":
+        if not stack or stack.status == "DELETE_COMPLETE":  # pyright: ignore[reportAttributeAccessIssue]
             print(f"Successfully deleted stack {name_or_id}")
             return True
-        elif stack.status == "DELETE_IN_PROGRESS":
+        elif stack.status == "DELETE_IN_PROGRESS":  # pyright: ignore[reportAttributeAccessIssue]
             print("Waiting for stack to delete...")
-        elif stack.status == "DELETE_FAILED":
-            print(f"WARN: Failed to delete $STACK_NAME. Reason: {stack.status_reason}")
+        elif stack.status == "DELETE_FAILED":  # pyright: ignore[reportAttributeAccessIssue]
+            print(f"WARN: Failed to delete $STACK_NAME. Reason: {stack.status_reason}")  # pyright: ignore[reportAttributeAccessIssue]
             print("Retrying delete...")
             cloud.delete_stack(name_or_id)
         else:
-            print(f"WARN: Unexpected delete status: {stack.status}")
+            print(f"WARN: Unexpected delete status: {stack.status}")  # pyright: ignore[reportAttributeAccessIssue]
             print("Retrying delete...")
             cloud.delete_stack(name_or_id)
 
     print(f"Failed to delete stack {name_or_id}")
     if not force:
         return False
+    return None
 
 
-def delete_stale(os_cloud, jenkins_servers):
+def delete_stale(os_cloud: str, jenkins_servers: list[str]) -> None:
     """Search Jenkins and OpenStack for orphaned stacks and remove them.
 
     An orphaned stack is a stack that is not known in any of the Jenkins
@@ -202,11 +208,11 @@ def delete_stale(os_cloud, jenkins_servers):
     for server in jenkins_servers:
         jenkins = Jenkins(server)
         jenkins_url = jenkins.url.rstrip("/")
-        silo = jenkins_url.split("/")
+        silo_parts = jenkins_url.split("/")
 
-        if len(silo) == 4:  # https://jenkins.opendaylight.org/releng
-            silo = silo[3]
-        elif len(silo) == 3:  # https://jenkins.onap.org
+        if len(silo_parts) == 4:  # https://jenkins.opendaylight.org/releng
+            silo = silo_parts[3]
+        elif len(silo_parts) == 3:  # https://jenkins.onap.org
             silo = "production"
         else:
             log.error("Unexpected URL pattern, could not detect silo.")

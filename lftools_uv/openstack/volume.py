@@ -1,4 +1,6 @@
 # -*- code: utf-8 -*-
+from __future__ import annotations
+
 # SPDX-License-Identifier: EPL-1.0
 ##############################################################################
 # Copyright (c) 2018 The Linux Foundation and others.
@@ -12,15 +14,17 @@
 
 __author__ = "Thanh Ha"
 
+import builtins
 import sys
 from datetime import datetime, timedelta
+from typing import Any
 
 import openstack
-import openstack.config
+import openstack.connection
 from openstack.cloud.exc import OpenStackCloudException
 
 
-def _filter_volumes(volumes, days=0):
+def _filter_volumes(volumes: builtins.list[Any], days: int = 0) -> builtins.list[Any]:
     """Filter volume data and return list."""
     filtered = []
     for volume in volumes:
@@ -33,7 +37,7 @@ def _filter_volumes(volumes, days=0):
     return filtered
 
 
-def list(os_cloud, days=0):
+def list(os_cloud: str, days: int = 0) -> None:
     """List volumes found according to parameters."""
     cloud = openstack.connection.from_config(cloud=os_cloud)
     volumes = cloud.list_volumes()
@@ -43,14 +47,14 @@ def list(os_cloud, days=0):
         print(volume.name)
 
 
-def cleanup(os_cloud, days=0):
+def cleanup(os_cloud: str, days: int = 0) -> None:
     """Remove volume from cloud.
 
     :arg str os_cloud: Cloud name as defined in OpenStack clouds.yaml.
     :arg int days: Filter volumes that are older than number of days.
     """
 
-    def _remove_volumes_from_cloud(volumes, cloud):
+    def _remove_volumes_from_cloud(volumes: builtins.list[Any], cloud: Any) -> None:
         print(f"Removing {len(volumes)} volumes from {cloud.cloud_config.name}.")
         for volume in volumes:
             try:
@@ -79,7 +83,7 @@ def cleanup(os_cloud, days=0):
     _remove_volumes_from_cloud(filtered_volumes, cloud)
 
 
-def remove(os_cloud, volume_id, minutes=0):
+def remove(os_cloud: str, volume_id: str, minutes: int = 0) -> None:
     """Remove a volume from cloud.
 
     :arg str os_cloud: Cloud name as defined in OpenStack clouds.yaml.

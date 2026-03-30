@@ -44,7 +44,7 @@ def change(ctx, name):
         log.error("Username or password not set.")
         sys.exit(1)
 
-    log.info(get_token(name, jenkins.url, change=True, username=username, password=password))
+    log.info(get_token(name=name, url=jenkins.url, change=True, username=username, password=password))
 
 
 @click.command()
@@ -66,7 +66,7 @@ def init(ctx, name, url):
     config = configparser.ConfigParser()
     config.read(jenkins.config_file)
 
-    token = get_token(url, change=True, username=username, password=password)
+    token = get_token(name=name, url=url, change=True, username=username, password=password)
     try:
         config.add_section(name)
     except configparser.DuplicateSectionError as e:
@@ -93,7 +93,7 @@ def print_token(ctx):
         log.error("Username or password not set.")
         sys.exit(1)
 
-    log.info(get_token(jenkins.url, username=username, password=password))
+    log.info(get_token(name="token-created-by-lftools", url=jenkins.url, username=username, password=password))
 
 
 @click.command()
@@ -125,7 +125,7 @@ def reset(ctx, servers):
         url = config.get(server, "url")
 
         try:
-            token = get_token(url, change=True, username=username, password=password)
+            token = get_token(name="token-created-by-lftools", url=url, change=True, username=username, password=password)
             config.set(server, "password", token)
             with open(jenkins.config_file, "w") as configfile:
                 config.write(configfile)

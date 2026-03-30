@@ -179,7 +179,7 @@ def subproject_list(ctx, project_slug):
 def subproject_details(ctx, project_slug, subproject_slug):
     """Retrieve subproject's details."""
     r = readthedocs.ReadTheDocs()
-    data = r.subproject_details(project_slug, subproject_slug, "expand=active_versions")
+    data = r.subproject_details(project_slug, subproject_slug)
     log.info(pformat(data))
 
 

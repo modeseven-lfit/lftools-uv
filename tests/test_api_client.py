@@ -23,6 +23,7 @@ c = client.RestApi(creds=creds)
 def test_get():
     responses.add(responses.GET, "https://fakeurl/", json={"success": "get"}, status=200, match_querystring=True)
     resp = c.get("https://fakeurl/")
+    assert isinstance(resp, tuple)
     assert resp[1] == {"success": "get"}
 
 
@@ -32,6 +33,7 @@ def test_patch():
         responses.PATCH, url="https://fakeurl/", json={"success": "patch"}, status=200, match_querystring=True
     )
     resp = c.patch("https://fakeurl/")
+    assert isinstance(resp, tuple)
     assert resp[1] == {"success": "patch"}
 
 
@@ -39,6 +41,7 @@ def test_patch():
 def test_post():
     responses.add(responses.POST, "https://fakeurl/", json={"success": "post"}, status=201, match_querystring=True)
     resp = c.post("https://fakeurl/")
+    assert isinstance(resp, tuple)
     assert resp[1] == {"success": "post"}
 
 
@@ -46,6 +49,7 @@ def test_post():
 def test_put():
     responses.add(responses.PUT, "https://fakeurl/", json={"success": "put"}, status=200, match_querystring=True)
     resp = c.put("https://fakeurl/")
+    assert isinstance(resp, tuple)
     assert resp[1] == {"success": "put"}
 
 
@@ -53,6 +57,7 @@ def test_put():
 def test_delete():
     responses.add(responses.DELETE, "https://fakeurl/", json={"success": "delete"}, status=200, match_querystring=True)
     resp = c.delete("https://fakeurl/")
+    assert isinstance(resp, tuple)
     assert resp[1] == {"success": "delete"}
 
 
@@ -78,6 +83,7 @@ def test_post_with_unicode_string_data():
     # Test with Unicode characters that would fail with latin-1 encoding
     unicode_data = '{"user": "Aniś Bełur", "group": "tëam-ñame"}'
     resp = c.post("https://fakeurl/unicode", data=unicode_data)
+    assert isinstance(resp, tuple)
     assert resp[1] == {"success": "unicode"}
 
 
@@ -110,6 +116,7 @@ def test_post_with_various_unicode_characters():
 
         # Should not raise UnicodeEncodeError
         resp = c.post("https://fakeurl/unicode-test", data=test_data)
+        assert isinstance(resp, tuple)
         assert resp[0].status_code == 200
 
 
@@ -130,6 +137,7 @@ def test_post_with_bytes_data():
     # Pass bytes directly - should not be re-encoded
     bytes_data = b'{"already": "bytes"}'
     resp = c.post("https://fakeurl/bytes", data=bytes_data)
+    assert isinstance(resp, tuple)
     assert resp[1] == {"success": "bytes"}
 
 
@@ -149,6 +157,7 @@ def test_put_with_unicode_data():
 
     unicode_data = '{"description": "Project with español characters: ñáéíóú"}'
     resp = c.put("https://fakeurl/unicode-put", data=unicode_data)
+    assert isinstance(resp, tuple)
     assert resp[1] == {"success": "put-unicode"}
 
 
@@ -171,4 +180,5 @@ def test_patch_with_unicode_data():
     # Use the character that caused the original 'latin-1' codec error
     unicode_data = '{"user": "Jože Šmit"}'  # Contains \u0160
     resp = c.patch("https://fakeurl/unicode-patch", data=unicode_data)
+    assert isinstance(resp, tuple)
     assert resp[1] == {"success": "patch-unicode"}

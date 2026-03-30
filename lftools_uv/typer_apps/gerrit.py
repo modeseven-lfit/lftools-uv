@@ -45,7 +45,7 @@ def addfile(
     """
     try:
         g = gerrit.Gerrit(fqdn=gerrit_fqdn)
-        data = g.add_file(gerrit_fqdn, gerrit_project, filename, issue_id, file_location)
+        data = g.add_file(gerrit_fqdn, gerrit_project, filename, issue_id or "", file_location or "")
         log.info(pformat(data))
     except Exception as e:
         log.error(f"Failed to add file: {e}")
@@ -117,8 +117,7 @@ def addgithubrights(
     """
     try:
         g = gerrit.Gerrit(fqdn=gerrit_fqdn)
-        data = g.add_github_rights(gerrit_fqdn, gerrit_project)
-        log.info(pformat(data))
+        g.add_github_rights(gerrit_fqdn, gerrit_project)
     except Exception as e:
         log.error(f"Failed to add github rights: {e}")
         raise typer.Exit(1) from None
@@ -246,7 +245,7 @@ def addmavenconfig(
     """
     try:
         git = git_gerrit(fqdn=gerrit_fqdn, project=jjbrepo)
-        git.add_maven_config(gerrit_fqdn, gerrit_project, issue_id, nexus3, nexus3_ports)
+        git.add_maven_config(gerrit_fqdn, gerrit_project, issue_id, nexus3 or "", nexus3_ports or "")
     except Exception as e:
         log.error(f"Failed to add maven config: {e}")
         raise typer.Exit(1) from None

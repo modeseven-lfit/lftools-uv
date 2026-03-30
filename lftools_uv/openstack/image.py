@@ -12,16 +12,19 @@
 
 __author__ = "Thanh Ha"
 
+import builtins
 import logging
+from typing import Any
 import re
 import subprocess
 import sys
 import tempfile
 import urllib
+import urllib.request
 from datetime import datetime, timedelta
 
 import openstack
-import openstack.config
+import openstack.connection
 from openstack.cloud.exc import OpenStackCloudException
 
 log = logging.getLogger(__name__)
@@ -118,6 +121,7 @@ def cleanup(os_cloud, days=0, hide_public=False, ci_managed=True, clouds=None):
     for c in cloud_list:
         cloud = openstack.connection.from_config(cloud=c)
         images = cloud.list_images()
+        filtered_images: builtins.list[Any] = []
         if images:
             filtered_images = _filter_images(images, days, hide_public, ci_managed)
         if filtered_images:
@@ -143,7 +147,7 @@ def share(os_cloud, image, clouds):
     def _mark_image_shared(os_cloud, image):
         cmd = ["openstack", "--os-cloud", os_cloud, "image", "set", "--shared", image]
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = p.communicate()
+        _, stderr = p.communicate()
         log.debug(f"exit code: {p.returncode}")
         log.debug(stderr.decode("utf-8"))
         if p.returncode:
@@ -166,7 +170,7 @@ def share(os_cloud, image, clouds):
         log.debug(f"Sharing image {image} to {token}")
         cmd = ["openstack", "--os-cloud", os_cloud, "image", "add", "project", image, token]
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = p.communicate()
+        _, stderr = p.communicate()
         log.debug(f"exit code: {p.returncode}")
         log.debug(stderr.decode("utf-8"))
 
@@ -180,7 +184,7 @@ def share(os_cloud, image, clouds):
         log.debug(f"Accepting image {image}")
         cmd = ["openstack", "--os-cloud", cloud, "image", "set", "--accept", image]
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = p.communicate()
+        _, stderr = p.communicate()
         log.debug(f"exit code: {p.returncode}")
         log.debug(stderr.decode("utf-8"))
         if p.returncode:

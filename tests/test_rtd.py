@@ -95,7 +95,7 @@ def test_project_version_update():
         body="",
         status=204,
     )
-    assert rtd.project_version_update("TestProject1", "latest", "True")
+    assert rtd.project_version_update("TestProject1", "latest", True)
 
 
 @responses.activate
@@ -145,7 +145,7 @@ def test_project_build_details(datafiles):
         json=json_data,
         status=200,
     )
-    assert "id" in rtd.project_build_details("testproject1", 9584913)
+    assert "id" in rtd.project_build_details("testproject1", "9584913")
 
 
 @responses.activate

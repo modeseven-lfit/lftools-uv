@@ -200,6 +200,7 @@ def quiet_down(
     yes: bool = typer.Option(False, "--yes", "-y", help="Proceed without confirmation"),
 ):
     """Put Jenkins into 'Quiet Down' mode."""
+    version = "unknown"
     try:
         jenkins = ctx.obj["jenkins"]
         version = jenkins.server.get_version()
@@ -215,9 +216,7 @@ def quiet_down(
     except HTTPError as m:
         if m.code == 405:
             log.error(
-                f"\n[{m}]\nJenkins {version} does not support Quiet Down "
-                "without a CSRF Token. (CVE-2017-04-26)\nPlease "
-                "file a bug with 'python-jenkins'"
+                f"\n[{m}]\nJenkins {version} does not support Quiet Down without a CSRF Token. (CVE-2017-04-26)\nPlease file a bug with 'python-jenkins'"
             )
             raise typer.Exit(1) from None
         else:
@@ -554,6 +553,7 @@ def plugins_sec(ctx: typer.Context):
         for w in warn:
             name = w["name"]
             url = w["url"]
+            lastversion = None
             for version in w["versions"]:
                 lastversion = version.get("lastVersion")
             nv = {name: lastversion}
@@ -585,6 +585,7 @@ def plugins_sec(ctx: typer.Context):
                 for w in warn:
                     name = w["name"]
                     url = w["url"]
+                    lastversion = None
                     for version in w["versions"]:
                         lastversion = version.get("lastVersion")
                     if name == key and secdict[key] == lastversion:
@@ -616,7 +617,7 @@ def token_change(
             log.error("Username or password not set.")
             raise typer.Exit(1)
 
-        log.info(get_token(name, jenkins.url, change=True, username=username, password=password))
+        log.info(get_token(name, jenkins.url, username=username, password=password, change=True))
     except Exception as e:
         log.error(f"Failed to change token: {e}")
         raise typer.Exit(1) from None
@@ -714,7 +715,7 @@ def token_reset(
             url = config.get(server, "url")
 
             try:
-                token = get_token(url, change=True, username=username, password=password)
+                token = get_token("token-created-by-lftools", url, username=username, password=password, change=True)
                 config.set(server, "password", token)
                 with open(jenkins.config_file, "w") as configfile:
                     config.write(configfile)

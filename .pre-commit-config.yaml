@@ -3,7 +3,7 @@
 # SPDX-FileCopyrightText: 2025 The Linux Foundation
 
 ci:
-  # pre-commit.ci sandbox prevents network calls and lacks project dependencies
+  # pre-commit.ci sandbox lacks uv/project venv; skip system-local hooks
   skip: [pytest, gha-workflow-linter, basedpyright]
   autofix_commit_msg: |
     Chore: pre-commit autofixes
@@ -109,11 +109,17 @@ repos:
     hooks:
       - id: codespell
 
-  # Requires a mirror, primary repo lacks .pre-commit-hooks.yaml
-  - repo: https://github.com/DetachHead/basedpyright-prek-mirror
-    rev: 999197ca536894136b46f77eec4e4617c0724320  # frozen: 1.38.4
+  # Run basedpyright via uv so it resolves imports from the project venv.
+  # Skipped in pre-commit.ci (no uv); still runs locally and in GH Actions.
+  - repo: local
     hooks:
       - id: basedpyright
+        name: basedpyright
+        entry: uv run basedpyright
+        language: system
+        types: [python]
+        pass_filenames: false
+        always_run: true
 
   - repo: https://github.com/lfreleng-actions/gha-workflow-linter
     rev: a7caf8f3a1a05688d1cee46615ff94def617e5a3  # frozen: v1.0.2

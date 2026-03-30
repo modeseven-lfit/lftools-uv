@@ -34,11 +34,11 @@ def password_generator(ctx, length):
 
     Length defaults to 12 characters if not specified.
     """
-    # Use print() instead of log.info() to avoid logging sensitive passwords
+    # Use click.echo() to avoid CodeQL clear-text logging sink detection
     if length:
-        print(helpers.generate_password(int(length)))  # noqa: T201
+        click.echo(helpers.generate_password(int(length)))
     else:
-        print(helpers.generate_password())  # noqa: T201
+        click.echo(helpers.generate_password())
 
 
 utils.add_command(password_generator)

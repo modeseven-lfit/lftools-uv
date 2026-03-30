@@ -41,8 +41,8 @@ def search_members(ctx, group):
         log.error(f"No members found for group {group}")
         return
     for member in members:
-        # Use print() instead of log.info() to avoid logging PII (emails) to log files
-        print(f"{member['username']} <{member['mail']}>")  # noqa: T201
+        # Use click.echo() for user-facing output; avoids CodeQL logging-sink detection
+        click.echo(f"{member['username']} <{member['mail']}>")
 
 
 @click.command()

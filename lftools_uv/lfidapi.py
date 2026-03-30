@@ -63,7 +63,7 @@ def helper_search_members(group: str) -> list[dict[str, str]] | None:
             log.error(e)
             exit(1)
         result = response.json()
-        members = result["members"]
+        members: list[dict[str, str]] = result["members"]
         # Avoid logging PII (member data) - use debug level only for non-sensitive metadata
         log.debug("Retrieved %d members from group", len(members))
         return members
@@ -153,6 +153,7 @@ def helper_match_ldap_to_info(info_file: str, group: str, githuborg: str, noop: 
         except yaml.YAMLError as exc:
             print(exc)
     id = "id"
+    ldap_data: list[str] | list[dict[str, str]] | None = None
     if githuborg:
         id = "github_id"
         ldap_data = helper_list(

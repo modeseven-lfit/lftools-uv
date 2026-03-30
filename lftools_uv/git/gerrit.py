@@ -32,7 +32,7 @@ log = logging.getLogger(__name__)
 class Gerrit:
     """Wrapper for Gerrit-specific git methods."""
 
-    def __init__(self, **params: str | dict[str, str]) -> None:
+    def __init__(self, **params: Any) -> None:
         """Initialize the class."""
         self.params: dict[str, Any] = params
         self.fqdn: str = self.params["fqdn"]
@@ -212,8 +212,8 @@ class Gerrit:
         sb_creds_path = "serverCredentialMappings.sandbox.yaml"
 
         try:
-            default_servers = config.get_setting(self.fqdn, "default_servers")
-            default_servers = default_servers.split(",")
+            default_servers_str = config.get_setting(self.fqdn, "default_servers")
+            default_servers = default_servers_str.split(",")
         except configparser.NoOptionError:
             default_servers = ["releases", "snapshots", "staging", "site"]
 

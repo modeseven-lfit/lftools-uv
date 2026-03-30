@@ -89,7 +89,6 @@ def _format_image_id(id: str) -> str:
 
 def _request_get(url: str) -> requests.Response:
     """Execute a request get, return the resp."""
-    resp = {}
     try:
         resp = requests.get(url)
     except requests.exceptions.RequestException as excinfo:
@@ -251,8 +250,8 @@ class NexusTagClass(TagClass):
             raw_tags = raw_tags.replace("}", "")
             raw_tags = raw_tags.replace("]", "")
             raw_tags = raw_tags.replace(" ", "")
-            raw_tags = raw_tags.split("[")
-            TmpSplittedTags = raw_tags[1].split(",")
+            split_tags = raw_tags.split("[")
+            TmpSplittedTags = split_tags[1].split(",")
             if len(TmpSplittedTags) > 0:
                 for tag_2_add in TmpSplittedTags:
                     self.add_tag(tag_2_add)
@@ -636,8 +635,8 @@ def get_nexus3_catalog(org_name: str = "", find_pattern: str = "", exact_match: 
         raw_catalog = raw_catalog.replace("}", "")
         raw_catalog = raw_catalog.replace("[", "")
         raw_catalog = raw_catalog.replace("]", "")
-        raw_catalog = raw_catalog.split(":")
-        TmpCatalog = raw_catalog[1].split(",")
+        split_catalog = raw_catalog.split(":")
+        TmpCatalog = split_catalog[1].split(",")
         for word in TmpCatalog:
             # Remove all projects that do not start with org_name
             use_this_repo = False

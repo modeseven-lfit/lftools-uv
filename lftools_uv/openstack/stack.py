@@ -97,7 +97,7 @@ def cost(os_cloud: str, stack_name: str, timeout: int = 60) -> None:
             url = "https://pricing.vexxhost.net/v1/pricing/%s/cost?seconds=%d"
             with urllib.request.urlopen(url % (flavor, seconds), timeout=timeout) as response:  # nosec
                 data = json.loads(response.read())
-            return data["cost"]
+            return float(data["cost"])
         except (TimeoutError, urllib.error.URLError) as e:
             log.warning("Failed to get cost for server %s: %s", server_id, e)
             log.warning("Returning 0 cost for this server")
@@ -189,6 +189,7 @@ def delete(os_cloud: str, name_or_id: str, force: bool = False, timeout: int = 9
     print(f"Failed to delete stack {name_or_id}")
     if not force:
         return False
+    return None
 
 
 def delete_stale(os_cloud: str, jenkins_servers: list[str]) -> None:
@@ -207,11 +208,11 @@ def delete_stale(os_cloud: str, jenkins_servers: list[str]) -> None:
     for server in jenkins_servers:
         jenkins = Jenkins(server)
         jenkins_url = jenkins.url.rstrip("/")
-        silo = jenkins_url.split("/")
+        silo_parts = jenkins_url.split("/")
 
-        if len(silo) == 4:  # https://jenkins.opendaylight.org/releng
-            silo = silo[3]
-        elif len(silo) == 3:  # https://jenkins.onap.org
+        if len(silo_parts) == 4:  # https://jenkins.opendaylight.org/releng
+            silo = silo_parts[3]
+        elif len(silo_parts) == 3:  # https://jenkins.onap.org
             silo = "production"
         else:
             log.error("Unexpected URL pattern, could not detect silo.")

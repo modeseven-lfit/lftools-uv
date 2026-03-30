@@ -208,7 +208,7 @@ class Nexus:
         }
 
         json_data = json.dumps(role).encode(encoding="utf-8")
-        log.debug(f"Sending role {json_data} to Nexus")
+        log.debug(f"Sending role {json_data.decode('utf-8')} to Nexus")
 
         r = requests.post(url, auth=self.auth, headers=self.headers, data=json_data)
 
@@ -326,7 +326,7 @@ class Nexus:
             items += result["items"]
             cont_token = result["continuationToken"]
 
-        return items
+        return list(items)
 
     def search_images(self, repo: str, pattern: str) -> list[object]:
         """Find all images in the given repository matching the pattern."""
@@ -348,7 +348,7 @@ class Nexus:
             items += result["items"]
             cont_token = result["continuationToken"]
 
-        return items
+        return list(items)
 
     def delete_image(self, image: dict[str, object]) -> None:
         """Delete an image from the repo, using the id field."""

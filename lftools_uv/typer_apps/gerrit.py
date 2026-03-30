@@ -117,8 +117,7 @@ def addgithubrights(
     """
     try:
         g = gerrit.Gerrit(fqdn=gerrit_fqdn)
-        data = g.add_github_rights(gerrit_fqdn, gerrit_project)
-        log.info(pformat(data))
+        g.add_github_rights(gerrit_fqdn, gerrit_project)
     except Exception as e:
         log.error(f"Failed to add github rights: {e}")
         raise typer.Exit(1) from None

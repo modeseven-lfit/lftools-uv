@@ -128,7 +128,7 @@ def _request_post_file(
     files: dict[str, object] = {"file": upload_file}
     try:
         if parameters:
-            resp = requests.post(url, data=parameters, files=files, timeout=30)  # pyright: ignore[reportArgumentType]
+            resp = requests.post(url, data=parameters, files=files, timeout=30)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
         else:
             resp = requests.post(url, data=upload_file.read(), timeout=30)
     except requests.exceptions.MissingSchema as err:
@@ -167,7 +167,7 @@ def _request_put_file(
     files: dict[str, object] = {"file": upload_file}
     try:
         if parameters:
-            resp = requests.put(url, data=parameters, files=files, timeout=30)  # pyright: ignore[reportArgumentType]
+            resp = requests.put(url, data=parameters, files=files, timeout=30)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
         else:
             resp = requests.put(url, data=upload_file, timeout=30)
     except requests.exceptions.MissingSchema as err:

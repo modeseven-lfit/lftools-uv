@@ -36,7 +36,7 @@ def get_credentials(settings_file: str | None, url: str | None = None) -> dict[s
     if settings_file:
         try:
             with open(settings_file) as f:
-                settings = yaml.safe_load(f)
+                settings: dict[str, str] = yaml.safe_load(f)
         except OSError:
             log.error(f'Error reading settings file "{settings_file}"')
             sys.exit(1)
@@ -70,7 +70,7 @@ def get_url(settings_file: str | None) -> str:
             sys.exit(1)
 
         if "nexus" in settings:
-            return settings["nexus"]
+            return str(settings["nexus"])
 
     return ""
 
@@ -134,14 +134,14 @@ def create_repos(config_file: str, settings_file: str | None, url: str) -> None:
         username = config.get_setting(settings_url, "username")
 
     with open(config_file) as f:
-        config = yaml.safe_load(f)
+        repo_config = yaml.safe_load(f)
     settings: dict[str, Any] = {}
     if settings_file:
         with open(settings_file) as f:
             settings = yaml.safe_load(f)
 
     for setting in ["email_domain", "base_groupId", "repositories"]:
-        if setting not in config:
+        if setting not in repo_config:
             log.error(f"{setting} needs to be defined in {config_file}")
             sys.exit(1)
 
@@ -176,7 +176,7 @@ def create_repos(config_file: str, settings_file: str | None, url: str) -> None:
         privs = {}
         for priv in privs_set:
             try:
-                privs[priv] = _nexus.get_priv(name, priv)
+                privs[priv] = _nexus.get_priv(name, priv)  # type: ignore[func-returns-value]
                 log.info(f"Creating {priv} privileges.")
             except LookupError:
                 privs[priv] = _nexus.create_priv(name, target_id, priv)
@@ -220,23 +220,23 @@ def create_repos(config_file: str, settings_file: str | None, url: str) -> None:
                 build_repo(sub_repo, sub_repo_id, config["repositories"][sub_repo], groupId, extra_privs, email_domain)
 
     log.warning("Nexus repo creation started. Aborting now could leave tasks undone!")
-    if "global_privs" in config:
-        global_privs = config["global_privs"]
+    if "global_privs" in repo_config:
+        global_privs = repo_config["global_privs"]
     else:
         global_privs = []
-    if "strict_url_regex" in config:
-        strict = config["strict_url_regex"]
+    if "strict_url_regex" in repo_config:
+        strict = repo_config["strict_url_regex"]
     else:
         strict = True
 
-    for repo in config["repositories"]:
+    for repo in repo_config["repositories"]:
         build_repo(
             repo,
             repo,
-            config["repositories"][repo],
-            config["base_groupId"],
+            repo_config["repositories"][repo],
+            repo_config["base_groupId"],
             global_privs,
-            config["email_domain"],
+            repo_config["email_domain"],
             strict,
         )
 
@@ -250,7 +250,7 @@ def create_roles(config_file: str, settings_file: str) -> None:
         information.
     """
     with open(config_file) as f:
-        config = yaml.safe_load(f)
+        role_config = yaml.safe_load(f)
 
     with open(settings_file) as f:
         settings = yaml.safe_load(f)
@@ -263,34 +263,34 @@ def create_roles(config_file: str, settings_file: str) -> None:
     _nexus = Nexus(settings["nexus"], settings["user"], settings["password"])
 
     required_settings = ["name", "roles"]
-    for role in config:
+    for role in role_config:
         for setting in required_settings:
-            if setting not in config[role]:
+            if setting not in role_config[role]:
                 log.error(
                     f"{setting} not defined for role {role}. Please ensure that {required_settings} are defined for each role in {config_file}"
                 )
                 sys.exit(1)
 
         subrole_ids = []
-        for subrole in config[role]["roles"]:
+        for subrole in role_config[role]["roles"]:
             subrole_id = _nexus.get_role(subrole)
             subrole_ids.append(subrole_id)
-        config[role]["roles"] = subrole_ids
+        role_config[role]["roles"] = subrole_ids
 
-        if "description" not in config[role]:
-            config[role]["description"] = config[role]["name"]
+        if "description" not in role_config[role]:
+            role_config[role]["description"] = role_config[role]["name"]
 
-        if "privileges" in config[role]:
+        if "privileges" in role_config[role]:
             priv_ids = []
-            for priv in config[role]["privileges"]:
+            for priv in role_config[role]["privileges"]:
                 priv_ids.append(_nexus.get_priv_by_name(priv))
-            config[role]["privileges"] = priv_ids
+            role_config[role]["privileges"] = priv_ids
         else:
-            config[role]["privileges"] = []
+            role_config[role]["privileges"] = []
 
-    for role in config:
+    for role in role_config:
         _nexus.create_role(
-            config[role]["name"], config[role]["privileges"], role, config[role]["description"], config[role]["roles"]
+            role_config[role]["name"], role_config[role]["privileges"], role, role_config[role]["description"], role_config[role]["roles"]
         )
 
 
@@ -518,9 +518,9 @@ def release_staging_repos(repos: tuple[str, ...], verify: bool, nexus_url: str =
             sleep(5)  # Quick sleep to allow small repos to release.
             while True:
                 try:
-                    response = requests.get(activity_url, auth=_nexus.auth).text
+                    response_text = requests.get(activity_url, auth=_nexus.auth).text
                     consecutive_failures = 0
-                    root = et.fromstring(response)  # nosec
+                    root = et.fromstring(response_text)  # nosec
                     time = find_release_time(root.findall("./stagingActivity"))
                     if time is not None:
                         log.info(f"Repo released at: {time}")

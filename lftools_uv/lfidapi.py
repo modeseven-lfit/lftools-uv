@@ -202,8 +202,13 @@ def helper_match_ldap_to_info(info_file: str, group: str, githuborg: str, noop: 
     for x in all_users:
         click.echo(f"  {x}")
 
+    # Precompute removed/added sets once before the loop to avoid O(n^2) recomputation
+    info_committers_set = set(info_committers)
+    ldap_committers_set = set(ldap_committers)
+    removed_by_patch = ldap_committers_set - info_committers_set
+    added_by_patch = info_committers_set - ldap_committers_set
+
     for user in all_users:
-        removed_by_patch = [item for item in ldap_committers if item not in info_committers]
         if user in removed_by_patch:
             # Use sys.stdout.write() to avoid CodeQL clear-text logging sink detection
             sys.stdout.write(f"User found in group {group}, scheduled for removal\n")
@@ -216,7 +221,6 @@ def helper_match_ldap_to_info(info_file: str, group: str, githuborg: str, noop: 
                 else:
                     helper_user(user, group, "--delete")
 
-        added_by_patch = [item for item in info_committers if item not in ldap_committers]
         if user in added_by_patch:
             # Use sys.stdout.write() to avoid CodeQL clear-text logging sink detection
             sys.stdout.write(f"User not found in group {group}, scheduled for addition\n")

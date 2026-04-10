@@ -149,17 +149,24 @@ def project_update(
         lftools-uv rtd project-update my-project --description "Updated description"
     """
     try:
-        if not any([name, description, repo_url]):
+        if name is None and description is None and repo_url is None:
             typer.echo("No update parameters provided")
             raise typer.Exit(1)
 
         rtd_client = ReadTheDocs()
-        # Note: The actual API may require different parameters
-        success, _status_code = rtd_client.project_update(project_slug)
+        update_data: dict[str, object] = {}
+        if name is not None:
+            update_data["name"] = name
+        if description is not None:
+            update_data["description"] = description
+        if repo_url is not None:
+            update_data["repository"] = {"url": repo_url}
+
+        success, status_code = rtd_client.project_update(project_slug, update_data)
         if success:
             typer.echo(f"✅ Project '{project_slug}' updated successfully")
         else:
-            typer.echo(f"Failed to update project '{project_slug}'")
+            typer.echo(f"Failed to update project '{project_slug}' (HTTP {status_code})")
             raise typer.Exit(1)
     except Exception as e:
         log.error(f"Failed to update project: {e}")

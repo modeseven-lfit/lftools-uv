@@ -59,7 +59,7 @@ def archives(
 @deploy_app.command(name="copy-archives")
 def copy_archives(
     workspace: str = typer.Argument(..., envvar="WORKSPACE", help="Workspace directory to copy files from"),
-    pattern: list[str] = typer.Argument(None, help="Unix glob patterns of files to copy for archiving"),
+    pattern: list[str] | None = typer.Argument(None, help="Unix glob patterns of files to copy for archiving"),
 ) -> None:
     """Copy files for archiving.
 

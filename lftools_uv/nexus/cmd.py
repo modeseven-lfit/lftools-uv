@@ -186,7 +186,7 @@ def create_repos(config_file: str, settings_file: str | None, url: str) -> None:
             role_id = _nexus.get_role(name)
             log.info(f"Role {role_id} already exists.")
         except LookupError:
-            role_id = _nexus.create_role(name, cast(list[str], cast(object, privs)))
+            role_id = _nexus.create_role(name, list(privs.values()))
 
         # Create user
         try:

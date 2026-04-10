@@ -43,9 +43,8 @@ def test_format_url():
 
 def test_log_and_exit():
     """Test exit."""
-    with pytest.raises(SystemExit) as excinfo:
-        deploy_sys._log_error_and_exit("testmsg")
-    assert excinfo.type is SystemExit  # type: ignore[unreachable]
+    excinfo = pytest.raises(SystemExit, deploy_sys._log_error_and_exit, "testmsg")
+    assert excinfo.type is SystemExit
 
 
 @pytest.mark.datafiles(

@@ -21,9 +21,9 @@ __summary__ = "Linux Foundation Release Engineering Tools"
 import logging
 import sys
 
-try:
+if sys.version_info >= (3, 12):
     from typing import override
-except ImportError:
+else:
     from typing_extensions import override
 
 

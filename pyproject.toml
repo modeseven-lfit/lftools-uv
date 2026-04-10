@@ -186,6 +186,10 @@ exclude = [
 
 # Removed [tool.isort] section (ruff handles import sorting)
 
+[tool.basedpyright]
+typeCheckingMode = "standard"
+pythonVersion = "3.11"
+
 [tool.mypy]
 python_version = "3.11"
 warn_return_any = true

@@ -173,10 +173,10 @@ def create_repos(config_file: str, settings_file: str | None, url: str) -> None:
             "update",
         ]
 
-        privs = {}
+        privs: dict[str, str] = {}
         for priv in privs_set:
             try:
-                privs[priv] = _nexus.get_priv(name, priv)  # type: ignore[func-returns-value]
+                privs[priv] = _nexus.get_priv(name, priv)
                 log.info(f"Creating {priv} privileges.")
             except LookupError:
                 privs[priv] = _nexus.create_priv(name, target_id, priv)

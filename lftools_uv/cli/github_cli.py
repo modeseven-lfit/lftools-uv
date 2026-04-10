@@ -228,13 +228,13 @@ def createteam(ctx, organization, name, repo, privacy):
     repos = []
     if repo:
         try:
-            repos = org.get_repos
+            get_repos = org.get_repos
         except GithubException as ghe:
             log.error(ghe)
             sys.exit(1)
 
         my_repos = [repo]
-        repos = [repo for repo in repos() if repo.name in my_repos]
+        repos = [repo for repo in get_repos() if repo.name in my_repos]
         for repo in repos:
             log.info(repo)
         if repos:

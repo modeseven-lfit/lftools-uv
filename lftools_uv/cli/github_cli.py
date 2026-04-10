@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 # SPDX-License-Identifier: EPL-1.0
 ##############################################################################
 # Copyright (c) 2019 The Linux Foundation and others.
@@ -10,6 +8,8 @@ from __future__ import annotations
 # http://www.eclipse.org/legal/epl-v10.html
 ##############################################################################
 """Github tools."""
+
+from __future__ import annotations
 
 import logging
 import sys

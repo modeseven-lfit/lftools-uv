@@ -80,7 +80,7 @@ from typing import TYPE_CHECKING, ParamSpec, TypeVar
 try:
     import click
 except Exception:  # pragma: no cover - defensive
-    click = None  # type: ignore[assignment]
+    click = None
 
 if TYPE_CHECKING:
     import click as _click_type

@@ -32,7 +32,7 @@ lfidapi_app = typer.Typer(
 
 
 @lfidapi_app.callback()
-def lfidapi_callback():
+def lfidapi_callback() -> None:
     """LFID API TOOLS."""
     pass
 
@@ -40,7 +40,7 @@ def lfidapi_callback():
 @lfidapi_app.command("search-members")
 def search_members(
     group: str = typer.Argument(..., help="Group name to search for members"),
-):
+) -> None:
     """List members of a group.
 
     Args:
@@ -68,7 +68,7 @@ def user_command(
     user: str = typer.Argument(..., help="Username to add or remove"),
     group: str = typer.Argument(..., help="Group name"),
     delete: bool = typer.Option(False, "--delete", help="Remove user from group instead of adding"),
-):
+) -> None:
     """Add and remove users from groups.
 
     Args:
@@ -94,7 +94,7 @@ def user_command(
 def invite_command(
     email: str = typer.Argument(..., help="Email address to invite"),
     group: str = typer.Argument(..., help="Group name to invite to"),
-):
+) -> None:
     """Email invitation to join group.
 
     Args:
@@ -116,7 +116,7 @@ def invite_command(
 @lfidapi_app.command("create-group")
 def create_group_command(
     group: str = typer.Argument(..., help="Group name to create"),
-):
+) -> None:
     """Create group.
 
     Args:
@@ -140,7 +140,7 @@ def match_ldap_info(
     group: str = typer.Argument(..., help="LDAP group name"),
     githuborg: str = typer.Option("", help="GitHub organization (leave empty for LDAP)"),
     noop: bool = typer.Option(False, "--noop", help="Dry run mode"),
-):
+) -> None:
     """Match LDAP information to INFO files."""
     try:
         helper_match_ldap_to_info(info_file, group, githuborg, noop)

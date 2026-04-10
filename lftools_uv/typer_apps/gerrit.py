@@ -33,7 +33,7 @@ def addfile(
         None, "--issue-id", help="For projects that enforce an issue id for changesets"
     ),
     file_location: str | None = typer.Option(None, "--file-location", help="File path within the repository"),
-):
+) -> None:
     """Add a file for review to a Project.
 
     Requires gerrit directory.
@@ -61,7 +61,7 @@ def addinfojob(
         None, "--issue-id", help="For projects that enforce an issue id for changesets"
     ),
     agent: str | None = typer.Option(None, "--agent", help="Specify the Jenkins agent label to run the job on"),
-):
+) -> None:
     """Add an INFO job for a new Project.
 
     Adds info verify jenkins job for project.
@@ -90,7 +90,7 @@ def addgitreview(
     issue_id: str | None = typer.Option(
         None, "--issue-id", help="For projects that enforce an issue id for changesets"
     ),
-):
+) -> None:
     """Add git review to a project.
 
     Example:
@@ -109,7 +109,7 @@ def addgitreview(
 def addgithubrights(
     gerrit_fqdn: str = typer.Argument(..., help="Gerrit FQDN"),
     gerrit_project: str = typer.Argument(..., help="Gerrit project name"),
-):
+) -> None:
     """Grant Github read for a project.
 
     gerrit_url gerrit.o-ran-sc.org
@@ -127,7 +127,7 @@ def addgithubrights(
 def abandonchanges(
     gerrit_fqdn: str = typer.Argument(..., help="Gerrit FQDN"),
     gerrit_project: str = typer.Argument(..., help="Gerrit project name"),
-):
+) -> None:
     """Abandon all OPEN changes for a gerrit project.
 
     gerrit_url gerrit.o-ran-sc.org
@@ -149,7 +149,7 @@ def createproject(
     ldap_group: str = typer.Argument(..., help="LDAP group name"),
     description: str = typer.Option(..., "--description", help="Project Description"),
     check: bool = typer.Option(False, "--check", help="just check if the project exists"),
-):
+) -> None:
     """Create a project via the gerrit API.
 
     Creates a gerrit project.
@@ -174,7 +174,7 @@ def createproject(
 def create_saml_group(
     gerrit_fqdn: str = typer.Argument(..., help="Gerrit FQDN"),
     ldap_group: str = typer.Argument(..., help="LDAP group name"),
-):
+) -> None:
     """Create saml group based on ldap group."""
     try:
         g = gerrit.Gerrit(fqdn=gerrit_fqdn)
@@ -189,7 +189,7 @@ def create_saml_group(
 def list_project_permissions(
     gerrit_fqdn: str = typer.Argument(..., help="Gerrit FQDN"),
     project: str = typer.Argument(..., help="Project name"),
-):
+) -> None:
     """List Owners of a Project."""
     try:
         g = gerrit.Gerrit(fqdn=gerrit_fqdn)
@@ -205,7 +205,7 @@ def list_project_permissions(
 def list_project_inherits_from(
     gerrit_fqdn: str = typer.Argument(..., help="Gerrit FQDN"),
     gerrit_project: str = typer.Argument(..., help="Gerrit project name"),
-):
+) -> None:
     """List who a project inherits from."""
     try:
         g = gerrit.Gerrit(fqdn=gerrit_fqdn)
@@ -230,7 +230,7 @@ def addmavenconfig(
         "--nexus3-ports",
         help="Comma-separated list of ports supported by the Nexus 3 server specified",
     ),
-):
+) -> None:
     """Add maven config file for JCasC.
 
     The following options can be set in the gerrit server's entry in lftools.ini:

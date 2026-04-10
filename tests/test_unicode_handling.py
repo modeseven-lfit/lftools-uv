@@ -363,7 +363,7 @@ class TestUnicodeRegressionPrevention:
         This simulates what happens in RestApi._request() after the fix.
         """
         # Simulate the fix in client.py
-        data = '{"reviewer": "Aniś Bełur", "group": "tëam-ñame"}'
+        data: str | bytes = '{"reviewer": "Aniś Bełur", "group": "tëam-ñame"}'
 
         # The fix: encode string data as UTF-8
         if isinstance(data, str):

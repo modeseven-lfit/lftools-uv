@@ -25,7 +25,7 @@ log: logging.Logger = logging.getLogger(__name__)
 
 @click.group()
 @click.pass_context
-def version(ctx) -> None:
+def version(ctx: click.Context) -> None:
     """Version bump script for Maven based projects.
 
     In general, versions should be: <major>.<minor>.<micro>[-<human-readable-tag>]
@@ -59,7 +59,7 @@ def version(ctx) -> None:
 @click.command()
 @click.argument("release-tag")
 @click.pass_context
-def bump(ctx, release_tag: str) -> None:
+def bump(ctx: click.Context, release_tag: str) -> None:
     """Version bump pom files in a Maven project by x.(y+1).z or x.y.(z+1).
 
     This script performs version bumping as follows:
@@ -77,7 +77,7 @@ def bump(ctx, release_tag: str) -> None:
 @click.command()
 @click.argument("release-tag")
 @click.pass_context
-def release(ctx, release_tag: str) -> None:
+def release(ctx: click.Context, release_tag: str) -> None:
     """Version bump pom files in a Maven project from SNAPSHOT to RELEASE_TAG.
 
     Searches poms for all instances of SNAPSHOT version and changes it to
@@ -92,7 +92,7 @@ def release(ctx, release_tag: str) -> None:
 @click.argument("patch-dir")
 @click.option("--project", default="OpenDaylight", help="Project name to use when tagging. (Default: OpenDaylight)")
 @click.pass_context
-def patch(ctx, release_tag: str, patch_dir: str, project: str) -> None:
+def patch(ctx: click.Context, release_tag: str, patch_dir: str, project: str) -> None:
     """Patch a project with git.bundles and then version bump.
 
     Applies git.bundle patches to the project and then performs a version bump

@@ -31,7 +31,7 @@ pre-configured with an entry for the Nexus server. Eg.
 
 
 @deploy_app.callback()
-def deploy_callback():
+def deploy_callback() -> None:
     """Deploy files to a Nexus sites repository."""
     pass
 
@@ -42,7 +42,7 @@ def archives(
     nexus_path: str = typer.Argument(..., envvar="NEXUS_PATH", help="Path on Nexus where files will be deployed"),
     workspace: str = typer.Argument(..., envvar="WORKSPACE", help="Workspace directory containing files to deploy"),
     pattern: list[str] = typer.Option([], "-p", "--pattern", help="Unix glob patterns for files to deploy"),
-):
+) -> None:
     """Archive files to a Nexus site repository.
 
     Provides 2 ways to archive files:
@@ -60,7 +60,7 @@ def archives(
 def copy_archives(
     workspace: str = typer.Argument(..., envvar="WORKSPACE", help="Workspace directory to copy files from"),
     pattern: list[str] = typer.Argument(None, help="Unix glob patterns of files to copy for archiving"),
-):
+) -> None:
     """Copy files for archiving.
 
     Arguments:
@@ -83,7 +83,7 @@ def file(
     packaging: str = typer.Argument(..., help="Maven packaging type"),
     file_path: str = typer.Argument(..., help="Path to file to deploy"),
     classifier: str = typer.Option("", "-c", "--classifier", help="Maven classifier"),
-):
+) -> None:
     """Deploy a file to Nexus using Maven.
 
     This command will upload a file to a Nexus repository using the Maven
@@ -100,7 +100,7 @@ def logs(
     nexus_url: str = typer.Argument(..., envvar="NEXUS_URL", help="Nexus server URL"),
     nexus_path: str = typer.Argument(..., envvar="NEXUS_PATH", help="Path on Nexus where logs will be deployed"),
     build_url: str = typer.Argument(..., envvar="BUILD_URL", help="Build URL for log collection"),
-):
+) -> None:
     """Deploy logs to a Nexus site repository.
 
     This script fetches logs and system information and pushes them to Nexus
@@ -119,7 +119,7 @@ def s3(
     build_url: str = typer.Argument(..., envvar="BUILD_URL", help="Build URL for log collection"),
     workspace: str = typer.Argument(..., envvar="WORKSPACE", help="Workspace directory containing files to deploy"),
     pattern: list[str] = typer.Option([], "-p", "--pattern", help="Unix glob patterns for files to deploy"),
-):
+) -> None:
     """Deploy logs and archives to a S3 bucket."""
     pattern_str = None if not pattern else pattern
     deploy_sys.deploy_s3(s3_bucket, s3_path, build_url, workspace, pattern_str)
@@ -148,7 +148,7 @@ def maven_file(
     # Repository Config
     repo_url: str | None = typer.Option(None, "-r", "--repo-url", help="Maven repository URL."),
     repository_layout: str = typer.Option("default", "-l", "--repository-layout", help="Repository layout."),
-):
+) -> None:
     """Deploy a file to Nexus using Maven deploy:deploy-file.
 
     This script takes a file and deploys to a Nexus repository using Maven
@@ -171,7 +171,7 @@ def nexus(
     nexus_repo_url: str = typer.Argument(..., envvar="NEXUS_REPO_URL", help="Nexus repository URL"),
     deploy_dir: str = typer.Argument(..., envvar="DEPLOY_DIR", help="Directory containing Maven repository to deploy"),
     snapshot: bool = typer.Option(False, "-s", "--snapshot", help="Deploy a snapshot repo."),
-):
+) -> None:
     """Deploy a Maven repository to a specified Nexus repository.
 
     This script takes a local Maven repository and deploys it to a Nexus
@@ -194,7 +194,7 @@ def nexus_stage(
     nexus_url: str = typer.Argument(..., envvar="NEXUS_URL", help="Nexus server URL"),
     staging_profile_id: str = typer.Argument(..., envvar="STAGING_PROFILE_ID", help="Nexus staging profile ID"),
     deploy_dir: str = typer.Argument(..., envvar="DEPLOY_DIR", help="Directory containing Maven repository to deploy"),
-):
+) -> None:
     """Deploy a Maven repository to a Nexus staging repository.
 
     This script takes a local Maven repository and deploys it to a Nexus
@@ -208,7 +208,7 @@ def nexus_stage_repo_close(
     nexus_url: str = typer.Argument(..., envvar="NEXUS_URL", help="Nexus server URL"),
     staging_profile_id: str = typer.Argument(..., envvar="STAGING_PROFILE_ID", help="Nexus staging profile ID"),
     staging_repo_id: str = typer.Argument(..., help="Nexus staging repository ID"),
-):
+) -> None:
     """Close a Nexus staging repo."""
     deploy_sys.nexus_stage_repo_close(nexus_url, staging_profile_id, staging_repo_id)
 
@@ -217,7 +217,7 @@ def nexus_stage_repo_close(
 def nexus_stage_repo_create(
     nexus_url: str = typer.Argument(..., envvar="NEXUS_URL", help="Nexus server URL"),
     staging_profile_id: str = typer.Argument(..., envvar="STAGING_PROFILE_ID", help="Nexus staging profile ID"),
-):
+) -> None:
     """Create a Nexus staging repo."""
     staging_repo_id = deploy_sys.nexus_stage_repo_create(nexus_url, staging_profile_id)
     log.info(staging_repo_id)
@@ -229,7 +229,7 @@ def nexus_zip(
     nexus_repo: str = typer.Argument(..., envvar="NEXUS_REPO", help="Nexus repository name"),
     nexus_path: str = typer.Argument(..., envvar="NEXUS_PATH", help="Path on Nexus where zip will be deployed"),
     deploy_zip: str = typer.Argument(..., envvar="DEPLOY_DIR", help="Path to zip file to deploy"),
-):
+) -> None:
     """Deploy zip file containing artifacts to Nexus using cURL.
 
     This script simply takes a zip file preformatted in the correct

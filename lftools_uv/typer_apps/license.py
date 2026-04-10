@@ -27,7 +27,7 @@ license_app = typer.Typer(
 
 
 @license_app.callback()
-def license_callback():
+def license_callback() -> None:
     """Scan code for license headers."""
     pass
 
@@ -38,7 +38,7 @@ def check_command(
     license_file: str = typer.Option(
         "license-header.txt", "-l", "--license", help="License header file to compare against"
     ),
-):
+) -> None:
     """Check files for missing license headers.
 
     Does not care about line formatting of the license as long as all of the

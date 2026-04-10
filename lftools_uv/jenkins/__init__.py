@@ -17,7 +17,6 @@ import configparser
 import logging
 import os
 
-
 import jenkins
 
 log: logging.Logger = logging.getLogger(__name__)
@@ -80,6 +79,6 @@ class Jenkins:
                 log.debug("jenkins_jobs.ini not found in any of the default paths.")
                 server = "https://localhost:8080"
 
-        self.server: jenkins.Jenkins = jenkins.Jenkins(server, username=user, password=password)  # type: ignore
+        self.server: jenkins.Jenkins = jenkins.Jenkins(server, username=user, password=password)
 
         self.url: str = server

@@ -27,7 +27,7 @@ schema_app = typer.Typer(
 
 
 @schema_app.callback()
-def schema_callback():
+def schema_callback() -> None:
     """Verify YAML Schema."""
     pass
 
@@ -36,7 +36,7 @@ def schema_callback():
 def verify_schema(
     yamlfile: Path = typer.Argument(..., help="Release YAML file to be validated"),
     schemafile: Path = typer.Argument(..., help="SCHEMA file to validate against"),
-):
+) -> None:
     """Verify YAML Schema.
 
     Args:

@@ -30,7 +30,7 @@ utils_app = typer.Typer(
 
 
 @utils_app.callback()
-def utils_callback():
+def utils_callback() -> None:
     """Tools to make life easier."""
     pass
 
@@ -39,7 +39,7 @@ def utils_callback():
 def password_generator(
     ctx: typer.Context,
     length: int | None = typer.Argument(None, help="Length of the password to generate (default: 12)"),
-):
+) -> None:
     """Generate a complex password.
 
     Generates a password using a mix of letters, digits, and punctuation

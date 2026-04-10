@@ -34,7 +34,7 @@ def get_branches(path=getcwd(), invert=False):
             .decode(encoding="UTF-8")
             .splitlines()
         )
-        hashlist = []
+        hashlist: list[str] = []
         for branch in branches:
             branch = branch.strip()
             hashes = (

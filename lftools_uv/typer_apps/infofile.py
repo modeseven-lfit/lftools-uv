@@ -27,7 +27,7 @@ infofile_app = typer.Typer(
 
 
 @infofile_app.callback()
-def infofile_callback():
+def infofile_callback() -> None:
     """INFO.yaml TOOLS."""
     pass
 
@@ -39,7 +39,7 @@ def create_info_file(
     directory: str = typer.Option("r", "--directory", help="Custom gerrit directory, e.g. not /r/"),
     empty: bool = typer.Option(False, "--empty", help="Create info file for uncreated project"),
     tsc_approval: str = typer.Option("missing", "--tsc-approval", help="Optionally provide a TSC approval link"),
-):
+) -> None:
     """Create an initial INFO file.
 
     Args:
@@ -72,7 +72,7 @@ def get_committers(
     ldap_group: str = typer.Argument(..., help="LDAP group name"),
     info_file: str = typer.Argument(..., help="Path to INFO.yaml file"),
     directory: str = typer.Option("r", "--directory", help="Custom gerrit directory"),
-):
+) -> None:
     """Get committers from LDAP and update INFO file.
 
     Args:
@@ -100,7 +100,7 @@ def get_committers(
 @infofile_app.command("validate-info-file")
 def validate_info_file(
     info_file: str = typer.Argument(..., help="Path to INFO.yaml file to validate"),
-):
+) -> None:
     """Validate INFO.yaml file format and content.
 
     Args:
@@ -122,7 +122,7 @@ def validate_info_file(
 @infofile_app.command("check-committers")
 def check_committers(
     info_file: str = typer.Argument(..., help="Path to INFO.yaml file"),
-):
+) -> None:
     """Check committers in INFO file against LDAP.
 
     Args:
@@ -144,7 +144,7 @@ def check_committers(
 @infofile_app.command("match-ldap")
 def match_ldap(
     info_file: str = typer.Argument(..., help="Path to INFO.yaml file"),
-):
+) -> None:
     """Match LDAP information to INFO file.
 
     Args:

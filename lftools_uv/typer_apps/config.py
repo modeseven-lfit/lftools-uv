@@ -24,7 +24,7 @@ config_app = typer.Typer(name="config", help="Configuration subsystem.")
 
 
 @config_app.callback()
-def config_callback():
+def config_callback() -> None:
     """Configuration subsystem callback."""
     pass
 
@@ -33,7 +33,7 @@ def config_callback():
 def get_setting(
     section: str = typer.Argument(..., help="Configuration section name"),
     option: str | None = typer.Argument(None, help="Configuration option name (optional)"),
-):
+) -> None:
     """Print section or setting from config file."""
     try:
         result = config.get_setting(section, option)
@@ -53,7 +53,7 @@ def set_setting(
     section: str = typer.Argument(..., help="Configuration section name"),
     option: str = typer.Argument(..., help="Configuration option name"),
     value: str = typer.Argument(..., help="Configuration option value"),
-):
+) -> None:
     """Set a setting in the config file."""
     log.debug(f"Set config\n[{section}]\n{option}:{value}")
     config.set_setting(section, option, value)

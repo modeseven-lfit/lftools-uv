@@ -26,7 +26,7 @@ version_app = typer.Typer(
 
 
 @version_app.callback()
-def version_callback():
+def version_callback() -> None:
     """Version bump script for Maven based projects.
 
     In general, versions should be: <major>.<minor>.<micro>[-<human-readable-tag>]
@@ -59,7 +59,7 @@ def version_callback():
 def bump(
     ctx: typer.Context,
     release_tag: str = typer.Argument(..., help="Release tag to use for version bumping"),
-):
+) -> None:
     """Version bump pom files in a Maven project by x.(y+1).z or x.y.(z+1).
 
     This script performs version bumping as follows:
@@ -93,7 +93,7 @@ def bump(
 def release(
     ctx: typer.Context,
     release_tag: str = typer.Argument(..., help="Release tag to replace SNAPSHOT versions"),
-):
+) -> None:
     """Version bump pom files in a Maven project from SNAPSHOT to RELEASE_TAG.
 
     Searches poms for all instances of SNAPSHOT version and changes it to
@@ -125,7 +125,7 @@ def patch(
     release_tag: str = typer.Argument(..., help="Release tag to use for version bumping after patching"),
     patch_dir: str = typer.Argument(..., help="Directory containing git.bundle patches to apply"),
     project: str = typer.Option("OpenDaylight", "--project", help="Project name to use when tagging"),
-):
+) -> None:
     """Patch a project with git.bundles and then version bump.
 
     Applies git.bundle patches to the project and then performs a version bump

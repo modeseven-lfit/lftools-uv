@@ -49,7 +49,7 @@ nexus3_app.add_typer(user_app, name="user")
 def nexus3_callback(
     ctx: typer.Context,
     fqdn: str = typer.Argument(..., help="Nexus3 server FQDN"),
-):
+) -> None:
     """The Nexus3 API Interface."""
     # Check if we're just asking for help - if so, skip initialization
     if ctx.resilient_parsing:
@@ -73,7 +73,7 @@ def nexus3_callback(
 
 # Asset subcommands
 @asset_app.command("list")
-def asset_list(ctx: typer.Context, repository: str = typer.Argument(..., help="Repository name")):
+def asset_list(ctx: typer.Context, repository: str = typer.Argument(..., help="Repository name")) -> None:
     """List assets."""
     try:
         r = ctx.obj["nexus3"]
@@ -91,7 +91,7 @@ def asset_search(
     query_string: str = typer.Argument(..., help="Query string to search for"),
     repository: str = typer.Argument(..., help="Repository name"),
     details: bool = typer.Option(False, "--details", help="Show detailed results"),
-):
+) -> None:
     """Search assets."""
     try:
         r = ctx.obj["nexus3"]
@@ -109,7 +109,7 @@ def asset_search(
 
 # Privilege subcommands
 @privilege_app.command("list")
-def list_privileges(ctx: typer.Context):
+def list_privileges(ctx: typer.Context) -> None:
     """List privileges."""
     try:
         r = ctx.obj["nexus3"]
@@ -122,7 +122,7 @@ def list_privileges(ctx: typer.Context):
 
 # Repository subcommands
 @repository_app.command("list")
-def list_repositories(ctx: typer.Context):
+def list_repositories(ctx: typer.Context) -> None:
     """List repositories."""
     try:
         r = ctx.obj["nexus3"]
@@ -135,7 +135,7 @@ def list_repositories(ctx: typer.Context):
 
 # Role subcommands
 @role_app.command("list")
-def list_roles(ctx: typer.Context):
+def list_roles(ctx: typer.Context) -> None:
     """List roles."""
     try:
         r = ctx.obj["nexus3"]
@@ -153,7 +153,7 @@ def create_role(
     description: str = typer.Argument(..., help="Role description"),
     privileges: str = typer.Argument(..., help="Comma-separated list of privileges"),
     roles: str = typer.Argument(..., help="Comma-separated list of roles"),
-):
+) -> None:
     """Create roles."""
     try:
         r = ctx.obj["nexus3"]
@@ -170,7 +170,7 @@ def create_script(
     ctx: typer.Context,
     name: str = typer.Argument(..., help="Script name"),
     filename: str = typer.Argument(..., help="Script filename"),
-):
+) -> None:
     """Create a new script."""
     try:
         r = ctx.obj["nexus3"]
@@ -185,7 +185,7 @@ def create_script(
 def delete_script(
     ctx: typer.Context,
     name: str = typer.Argument(..., help="Script name to delete"),
-):
+) -> None:
     """Delete a script."""
     try:
         r = ctx.obj["nexus3"]
@@ -197,7 +197,7 @@ def delete_script(
 
 
 @script_app.command("list")
-def list_scripts(ctx: typer.Context):
+def list_scripts(ctx: typer.Context) -> None:
     """List all scripts."""
     try:
         r = ctx.obj["nexus3"]
@@ -212,7 +212,7 @@ def list_scripts(ctx: typer.Context):
 def read_script(
     ctx: typer.Context,
     name: str = typer.Argument(..., help="Script name to read"),
-):
+) -> None:
     """Get script contents."""
     try:
         r = ctx.obj["nexus3"]
@@ -227,7 +227,7 @@ def read_script(
 def run_script(
     ctx: typer.Context,
     name: str = typer.Argument(..., help="Script name to run"),
-):
+) -> None:
     """Run a script."""
     try:
         r = ctx.obj["nexus3"]
@@ -243,7 +243,7 @@ def update_script(
     ctx: typer.Context,
     name: str = typer.Argument(..., help="Script name to update"),
     content: str = typer.Argument(..., help="New script content"),
-):
+) -> None:
     """Update script contents."""
     try:
         r = ctx.obj["nexus3"]
@@ -260,7 +260,7 @@ def add_tag(
     ctx: typer.Context,
     name: str = typer.Argument(..., help="Tag name"),
     attributes: str | None = typer.Argument(None, help="Tag attributes"),
-):
+) -> None:
     """Add a tag."""
     try:
         r = ctx.obj["nexus3"]
@@ -275,7 +275,7 @@ def add_tag(
 def delete_tag(
     ctx: typer.Context,
     name: str = typer.Argument(..., help="Tag name to delete"),
-):
+) -> None:
     """Delete a tag."""
     try:
         r = ctx.obj["nexus3"]
@@ -287,7 +287,7 @@ def delete_tag(
 
 
 @tag_app.command("list")
-def list_tags(ctx: typer.Context):
+def list_tags(ctx: typer.Context) -> None:
     """List tags."""
     try:
         r = ctx.obj["nexus3"]
@@ -302,7 +302,7 @@ def list_tags(ctx: typer.Context):
 def show_tag(
     ctx: typer.Context,
     name: str = typer.Argument(..., help="Tag name to show"),
-):
+) -> None:
     """Show tags."""
     try:
         r = ctx.obj["nexus3"]
@@ -315,7 +315,7 @@ def show_tag(
 
 # Task subcommands
 @task_app.command("list")
-def list_tasks(ctx: typer.Context):
+def list_tasks(ctx: typer.Context) -> None:
     """List tasks."""
     try:
         r = ctx.obj["nexus3"]
@@ -336,7 +336,7 @@ def list_tasks(ctx: typer.Context):
 def search_user(
     ctx: typer.Context,
     username: str = typer.Argument(..., help="Username to search for"),
-):
+) -> None:
     """Search users."""
     try:
         r = ctx.obj["nexus3"]
@@ -368,7 +368,7 @@ def user_create(
     email_address: str = typer.Argument(..., help="Email address"),
     roles: str = typer.Argument(..., help="Comma-separated list of roles"),
     password: str | None = typer.Argument(None, help="Password (will be generated if not provided)"),
-):
+) -> None:
     """Create a new user account."""
     try:
         r = ctx.obj["nexus3"]
@@ -383,7 +383,7 @@ def user_create(
 def user_delete(
     ctx: typer.Context,
     username: str = typer.Argument(..., help="Username to delete"),
-):
+) -> None:
     """Delete a user account."""
     try:
         r = ctx.obj["nexus3"]

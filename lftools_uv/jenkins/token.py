@@ -32,7 +32,7 @@ def get_token(name: str, url: str, username: str, password: str, change: bool = 
     else:
         log.debug(f"Fetching Jenkins API token from {url}")
 
-    server: jenkins.Jenkins = jenkins.Jenkins(url, username=username, password=password)  # type: ignore
+    server: jenkins.Jenkins = jenkins.Jenkins(url, username=username, password=password)
 
     get_token: str = f"""
 import hudson.model.*

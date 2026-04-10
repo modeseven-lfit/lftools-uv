@@ -56,7 +56,7 @@ def jenkins_callback(
     ),
     user: str = typer.Option("admin", "--user", "-u", envvar="JENKINS_USER"),
     password: str | None = typer.Option(None, "--password", "-p", envvar="JENKINS_PASSWORD"),
-):
+) -> None:
     """Query information about the Jenkins Server."""
     # Skip initialization if we're just showing help
     if ctx.resilient_parsing:
@@ -86,7 +86,7 @@ def jenkins_callback(
 
 # Main jenkins commands
 @jenkins_app.command("get-credentials")
-def get_credentials(ctx: typer.Context):
+def get_credentials(ctx: typer.Context) -> None:
     """Print all available Credentials."""
     try:
         jenkins = ctx.obj["jenkins"]
@@ -115,7 +115,7 @@ for (c in creds) {
 
 
 @jenkins_app.command("get-secrets")
-def get_secrets(ctx: typer.Context):
+def get_secrets(ctx: typer.Context) -> None:
     """Print all available secrets."""
     try:
         jenkins = ctx.obj["jenkins"]
@@ -144,7 +144,7 @@ for (c in creds) {
 
 
 @jenkins_app.command("get-private-keys")
-def get_private_keys(ctx: typer.Context):
+def get_private_keys(ctx: typer.Context) -> None:
     """Print all available SSH User Private Keys."""
     try:
         jenkins = ctx.obj["jenkins"]
@@ -177,7 +177,7 @@ for (c in creds) {
 
 
 @jenkins_app.command("groovy")
-def groovy(ctx: typer.Context, groovy_file: str = typer.Argument(..., help="Path to groovy script file")):
+def groovy(ctx: typer.Context, groovy_file: str = typer.Argument(..., help="Path to groovy script file")) -> None:
     """Run a groovy script."""
     try:
         with open(groovy_file) as f:
@@ -198,7 +198,7 @@ def groovy(ctx: typer.Context, groovy_file: str = typer.Argument(..., help="Path
 def quiet_down(
     ctx: typer.Context,
     yes: bool = typer.Option(False, "--yes", "-y", help="Proceed without confirmation"),
-):
+) -> None:
     """Put Jenkins into 'Quiet Down' mode."""
     version = "unknown"
     try:
@@ -233,7 +233,7 @@ def remove_offline_nodes(
     force: bool = typer.Option(
         False, "--force", help="Forcibly remove nodes, use only if the non-force version fails."
     ),
-):
+) -> None:
     """Remove any offline nodes."""
     try:
         jenkins = ctx.obj["jenkins"]
@@ -302,7 +302,7 @@ for (node in Jenkins.instance.computers) {
 
 # Builds subcommands
 @builds_app.command("running")
-def builds_running(ctx: typer.Context):
+def builds_running(ctx: typer.Context) -> None:
     """Show all the currently running builds."""
     try:
         jenkins = ctx.obj["jenkins"]
@@ -316,7 +316,7 @@ def builds_running(ctx: typer.Context):
 
 
 @builds_app.command("queued")
-def builds_queued(ctx: typer.Context):
+def builds_queued(ctx: typer.Context) -> None:
     """Show all jobs waiting in the queue and their status."""
     try:
         jenkins = ctx.obj["jenkins"]
@@ -360,7 +360,7 @@ jobTypes.each{{ className->
 
 
 @jobs_app.command("enable")
-def jobs_enable(ctx: typer.Context, regex: str = typer.Argument(..., help="Regex pattern to match job names")):
+def jobs_enable(ctx: typer.Context, regex: str = typer.Argument(..., help="Regex pattern to match job names")) -> None:
     """Enable all Jenkins jobs matching REGEX."""
     try:
         jenkins = ctx.obj["jenkins"]
@@ -372,7 +372,7 @@ def jobs_enable(ctx: typer.Context, regex: str = typer.Argument(..., help="Regex
 
 
 @jobs_app.command("disable")
-def jobs_disable(ctx: typer.Context, regex: str = typer.Argument(..., help="Regex pattern to match job names")):
+def jobs_disable(ctx: typer.Context, regex: str = typer.Argument(..., help="Regex pattern to match job names")) -> None:
     """Disable all Jenkins jobs matching REGEX."""
     try:
         jenkins = ctx.obj["jenkins"]
@@ -392,7 +392,7 @@ def offline_str(status):
 
 
 @nodes_app.command("list")
-def nodes_list(ctx: typer.Context):
+def nodes_list(ctx: typer.Context) -> None:
     """List Jenkins nodes."""
     try:
         jenkins = ctx.obj["jenkins"]
@@ -419,7 +419,7 @@ def print_plugin(plugin, namefield="longName"):
 
 
 @plugins_app.command("list")
-def plugins_list(ctx: typer.Context):
+def plugins_list(ctx: typer.Context) -> None:
     """List installed plugins.
 
     Defaults to listing all installed plugins and their current versions
@@ -437,7 +437,7 @@ def plugins_list(ctx: typer.Context):
 
 
 @plugins_app.command("pinned")
-def plugins_pinned(ctx: typer.Context):
+def plugins_pinned(ctx: typer.Context) -> None:
     """List pinned plugins."""
     try:
         jenkins = ctx.obj["jenkins"]
@@ -453,7 +453,7 @@ def plugins_pinned(ctx: typer.Context):
 
 
 @plugins_app.command("dynamic")
-def plugins_dynamic(ctx: typer.Context):
+def plugins_dynamic(ctx: typer.Context) -> None:
     """List dynamically reloadable plugins."""
     try:
         jenkins = ctx.obj["jenkins"]
@@ -469,7 +469,7 @@ def plugins_dynamic(ctx: typer.Context):
 
 
 @plugins_app.command("needs-update")
-def plugins_needs_update(ctx: typer.Context):
+def plugins_needs_update(ctx: typer.Context) -> None:
     """List pending plugin updates."""
     try:
         jenkins = ctx.obj["jenkins"]
@@ -485,7 +485,7 @@ def plugins_needs_update(ctx: typer.Context):
 
 
 @plugins_app.command("enabled")
-def plugins_enabled(ctx: typer.Context):
+def plugins_enabled(ctx: typer.Context) -> None:
     """List enabled plugins."""
     try:
         jenkins = ctx.obj["jenkins"]
@@ -501,7 +501,7 @@ def plugins_enabled(ctx: typer.Context):
 
 
 @plugins_app.command("disabled")
-def plugins_disabled(ctx: typer.Context):
+def plugins_disabled(ctx: typer.Context) -> None:
     """List disabled plugins.
 
     TODO: In the future this should be part of a command alias and pass a flag
@@ -521,7 +521,7 @@ def plugins_disabled(ctx: typer.Context):
 
 
 @plugins_app.command("active")
-def plugins_active(ctx: typer.Context):
+def plugins_active(ctx: typer.Context) -> None:
     """List active plugins."""
     try:
         jenkins = ctx.obj["jenkins"]
@@ -537,7 +537,7 @@ def plugins_active(ctx: typer.Context):
 
 
 @plugins_app.command("sec")
-def plugins_sec(ctx: typer.Context):
+def plugins_sec(ctx: typer.Context) -> None:
     """List plugins with a known vulnerability.
 
     Output is in the format:
@@ -606,7 +606,7 @@ def _require_jjb_ini(config):
 def token_change(
     ctx: typer.Context,
     name: str = typer.Option("token-created-by-lftools", "--name", help="set token name"),
-):
+) -> None:
     """Generate a new API token."""
     try:
         jenkins = ctx.obj["jenkins"]
@@ -628,7 +628,7 @@ def token_init(
     ctx: typer.Context,
     name: str = typer.Argument(..., help="Server name for configuration"),
     url: str = typer.Argument(..., help="Jenkins server URL"),
-):
+) -> None:
     """Initialize jenkins_jobs.ini config for new server section."""
     try:
         jenkins = ctx.obj["jenkins"]
@@ -667,7 +667,7 @@ def token_init(
 
 
 @token_app.command("print")
-def token_print(ctx: typer.Context):
+def token_print(ctx: typer.Context) -> None:
     """Print current API token."""
     try:
         jenkins = ctx.obj["jenkins"]
@@ -688,7 +688,7 @@ def token_print(ctx: typer.Context):
 def token_reset(
     ctx: typer.Context,
     servers: list[str] | None = typer.Argument(None, help="Server names to reset tokens for"),
-):
+) -> None:
     """Regenerate API tokens for configurations in jenkins_jobs.ini.
 
     This command has 2 modes to reset API tokens:

@@ -138,7 +138,7 @@ def test_create_repo_target_regex():
         ["io.fd.vpp", "/io/fd/vpp/jvpp/16.06/jvpp-16.06.jar"],
     ]
 
-    for url in test_url_2_par:
-        a = util.create_repo_target_regex(url[0])
+    for entry in test_url_2_par:
+        a = util.create_repo_target_regex(entry[0])
         a_regex = re.compile(a)
-        assert a_regex.match(url[1]) is not None
+        assert a_regex.match(entry[1]) is not None

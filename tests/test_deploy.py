@@ -43,8 +43,7 @@ def test_format_url():
 
 def test_log_and_exit():
     """Test exit."""
-    with pytest.raises(SystemExit) as excinfo:
-        deploy_sys._log_error_and_exit("testmsg")
+    excinfo = pytest.raises(SystemExit, deploy_sys._log_error_and_exit, "testmsg")
     assert excinfo.type is SystemExit
 
 
@@ -164,8 +163,7 @@ def test_deploy_archive4(cli_runner, datafiles, responses):
         "**/target/failsafe-reports/failsafe-summary.xml",
         "**/*",
     ]
-    result = deploy_sys.copy_archives(workspace_dir, pattern)
-    assert result is None
+    deploy_sys.copy_archives(workspace_dir, pattern)
 
 
 def test_remove_duplicates_and_sort():
@@ -437,7 +435,7 @@ def test__request_post(responses, mocker):
     headers = {"Content-Type": "application/xml"}
 
     test_url = "http://connection.error.test"
-    exception = requests.exceptions.ConnectionError(test_url)
+    exception: requests.exceptions.RequestException = requests.exceptions.ConnectionError(test_url)
     responses.add(responses.POST, test_url, body=exception)
     with pytest.raises(ValueError) as excinfo:
         deploy_sys._request_post(test_url, xml_doc, headers)
@@ -463,7 +461,7 @@ def test__request_post_file(responses, mocker):
 
     zip_file = "zip-test-files/test.zip"
     test_url = "http://connection.error.test"
-    exception = requests.exceptions.ConnectionError(test_url)
+    exception: requests.exceptions.RequestException = requests.exceptions.ConnectionError(test_url)
     responses.add(responses.POST, test_url, body=exception)
     with pytest.raises(requests.HTTPError) as excinfo:
         deploy_sys._request_post_file(test_url, zip_file)
@@ -508,7 +506,7 @@ def test__request_post_file_data(responses, mocker):
     param = {"r": (None, "testing")}
     zip_file = "zip-test-files/test.zip"
     test_url = "http://connection.error.test"
-    exception = requests.exceptions.ConnectionError(test_url)
+    exception: requests.exceptions.RequestException = requests.exceptions.ConnectionError(test_url)
     responses.add(responses.POST, test_url, body=exception)
     with pytest.raises(requests.HTTPError) as excinfo:
         deploy_sys._request_post_file(test_url, zip_file, param)

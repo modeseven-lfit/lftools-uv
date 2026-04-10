@@ -26,7 +26,7 @@ sign_app = typer.Typer(
 
 
 @sign_app.callback()
-def sign_callback():
+def sign_callback() -> None:
     """GPG or Sigul sign files."""
     pass
 
@@ -35,7 +35,7 @@ def sign_callback():
 def directory(
     directory: Path = typer.Argument(..., help="Directory containing files to sign"),
     mode: str = typer.Option("parallel", "-m", "--mode", help="Signing mode: serial or parallel"),
-):
+) -> None:
     """GPG signs all of the files in a directory.
 
     Args:
@@ -66,7 +66,7 @@ def directory(
 @sign_app.command("git-tag")
 def git_tag(
     tag: str = typer.Argument(..., help="Git tag to sign"),
-):
+) -> None:
     """GPG signs a git tag.
 
     Args:
@@ -92,7 +92,7 @@ def git_tag(
 @sign_app.command("nexus")
 def nexus(
     nexus_repo_url: str = typer.Argument(..., help="Nexus repository URL"),
-):
+) -> None:
     """GPG signs artifacts in a Nexus repository.
 
     Args:

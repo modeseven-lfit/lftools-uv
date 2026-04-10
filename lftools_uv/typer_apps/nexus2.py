@@ -40,7 +40,7 @@ nexus2_app.add_typer(user_app, name="user")
 def nexus2_callback(
     ctx: typer.Context,
     fqdn: str = typer.Argument(..., help="Nexus2 server FQDN"),
-):
+) -> None:
     """The Nexus2 API Interface."""
     # Check if we're just asking for help - if so, skip initialization
     if ctx.resilient_parsing:
@@ -63,7 +63,7 @@ def nexus2_callback(
 
 # Privilege subcommands
 @privilege_app.command("list")
-def privilege_list(ctx: typer.Context):
+def privilege_list(ctx: typer.Context) -> None:
     """List privileges."""
     try:
         r = ctx.obj["nexus2"]
@@ -80,7 +80,7 @@ def privilege_create(
     name: str = typer.Argument(..., help="Privilege name"),
     description: str = typer.Argument(..., help="Privilege description"),
     repo: str = typer.Argument(..., help="Repository name"),
-):
+) -> None:
     """Create a new privilege."""
     try:
         r = ctx.obj["nexus2"]
@@ -95,7 +95,7 @@ def privilege_create(
 def privilege_delete(
     ctx: typer.Context,
     privilege_id: str = typer.Argument(..., help="Privilege ID to delete"),
-):
+) -> None:
     """Delete a privilege."""
     try:
         r = ctx.obj["nexus2"]
@@ -108,7 +108,7 @@ def privilege_delete(
 
 # Repository subcommands
 @repo_app.command("list")
-def repo_list(ctx: typer.Context):
+def repo_list(ctx: typer.Context) -> None:
     """List repositories."""
     try:
         r = ctx.obj["nexus2"]
@@ -128,7 +128,7 @@ def repo_create(
     repo_provider: str = typer.Argument(..., help="Repository provider"),
     repo_policy: str = typer.Argument(..., help="Repository policy"),
     repo_upstream_url: str | None = typer.Option(None, "--upstream-repo", "-u", help="Upstream repository URL"),
-):
+) -> None:
     """Create a new repository."""
     try:
         r = ctx.obj["nexus2"]
@@ -143,7 +143,7 @@ def repo_create(
 def repo_delete(
     ctx: typer.Context,
     repo_id: str = typer.Argument(..., help="Repository ID to delete"),
-):
+) -> None:
     """Permanently delete a repo."""
     try:
         r = ctx.obj["nexus2"]
@@ -156,7 +156,7 @@ def repo_delete(
 
 # Role subcommands
 @role_app.command("list")
-def role_list(ctx: typer.Context):
+def role_list(ctx: typer.Context) -> None:
     """List roles."""
     try:
         r = ctx.obj["nexus2"]
@@ -175,7 +175,7 @@ def role_create(
     role_description: str | None = typer.Option(None, "--description", "-d", help="Role description"),
     roles_list: str | None = typer.Option(None, "--roles", "-r", help="Comma-separated list of roles"),
     privileges_list: str | None = typer.Option(None, "--privileges", "-p", help="Comma-separated list of privileges"),
-):
+) -> None:
     """Create a new role."""
     try:
         r = ctx.obj["nexus2"]
@@ -190,7 +190,7 @@ def role_create(
 def role_delete(
     ctx: typer.Context,
     role_id: str = typer.Argument(..., help="Role ID to delete"),
-):
+) -> None:
     """Delete a role."""
     try:
         r = ctx.obj["nexus2"]
@@ -203,7 +203,7 @@ def role_delete(
 
 # User subcommands
 @user_app.command("list")
-def user_list(ctx: typer.Context):
+def user_list(ctx: typer.Context) -> None:
     """List users."""
     try:
         r = ctx.obj["nexus2"]
@@ -223,7 +223,7 @@ def user_create(
     email: str = typer.Argument(..., help="Email address"),
     roles: str = typer.Argument(..., help="Comma-separated list of roles"),
     password: str | None = typer.Argument(None, help="Password (will be generated if not provided)"),
-):
+) -> None:
     """Add a new user."""
     try:
         r = ctx.obj["nexus2"]
@@ -238,7 +238,7 @@ def user_create(
 def user_delete(
     ctx: typer.Context,
     username: str = typer.Argument(..., help="Username to delete"),
-):
+) -> None:
     """Delete a user."""
     try:
         r = ctx.obj["nexus2"]

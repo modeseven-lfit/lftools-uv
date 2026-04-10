@@ -25,7 +25,7 @@ github_app = typer.Typer(name="github", help="GitHub tools.")
 
 
 @github_app.callback()
-def github_callback():
+def github_callback() -> None:
     """GitHub tools callback."""
     pass
 
@@ -35,7 +35,7 @@ def submit_pr(
     organization: str = typer.Argument(..., help="GitHub organization name"),
     repo: str = typer.Argument(..., help="GitHub repository name"),
     pr: int = typer.Argument(..., help="Pull request number"),
-):
+) -> None:
     """Submit a pr if mergeable."""
     if config.get_setting("github." + organization, "token"):
         token = config.get_setting("github." + organization, "token")
@@ -65,7 +65,7 @@ def votes(
     organization: str = typer.Argument(..., help="GitHub organization name"),
     repo: str = typer.Argument(..., help="GitHub repository name"),
     pr: int = typer.Argument(..., help="Pull request number"),
-):
+) -> None:
     """Helper for votes."""
     approval_list = prvotes(organization, repo, pr)
     log.info("Approvals: %s", approval_list)
@@ -80,7 +80,7 @@ def list_github(
     teams: bool = typer.Option(False, "--teams", help="List available teams"),
     team: str | None = typer.Option(None, "--team", help="List members of a team"),
     repofeatures: bool = typer.Option(False, "--repofeatures", help="List enabled features for repos in an org"),
-):
+) -> None:
     """List options for github org repos."""
     helper_list(None, organization, repos, audit, full, teams, team, repofeatures)
 
@@ -93,7 +93,7 @@ def create_repo(
     has_issues: bool = typer.Option(False, "--has-issues", help="Repo should have issues"),
     has_projects: bool = typer.Option(False, "--has-projects", help="Repo should have projects"),
     has_wiki: bool = typer.Option(False, "--has-wiki", help="Repo should have wiki"),
-):
+) -> None:
     """Create a Github repo within an Organization.
 
     Requires an admin token.
@@ -125,7 +125,7 @@ def update_repo(
     has_wiki: bool = typer.Option(False, "--has-wiki", help="Repo should have wiki"),
     add_team: str | None = typer.Option(None, "--add-team", help="Add team to repo"),
     remove_team: str | None = typer.Option(None, "--remove-team", help="Remove team from repo"),
-):
+) -> None:
     """Update a Github repo within an Organization.
 
     Requires an admin token.
@@ -161,7 +161,7 @@ def create_team(
     name: str = typer.Argument(..., help="Team name to create"),
     privacy: str = typer.Argument(..., help="Team privacy setting (closed/secret)"),
     repo: str | None = typer.Option(None, "--repo", help="Assign team to repo"),
-):
+) -> None:
     """Create a Github team within an Organization.
 
     Privacy should be set to closed
@@ -197,7 +197,7 @@ def user(
     team: str = typer.Argument(..., help="Team name"),
     delete: bool = typer.Option(False, "--delete", help="Remove user from org"),
     admin: bool = typer.Option(False, "--admin", help="User is admin for org, or a maintainer of a team"),
-):
+) -> None:
     """Add and Remove users from an org team."""
     try:
         helper_user_github(None, organization, user, team, delete, admin)

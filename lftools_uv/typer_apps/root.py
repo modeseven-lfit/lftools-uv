@@ -42,7 +42,7 @@ from lftools_uv.typer_apps.version import get_version_app
 log = logging.getLogger(__name__)
 
 
-def version_callback(value: bool):
+def version_callback(value: bool) -> None:
     """Show version and exit."""
     if value:
         try:
@@ -76,7 +76,7 @@ def main(
         None, "--password", envvar="LFTOOLS_PASSWORD", help="Password for authentication", hide_input=True
     ),
     interactive: bool = typer.Option(False, "--interactive", "-i", help="Prompt for missing credentials"),
-):
+) -> None:
     """Linux Foundation Release Engineering Tools.
 
     This is the Typer-based version of lftools-uv. Enable it by setting

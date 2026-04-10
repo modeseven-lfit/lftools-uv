@@ -169,7 +169,7 @@ def test_multiple_pages_4_dockertags(responses, datafiles):
         "2.4.0",
         "2.4.1",
     ]
-    answer_invalid_tags = []
+    answer_invalid_tags: list[str] = []
     responses.add(responses.GET, url1, body=answer1, status=200)
     responses.add(responses.GET, url2, body=answer2, status=200)
     responses.add(responses.GET, url3, body=answer3, status=200)

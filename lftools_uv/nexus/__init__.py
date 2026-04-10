@@ -115,10 +115,10 @@ class Nexus:
         resp = r.json()
         return str(resp["data"]["id"])
 
-    def get_priv(self, name: str, priv: str) -> None:
+    def get_priv(self, name: str, priv: str) -> str:
         """Get the ID for the privilege with the given name and privilege type."""
         search_name = f"{name} - ({priv})"
-        _ = self.get_priv_by_name(search_name)
+        return self.get_priv_by_name(search_name)
 
     def get_priv_by_name(self, name: str) -> str:
         """Get the ID for the privilege with the given name."""

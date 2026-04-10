@@ -51,7 +51,7 @@ state = OpenStackState()
 
 
 @openstack_app.callback()
-def openstack_callback(os_cloud: str = typer.Option(..., "--os-cloud", envvar="OS_CLOUD", help="OpenStack cloud name")):
+def openstack_callback(os_cloud: str = typer.Option(..., "--os-cloud", envvar="OS_CLOUD", help="OpenStack cloud name")) -> None:
     """Provide an interface to OpenStack."""
     state.os_cloud = os_cloud
 
@@ -69,7 +69,7 @@ def image_cleanup(
         "--clouds",
         help="Clouds (as defined in clouds.yaml) to remove images from. If not passed will assume from os-cloud parameter. (optional)",
     ),
-):
+) -> None:
     """Cleanup old images."""
     os_image.cleanup(state.os_cloud, ci_managed=ci_managed, days=days, hide_public=hide_public, clouds=clouds)
 
@@ -81,7 +81,7 @@ def image_list(
     ),
     days: int = typer.Option(0, "--days", help="Find images older than or equal to days."),
     hide_public: bool = typer.Option(False, "--hide-public", help="Ignore public images."),
-):
+) -> None:
     """List cloud images."""
     os_image.list(state.os_cloud, ci_managed=ci_managed, days=days, hide_public=hide_public)
 
@@ -90,7 +90,7 @@ def image_list(
 def image_share(
     image: str = typer.Argument(..., help="Image to share"),
     dest: list[str] = typer.Argument(..., help="Destination tenants"),
-):
+) -> None:
     """Share image with another tenant."""
     os_image.share(state.os_cloud, image, dest)
 
@@ -100,7 +100,7 @@ def image_upload(
     image: str = typer.Argument(..., help="Image file to upload"),
     name: list[str] = typer.Argument(..., help="Name for the uploaded image"),
     disk_format: str = typer.Option("raw", "--disk-format", help="Disk format of image. (default: raw)"),
-):
+) -> None:
     """Upload image to OpenStack cloud."""
     name_str = " ".join(name)
 
@@ -118,7 +118,7 @@ def image_upload(
 
 # Object commands
 @object_app.command("list")
-def object_list():
+def object_list() -> None:
     """List available containers."""
     os_object.list_containers(state.os_cloud)
 
@@ -127,7 +127,7 @@ def object_list():
 @server_app.command("cleanup")
 def server_cleanup(
     days: int = typer.Option(0, "--days", help="Find servers older than or equal to days."),
-):
+) -> None:
     """Cleanup old servers."""
     os_server.cleanup(state.os_cloud, days=days)
 
@@ -135,7 +135,7 @@ def server_cleanup(
 @server_app.command("list")
 def server_list(
     days: int = typer.Option(0, "--days", help="Find servers older than or equal to days."),
-):
+) -> None:
     """List cloud servers."""
     os_server.list(state.os_cloud, days=days)
 
@@ -144,7 +144,7 @@ def server_list(
 def server_remove(
     server: str = typer.Argument(..., help="Server to remove"),
     minutes: int = typer.Option(0, "--minutes", help="Delete server if older than x minutes."),
-):
+) -> None:
     """Remove servers."""
     os_server.remove(state.os_cloud, server_name=server, minutes=minutes)
 
@@ -157,7 +157,7 @@ def stack_create(
     parameter_file: str = typer.Argument(..., help="Parameter file"),
     timeout: int = typer.Option(900, "--timeout", help="Stack create timeout in seconds."),
     tries: int = typer.Option(2, "--tries", help="Number of tries before giving up."),
-):
+) -> None:
     """Create stack."""
     os_stack.create(state.os_cloud, name, template_file, parameter_file, timeout, tries)
 
@@ -167,7 +167,7 @@ def stack_delete(
     name_or_id: str = typer.Argument(..., help="Stack name or ID"),
     force: bool = typer.Option(False, "--force", help="Ignore timeout and continue with next stack."),
     timeout: int = typer.Option(900, "--timeout", help="Stack delete timeout in seconds."),
-):
+) -> None:
     """Delete stack."""
     os_stack.delete(state.os_cloud, name_or_id, force=force, timeout=timeout)
 
@@ -176,7 +176,7 @@ def stack_delete(
 def stack_cost(
     stack_name: str = typer.Argument(..., help="Stack name"),
     timeout: int = typer.Option(60, "--timeout", help="Timeout in seconds for cost retrieval operations (default: 60)"),
-):
+) -> None:
     """Get Total Stack Cost."""
     os_stack.cost(state.os_cloud, stack_name, timeout=timeout)
 
@@ -184,7 +184,7 @@ def stack_cost(
 @stack_app.command("delete-stale")
 def stack_delete_stale(
     jenkins_urls: list[str] = typer.Argument(..., help="Jenkins URLs"),
-):
+) -> None:
     """Delete stale stacks.
 
     This command checks Jenkins and OpenStack for stacks that do not appear in
@@ -198,7 +198,7 @@ def stack_delete_stale(
 @volume_app.command("cleanup")
 def volume_cleanup(
     days: int = typer.Option(0, "--days", help="Find volumes older than or equal to days."),
-):
+) -> None:
     """Cleanup old volumes."""
     os_volume.cleanup(state.os_cloud, days=days)
 
@@ -206,7 +206,7 @@ def volume_cleanup(
 @volume_app.command("list")
 def volume_list(
     days: int = typer.Option(0, "--days", help="Find volumes older than or equal to days."),
-):
+) -> None:
     """List cloud volumes."""
     os_volume.list(state.os_cloud, days=days)
 
@@ -215,7 +215,7 @@ def volume_list(
 def volume_remove(
     volume_id: str = typer.Argument(..., help="Volume ID"),
     minutes: int = typer.Option(0, "--minutes", help="Delete volumes if older than x minutes."),
-):
+) -> None:
     """Remove volumes."""
     os_volume.remove(state.os_cloud, volume_id=volume_id, minutes=minutes)
 

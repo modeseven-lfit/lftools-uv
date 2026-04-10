@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 # SPDX-License-Identifier: EPL-1.0
 ##############################################################################
 # Copyright (c) 2019 The Linux Foundation and others.
@@ -10,6 +8,8 @@ from __future__ import annotations
 # http://www.eclipse.org/legal/epl-v10.html
 ##############################################################################
 """Github tools."""
+
+from __future__ import annotations
 
 import logging
 import sys
@@ -228,13 +228,13 @@ def createteam(ctx, organization, name, repo, privacy):
     repos = []
     if repo:
         try:
-            repos = org.get_repos
+            get_repos = org.get_repos
         except GithubException as ghe:
             log.error(ghe)
             sys.exit(1)
 
         my_repos = [repo]
-        repos = [repo for repo in repos() if repo.name in my_repos]
+        repos = [repo for repo in get_repos() if repo.name in my_repos]
         for repo in repos:
             log.info(repo)
         if repos:

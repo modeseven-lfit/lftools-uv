@@ -20,7 +20,7 @@ dco_app = typer.Typer(name="dco", help="Check repository for commits missing DCO
 
 
 @dco_app.callback()
-def dco_callback():
+def dco_callback() -> None:
     """DCO subsystem callback."""
     pass
 
@@ -31,7 +31,7 @@ def check(
     signoffs: str = typer.Option(
         "dco_signoffs", "--signoffs", help="Specify a directory to check for DCO signoff text files"
     ),
-):
+) -> None:
     """Check repository for commits missing DCO.
 
     This check will exclude merge commits and empty commits.
@@ -57,7 +57,7 @@ def match(
     signoffs: str = typer.Option(
         "dco_signoffs", "--signoffs", help="Specify a directory to check for DCO signoff text files"
     ),
-):
+) -> None:
     """Check for commits whose DCO does not match the commit author's email.
 
     This check will exclude merge commits and empty commits.

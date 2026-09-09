@@ -938,19 +938,18 @@ wheels = [
 
 [[package]]
 name = "keystoneauth1"
-version = "5.12.0"
+version = "5.17.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "iso8601" },
     { name = "os-service-types" },
-    { name = "pbr" },
     { name = "requests" },
     { name = "stevedore" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e5/16/b96df223ca7ea4bfa78034b205e0eaf4875bfecb2f119f375fc5232d2061/keystoneauth1-5.12.0.tar.gz", hash = "sha256:dd113c2f3dcb418d9f761c73b8cd43a96ddfa8a612b51c576822381f39ca4ae8", size = 288504, upload-time = "2025-08-21T09:34:10.767Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/68/84/a76c0819add727693d89b152c11452650036fcd481274756a33172e386e7/keystoneauth1-5.17.0.tar.gz", hash = "sha256:82359acc20c754fcb22818e090e2fea647e4c5c1137a6addb4984e9fba708ab3", size = 316782, upload-time = "2026-08-28T16:16:24.767Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/16/8a/803a45dc660770ac7e2d74fc1260a15ade29d2234120854747491b4a7a02/keystoneauth1-5.12.0-py3-none-any.whl", hash = "sha256:2e514b03615e2d9162f0c07c823a61a636e6d4df38ff4a34b7511a04e8a4166a", size = 343402, upload-time = "2025-08-21T09:34:09.38Z" },
+    { url = "https://files.pythonhosted.org/packages/e7/6b/e6eda650bb709c23688e250a7e66ad3ecbd470b70597d35d051f11ae66fa/keystoneauth1-5.17.0-py3-none-any.whl", hash = "sha256:28201a5299d4fabc478dda28e523a0d12777cda47e53b234772d15d3e0771736", size = 366027, upload-time = "2026-08-28T16:16:23.54Z" },
 ]
 
 [[package]]
@@ -1623,7 +1622,7 @@ wheels = [
 
 [[package]]
 name = "openstacksdk"
-version = "4.18.0"
+version = "4.20.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
@@ -1639,9 +1638,9 @@ dependencies = [
     { name = "psutil" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/60/d0/514c38d0b7f4d3652321baf0c5136ac29ce9360a2094fcdcd78f865cb7c9/openstacksdk-4.18.0.tar.gz", hash = "sha256:466f2f869bcf6dec717a5e6c65c0522b1bd061d53310c7bf11982e0d9244f70c", size = 1403478, upload-time = "2026-08-03T12:27:08.152Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/38/3b/7d0bb61a25002fb0023e2f0e620cb7e78dcd7b79d555005700fc13d92888/openstacksdk-4.20.0.tar.gz", hash = "sha256:f533050d7441b6d41c53488434d2f2df79f1f963a4b431695b4c7f49380ea85c", size = 1440710, upload-time = "2026-09-01T00:23:08.819Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/41/75/1c68b79bc71b1d9ea1d7acfd9a90f52bddfc2485ac3f8e1d1be488fcbcb8/openstacksdk-4.18.0-py3-none-any.whl", hash = "sha256:17d033c19a07df90116b67c0750b2218acdc45cdcf659d4c137f084667b26993", size = 1993600, upload-time = "2026-08-03T12:27:06.589Z" },
+    { url = "https://files.pythonhosted.org/packages/53/b5/ca0656afcb3b3f60fb4677df6f8620bf433eb57c14a4cd19e3f886dd316b/openstacksdk-4.20.0-py3-none-any.whl", hash = "sha256:f727e3366ea2e9bb7e925cd28cd334587b829e30742204359e3b145768f24459", size = 2040297, upload-time = "2026-09-01T00:23:07.022Z" },
 ]
 
 [[package]]
@@ -2745,11 +2744,11 @@ wheels = [
 
 [[package]]
 name = "stevedore"
-version = "5.6.0"
+version = "5.9.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/96/5b/496f8abebd10c3301129abba7ddafd46c71d799a70c44ab080323987c4c9/stevedore-5.6.0.tar.gz", hash = "sha256:f22d15c6ead40c5bbfa9ca54aa7e7b4a07d59b36ae03ed12ced1a54cf0b51945", size = 516074, upload-time = "2025-11-20T10:06:07.264Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/db/a1/3b8ed9c1fc3aa6eebb57732d924ddaa0500ecc3b638d0454816320994383/stevedore-5.9.1.tar.gz", hash = "sha256:e97a2667923efda926e8713fde6a73616df68210a3cbc6f02b48967b676fd8bf", size = 518111, upload-time = "2026-08-20T15:25:14.754Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f4/40/8561ce06dc46fd17242c7724ab25b257a2ac1b35f4ebf551b40ce6105cfa/stevedore-5.6.0-py3-none-any.whl", hash = "sha256:4a36dccefd7aeea0c70135526cecb7766c4c84c473b1af68db23d541b6dc1820", size = 54428, upload-time = "2025-11-20T10:06:05.946Z" },
+    { url = "https://files.pythonhosted.org/packages/c5/97/bba6e7ec2f5498b9dcb7b1b6400086b80ae5a8ebaff4b25e8c8add75f439/stevedore-5.9.1-py3-none-any.whl", hash = "sha256:5c8ff3a9f336cc1a06ac0f597bc79d11a2f950bfd32e290ca56b5a301fafafbf", size = 54931, upload-time = "2026-08-20T15:25:13.602Z" },
 ]
 
 [[package]]

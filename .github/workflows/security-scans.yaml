@@ -112,7 +112,7 @@ jobs:
 
       - name: 'SonarQube Cloud scan'
         # yamllint disable-line rule:line-length
-        uses: lfreleng-actions/sonarqube-cloud-scan-action@7ea9483ebee0d6d4f739ffca5bfb0035a2ece0d4  # v1.4.1
+        uses: lfreleng-actions/sonarqube-cloud-scan-action@bf84abc8e7e69217c2a65e2fcdb6338d080200d9  # v1.6.0
         with:
           sonar_token: ${{ secrets.SONAR_TOKEN }}
           # Workspace already populated by the steps above (checkout +
